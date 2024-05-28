@@ -1,0 +1,15 @@
+.popover {
+  position: relative;
+}
+
+.popover-content {
+  position: absolute;
+  top: 100%;
+  z-index: 10;
+  padding: 10px;
+  margin-top: 5px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0 0 0 0.1);
+}

@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: Rototo;
+  src: url("/fonts/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Rototo;
+  src: url("/fonts/Roboto-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Rototo;
+  src: url("/fonts/Roboto-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+  font-family: Roboto, sans-serif;
+  // user-select: none;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#__next {
+  height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: white;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ddd;
+
+  &:hover {
+    background: #555;
+  }
+}
+
+/** Input styles */
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.selected-option {
+  background-color: #a0aec0; // Tailwind's bg-gray-500
+  color: #fff; // Tailwind's text-white
+  border-radius: 0.25rem; // Tailwind's rounded-md
+  margin-right: 0.5rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+}
+
+.options-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0; // Tailwind's gray-300
+  border-radius: 0.25rem; // Tailwind's rounded-md
+  width: 100%;
+
+  .option {
+    padding: 0.5rem 1rem; // Tailwind's p-2 and px-4
+    cursor: pointer;
+    background-color: #fff; // Tailwind's bg-white
+
+    &:hover {
+      background-color: #edf2f7; // Tailwind's bg-gray-200
+    }
+  }
+}

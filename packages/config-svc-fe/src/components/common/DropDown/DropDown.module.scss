@@ -1,0 +1,27 @@
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-top: 7px;
+
+  // .dropdown-toggle {}
+
+  .dropdown-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    width: max-content;
+    min-width: 100%;
+    z-index: 1;
+
+    .dropdown-item {
+      padding: 5px 10px;
+      white-space: nowrap;
+      font-size: small;
+
+      &:hover {
+        background-color: #f9fafb;
+      }
+    }
+  }
+}

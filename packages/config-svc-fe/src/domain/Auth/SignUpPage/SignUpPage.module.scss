@@ -1,0 +1,26 @@
+.register-container {
+  @apply w-full h-full flex items-start;
+
+  max-width: 500px;
+
+  .signup-form {
+    h1 {
+      margin: 40px 0 20px;
+    }
+
+    &-forminputs {
+      margin-bottom: 20px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+
+      .email-input {
+        grid-column: 1 / span 2;
+      }
+
+      .create-account-btn {
+        margin-top: 16px;
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+.auth-layout {
+  @apply w-screen h-screen bg-white flex;
+
+  &-left {
+    width: 50%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    @apply h-full pt-20 pr-16 pl-16;
+
+    @media screen and (width <= 768px) {
+      width: 100%;
+      padding: 20px;
+    }
+
+    a {
+      @apply text-blue;
+    }
+
+    .auth {
+      &-header {
+        margin-bottom: 40px;
+
+        @media screen and (width <= 768px) {
+          margin-top: 40px;
+        }
+
+        img {
+          width: 220px;
+        }
+      }
+
+      &-main-content {
+        display: flex;
+        justify-content: center;
+        flex: 1;
+      }
+
+      &-footer {
+        display: flex;
+        flex-direction: column;
+        flex: 0;
+
+        .description {
+          flex: 1;
+        }
+
+        &-links {
+          border-top: 1px solid #e1e1e1;
+          margin-top: 20px;
+          margin-bottom: 20px;
+        }
+      }
+    }
+  }
+
+  &-right {
+    width: 50%;
+    display: block;
+
+    @apply h-full;
+
+    @media screen and (width <= 768px) {
+      display: none;
+    }
+
+    .auth-layout-bg-img {
+      @apply h-full bg-cover bg-center;
+
+      background-image: url("/images/welcome-side-background.png");
+    }
+  }
+}
