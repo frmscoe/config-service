@@ -1,6 +1,6 @@
 # Platform Shared Tools Deployment
 
-This guide provides step-by-step instructions for deploying the Mojaloop Platform Shared Tools currently used by the Configuration Service to create a reference installation for the 
+This guide provides step-by-step instructions for deploying the Mojaloop Platform Shared Tools currently used by the Configuration Service to create a reference installation for the
 
 > ⚠️ Important Note: These instructions are primarily for MacBook (macOS) users, but they should also be applicable for Linux and Windows Subsystem for Linux (WSL2) environments. If you encounter any issues, or if any commands do not work for you, please create an issue to provide feedback or request assistance. The deployment has been tested on a WSL2 installation.
 
@@ -23,7 +23,7 @@ Next, clone the repository into your code directory using the following command 
 > ⚠️ Important Note: Before proceeding, please ensure you navigate to the `docker-compose-infra` directory in your terminal:
 
 ```shell
-  cd platform-shared-tools/packages/deployment/docker-compose-infra
+  cd platform-shared-tools/packages/deployment/docker-compose-infra --branch beta1
 ```
 
 Proceed with the following instructions:
