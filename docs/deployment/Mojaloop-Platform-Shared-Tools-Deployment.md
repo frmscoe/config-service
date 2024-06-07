@@ -1,6 +1,6 @@
 # Platform Shared Tools Deployment
 
-This guide provides step-by-step instructions for deploying the Mojaloop Platform Shared Tools currently used by the Configuration Service to create a reference installation for the
+This guide provides step-by-step instructions for deploying the Mojaloop Platform Shared Tools currently used by the Configuration Service to create a reference installation for the Mojaloop vNext project.
 
 > ⚠️ Important Note: These instructions are primarily for MacBook (macOS) users, but they should also be applicable for Linux and Windows Subsystem for Linux (WSL2) environments. If you encounter any issues, or if any commands do not work for you, please create an issue to provide feedback or request assistance. The deployment has been tested on a WSL2 installation.
 
@@ -13,7 +13,7 @@ First, navigate to the [Mojaloop Platform Shared Tools Repo](https://github.com/
 Next, clone the repository into your code directory using the following command in your terminal:
 
 ```shell
-  git clone https://github.com/mojaloop/platform-shared-tools
+  git clone https://github.com/mojaloop/platform-shared-tools --branch beta1
 ```
 
 ## 2. Building Kafka, ElasticSearch and MongoDB for local infrastructure
@@ -23,7 +23,7 @@ Next, clone the repository into your code directory using the following command 
 > ⚠️ Important Note: Before proceeding, please ensure you navigate to the `docker-compose-infra` directory in your terminal:
 
 ```shell
-  cd platform-shared-tools/packages/deployment/docker-compose-infra --branch beta1
+  cd platform-shared-tools/packages/deployment/docker-compose-infra
 ```
 
 Proceed with the following instructions:
