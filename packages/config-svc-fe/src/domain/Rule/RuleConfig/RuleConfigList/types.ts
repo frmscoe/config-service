@@ -24,10 +24,10 @@ export interface Parameters {
 }
 
 export interface Config {
-    parameters: Parameters;
+    parameters: Parameters[];
     exitConditions: ExitCondition[];
     bands: Band[];
-    case: Case[];
+    cases: Case[];
 }
 
 export interface IRuleConfig {
@@ -38,7 +38,7 @@ export interface IRuleConfig {
     state: string;
     desc: string;
     ruleId: string;
-    config: Config;
+    config?: Config;
     ownerId: string;
     createdAt: string;
     updatedAt: string;

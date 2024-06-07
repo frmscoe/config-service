@@ -49,6 +49,7 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
 
     const schema = useMemo(() => {
         return yup.object().shape({
+            major: yup.number().required(t('createRulePage.errors.majorRequired')),
             minor: yup.number().required(t('createRuleConfigPage.errors.minorRequired')),
             patch: yup.number().required(t('createRuleConfigPage.errors.patchRequired')),
             isBand: yup.boolean().required(t('createRuleConfigPage.errors.bandRequired')),
@@ -143,7 +144,7 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
                     ParameterType: yup.string().required(t('createRuleConfigPage.errors.typeRequired')),
                     ParameterValue: yup.string().required(),
                 })
-            ).min(1, t('createRuleConfigPage.errors.minItems', { count: 1 }))
+            )
         });
     }, [t]);
 
@@ -160,7 +161,6 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
     });
 
     watch(['isBand', 'isCase', 'dataType', 'cases']);
-
 
     const dataType = watch('dataType');
 

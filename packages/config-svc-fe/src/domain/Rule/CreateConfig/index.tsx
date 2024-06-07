@@ -50,10 +50,10 @@ const CreateRuleConfigPage = () => {
             const obj = {
                 ruleId: id,
                 desc: data.description,
-                cfg: `${version}.${data.minor || 0}.${data.patch || 0}`,
+                cfg: `${data.major}.${data.minor || 0}.${data.patch || 0}`,
                 config: {
                     exitConditions: conditions?.map((con: any) => ({ reason: con.reason, subRuleRef: con.subRefRule, outcome: true })),
-                    bands: data.bands ? [...data.bands.map((band: any, index: number) => {
+                    bands: data.category === 'isBand' ? [...data.bands.map((band: any, index: number) => {
                         if(index === 0) {
                             return {
                                 upperLimit: covertValue(band.value, data.dataType),  
@@ -72,7 +72,7 @@ const CreateRuleConfigPage = () => {
                         reason: data.bandMaxReason,
 
                     }] : [],
-                    cases: data.cases ? data?.cases.map((cs: any, index: number) => {
+                    cases: data.category === 'isCase' ? data?.cases.map((cs: any, index: number) => {
                         if(data?.dataType === 'CALENDER_DATE_TIME') {
                             return {
                                 subRuleRef: `0.${index + 1}`,
@@ -86,7 +86,7 @@ const CreateRuleConfigPage = () => {
                             value: cs.value,
                         }
                     }) : [],
-                    parameters: data.parameters
+                    parameters: data.parameters || [],
                 }
             }
             await postRuleConfig(obj);

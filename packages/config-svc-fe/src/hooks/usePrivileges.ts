@@ -37,6 +37,23 @@ const usePrivileges = () => {
         return user?.privileges?.includes('SECURITY_GET_RULE_CONFIG');
     }, [user]);
 
+    //TODO add permissions for typology;
+    const canViewTypologyList = useMemo(() => {
+        return user?.privileges?.includes('SECURITY_GET_TYPOLOGIES');
+    }, [user]);
+
+    const canEditTypology = useMemo(() => {
+        return user.privileges?.includes('SECURITY_UPDATE_TYPOLOGY');
+    }, [user]);
+
+    const canCreateTypology = useMemo(() => {
+        return user?.privileges?.includes('SECURITY_CREATE_TYPOLOGY');
+    }, [user]);
+
+    const canReviewTypology = useMemo(() => {
+        return user?.privileges?.includes('SECURITY_GET_TYPOLOGY');
+    }, [user]);
+
     return {
         canCreateRuleConfig,
         canEditRule,
@@ -46,7 +63,11 @@ const usePrivileges = () => {
         privileges: user.privileges || [],
         canViewRules,
         canViewRuleConfigs,
-        canViewRuleWithConfigs
+        canViewRuleWithConfigs,
+        canViewTypologyList,
+        canEditTypology,
+        canReviewTypology,
+        canCreateTypology,
     };
 };
 

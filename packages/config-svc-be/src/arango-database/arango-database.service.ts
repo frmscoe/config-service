@@ -7,6 +7,10 @@ import {
   RULE_CONFIG_COLLECTION,
   ruleConfigSchema,
 } from '../rule-config/schema/rule-config.schema';
+import {
+  TYPOLOGY_COLLECTION,
+  typologySchema,
+} from '../typology/schema/typology.schema';
 
 @Injectable()
 export class ArangoDatabaseService {
@@ -59,6 +63,7 @@ export class ArangoDatabaseService {
     const collections = [
       { name: RULE_COLLECTION, options: ruleSchema },
       { name: RULE_CONFIG_COLLECTION, options: ruleConfigSchema },
+      { name: TYPOLOGY_COLLECTION, options: typologySchema },
     ];
 
     // Iterate over the collection names and create them if they don't exist
@@ -66,7 +71,10 @@ export class ArangoDatabaseService {
       if (!(await this.collectionExists(name))) {
         this.logger.log(`Creating collection '${name}'...`);
         await this.createCollection(name, options);
+      } else {
+        this.logger.log(`Collection '${name}' already exists.`);
       }
+      await this.updateCollectionSchema(name, options.schema);
     }
   }
 
@@ -89,6 +97,23 @@ export class ArangoDatabaseService {
   private async collectionExists(collectionName: string): Promise<boolean> {
     const collections = await this.database.listCollections();
     return collections.some((collection) => collection.name === collectionName);
+  }
+
+  async updateCollectionSchema(
+    collectionName: string,
+    newSchema: any,
+  ): Promise<void> {
+    try {
+      const collection = this.database.collection(collectionName);
+      await collection.properties({ schema: newSchema });
+      this.logger.log(`Schema of collection '${collectionName}' updated.`);
+    } catch (error) {
+      this.logger.error(
+        `Error updating schema of collection '${collectionName}': ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   async truncateCollections() {

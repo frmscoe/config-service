@@ -32,13 +32,10 @@ const rules: IRule[] = [{
     "updatedAt": "2024-04-08T12:31:51.863Z",
     ruleId: "kdkqpdq",
     config: {
-        parameters: {
-            maxQueryLimit: 0,
-            tolerance: 0
-        },
+        parameters: [],
         exitConditions: [],
         bands: [],
-        case: []
+        cases: []
     }}],
 }]
 

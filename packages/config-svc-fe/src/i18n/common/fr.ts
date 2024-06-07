@@ -232,6 +232,7 @@ export const frCommon = {
     dataType: 'Type de Données',
     selectDataType: 'Sélectionner le Type de Données',
     exit: 'Sortie',
+    success: 'Règle créée avec succès',
     errors: {
       nameRequired: 'Le nom est obligatoire',
       nameLength: 'Le nom doit comporter au moins 3 caractères',
@@ -361,5 +362,55 @@ export const frCommon = {
       parameterValue: 'Valeur du paramètre',
       add: 'Ajouter'
     }
-  }
+  },
+  typologyListPage: {
+    table: {
+      name: "Nom",
+      version: "Version",
+      description: "Description",
+      state: "État",
+      owner: "Propriétaire",
+      createdAt: "Créé à",
+      updatedAt: "Mis à jour à",
+      review: "Révision",
+      action: "Action",
+      modify: "Modifier"
+    },
+    retry: 'Retry'
+  },
+  typologyCreatePage: {
+    title: 'Règles',
+    searchRules: 'Rechercher des Règles',
+    recentlyRemoved: 'Supprimé récemment',
+    ruleConfiguration: 'Configuration des Règles',
+    searchConfigurations: 'Rechercher des Configurations',
+    noRuleConfigurations: 'Pas de Configurations de Règles',
+    setRule: 'Veuillez définir une règle pour afficher les configurations',
+    rulesAttached: "Règles attachées",
+    noRulesAttached: "Aucune règle attachée",
+    configurations: "configuration",
+    noConfigurations: "Aucune configuration",
+    rulesConfigurationsAttached: "Configurations de règles attachées",
+    structureTitle: "Structure",
+    searchPlaceholder: "Rechercher",
+    saving: "Enregistrement.....",
+    pleaseWait: "Veuillez patienter....",
+    typologyCreated: "La typologie a été créée"
+  },
+
+  typologyScorePage: {
+    conditions: "Conditions",
+    rules: "Règles",
+    outcomes: "Résultats",
+    others: "Autres",
+    recentlyRemoved: "Récemment Supprimé",
+    typologyInformation: "Informations de Typologie",
+    rulesAttached: "Règles Attachées",
+    outcomesAttached: "Résultats Attachés",
+    rulesCount: "Règles",
+    outcomesCount: "Résultats",
+    maxScore: "Score Maximum",
+    search: 'Rechercher',
+
+}
 };

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import RuleView from './RuleConfigList';
-import { getRules, getRulesWithConfigs } from './service';
-import { IRuleConfig } from './types';
+import { getRulesWithConfigs } from './service';
 import { useAuth } from '~/context/auth';
 import { IRule } from '../../RuleDetailPage/service';
 import usePrivileges from '~/hooks/usePrivileges';

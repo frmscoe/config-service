@@ -237,6 +237,7 @@ export const enCommon = {
     dataType: 'Data Type',
     selectDataType: 'Select Data Type',
     exit: 'Exit',
+    success: 'Rule Created Successfully',
     errors: {
       nameRequired: 'Name is required',
       nameLength: 'Name must be at least 3 characters long',
@@ -362,7 +363,64 @@ export const enCommon = {
       selectParameterType: 'Select Parameter Type',
       parameterValue: 'Parameter Value',
       add: 'Add'
-    }
+    },
+   
+  },
+  typologyListPage: {
+    table: {
+      name: "Name",
+      version: "Version",
+      description: "Description",
+      state: "State",
+      owner: "Owner",
+      createdAt: "Created At",
+      updatedAt: "Updated At",
+      review: "Review",
+      action: "Action",
+      modify: "Modify"
+    },
+    retry: 'Retry',
+    create: 'Create',
+    searchDescription: 'Search Description',
+    reset: 'Reset',
+    search: 'Search'
+  },
+
+  typologyCreatePage: {
+    title: 'Rules',
+    searchRules: 'Search Rules',
+    recentlyRemoved: 'Recently removed',
+    ruleConfiguration: 'Rule Configuration',
+    searchConfigurations: 'Search Configurations',
+    noRuleConfigurations: 'No Rule Configurations',
+    setRule: 'Please set a rule to show configurations',
+    rulesAttached: "Rules Attached",
+    noRulesAttached: "No rules attached",
+    configurations: "configuration",
+    noConfigurations: "No configurations",
+    rulesConfigurationsAttached: "Rules Configurations Attached",
+    structureTitle: "Structure",
+    searchPlaceholder: "Search",
+    saving: "Saving.....",
+    pleaseWait: "Please wait....",
+    typologyCreated: "Typology has been created"
+  },
+
+  typologyScorePage: {
+    conditions: "Conditions",
+    rules: "Rules",
+    outcomes: "Outcomes",
+    others: "Others",
+    recentlyRemoved: "Recently Removed",
+    typologyInformation: "Typology Information",
+    rulesAttached: "Rules Attached",
+    outcomesAttached: "Outcomes Attached",
+    rulesCount: "Rules",
+    outcomesCount: "Outcomes",
+    maxScore: "Max Score",
+    search: 'Search',
+
+
   }
 
 };

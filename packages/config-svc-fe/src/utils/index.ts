@@ -25,3 +25,15 @@ export function changeToEpoch(days: number, hours: number, minutes: number, seco
     // Return the epoch time in seconds
     return totalSeconds;
 }
+
+export const sortAlphabetically = (array: any[], key: string) => {
+    return array.sort((a, b) => {
+      if (a[key] < b[key]) {
+        return -1;
+      }
+      if (a[key] > b[key]) {
+        return 1;
+      }
+      return 0;
+    });
+  };

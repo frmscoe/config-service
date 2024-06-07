@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateRuleDto } from './dto/create-rule.dto';
@@ -21,16 +22,16 @@ export class RuleService {
   async create(createRuleDto: CreateRuleDto, req: Request) {
     const db = this.arangoDatabaseService.getDatabase();
     const collection = db.collection(RULE_COLLECTION);
-    const id = uuidv4();
+
+    const newRule = {
+      ...createRuleDto,
+      ownerId: req['user'].username,
+      _key: uuidv4(),
+      state: StateEnum['01_DRAFT'],
+    };
 
     try {
-      // Insert the new document into the 'rule' collection;
-      return await collection.save({
-        ...createRuleDto,
-        ownerId: req['user'].username,
-        _key: id,
-        state: StateEnum['01_DRAFT'],
-      });
+      return await collection.save(newRule);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
@@ -43,24 +44,33 @@ export class RuleService {
     const { limit, page } = options;
     const db = this.arangoDatabaseService.getDatabase();
     const skip = (page - 1) * limit;
+
+    const query = `
+    LET count = LENGTH(FOR doc IN @@collection FILTER doc.edited != @edited RETURN doc)
+    LET rules = (
+        FOR rule IN @@collection
+        FILTER rule.edited != @edited
+        SORT rule.createdAt ASC
+        LIMIT @skip, @limit
+        RETURN rule
+    )
+    RETURN { count, rules }
+  `;
+
+    const bindVars = {
+      '@collection': RULE_COLLECTION,
+      edited: true,
+      skip: skip,
+      limit: limit,
+    };
+
     try {
-      const cursor = await db.query(
-        `
-        LET count = LENGTH(FOR doc IN ${RULE_COLLECTION} FILTER doc.edited != @edited RETURN doc)
-        LET rules = (
-            FOR rule IN ${RULE_COLLECTION}
-            FILTER rule.edited != @edited
-            sort rule.createdAt ASC
-            LIMIT ${skip}, ${limit}
-            RETURN rule
-          )
-        RETURN { count, rules }
-        `,
-        { edited: true },
-      );
+      const cursor = await db.query(query, bindVars);
       return await cursor.next();
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw new InternalServerErrorException(
+        `Failed to retrieve rules: ${e.message}`,
+      );
     }
   }
 
@@ -71,33 +81,39 @@ export class RuleService {
     const { limit, page } = options;
     const db = this.arangoDatabaseService.getDatabase();
     const skip = (page - 1) * limit;
-    try {
-      const cursor = await db.query(
-        `
-        LET count = LENGTH(FOR doc IN ${RULE_COLLECTION} FILTER doc.edited != @edited RETURN doc)
-        LET rules = (
-            FOR rule IN ${RULE_COLLECTION}
-            FILTER rule.edited != @edited
-            sort rule.createdAt ASC
-            LIMIT ${skip}, ${limit}
-            LET configurations = (
-                FOR config IN ${RULE_CONFIG_COLLECTION}
-                FILTER config.ruleId == rule._key
-                RETURN config
-            )
-            RETURN MERGE(
-            {_key: rule._key, name:rule.name, cfg:rule.cfg, state:rule.state, ownerId:rule.ownerId},
 
-            { ruleConfigs: configurations}
-            )
-          )
-        RETURN { count, rules}
-        `,
-        { edited: true },
-      );
+    const query = `
+    LET count = LENGTH(FOR doc IN @@collection FILTER doc.edited != @edited RETURN doc)
+    LET rules = (
+        FOR rule IN @@collection
+        FILTER rule.edited != @edited
+        SORT rule.createdAt ASC
+        LIMIT @skip, @limit
+        LET configurations = (
+            FOR config IN @@configCollection
+            FILTER config.ruleId == rule._id
+            RETURN config
+        )
+        RETURN MERGE(rule, { ruleConfigs: configurations })
+    )
+    RETURN { count, rules }
+  `;
+
+    const bindVars = {
+      '@collection': RULE_COLLECTION,
+      '@configCollection': RULE_CONFIG_COLLECTION,
+      edited: true,
+      skip: skip,
+      limit: limit,
+    };
+
+    try {
+      const cursor = await db.query(query, bindVars);
       return await cursor.next();
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw new InternalServerErrorException(
+        `Failed to retrieve rule configurations: ${e.message}`,
+      );
     }
   }
 

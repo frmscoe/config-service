@@ -238,6 +238,7 @@ export const deCommon = {
     dataType: 'Datentyp',
     selectDataType: 'Datentyp auswählen',
     exit: 'Beenden',
+    success: 'Regel erfolgreich erstellt',
     errors: {
       nameRequired: 'Name ist erforderlich',
       nameLength: 'Name muss mindestens 3 Zeichen lang sein',
@@ -365,6 +366,59 @@ export const deCommon = {
       parameterValue: 'Parameterwert',
       add: 'Hinzufügen'
     }
+
+  },
+  typologyListPage: {
+    table: {
+      name: "Name",
+      version: "Version",
+      description: "Beschreibung",
+      state: "Zustand",
+      owner: "Besitzer",
+      createdAt: "Erstellt am",
+      updatedAt: "Aktualisiert am",
+      review: "Überprüfen",
+      action: "Aktion",
+      modify: "Ändern"
+    },
+    retry: 'Wiederholen',
+    create: 'Erstellen',
+    searchDescription: 'Beschreibung suchen',
+    reset: 'Zurücksetzen',
+    search: 'Suchen'
+  },
+  typologyCreatePage: {
+    title: 'Regeln',
+        searchRules: 'Regeln Suchen',
+        recentlyRemoved: 'Kürzlich entfernt',
+        ruleConfiguration: 'Regelkonfiguration',
+        searchConfigurations: 'Konfigurationen Suchen',
+        noRuleConfigurations: 'Keine Regelkonfigurationen',
+        setRule: 'Bitte setzen Sie eine Regel, um Konfigurationen anzuzeigen',
+        rulesAttached: "Angehängte Regeln",
+        noRulesAttached: "Keine Regeln angehängt",
+        configurations: "Konfiguration",
+        noConfigurations: "Keine Konfigurationen",
+        rulesConfigurationsAttached: "Angehängte Regelkonfigurationen",
+        structureTitle: "Struktur",
+        searchPlaceholder: "Suche",
+        saving: "Speichern.....",
+        pleaseWait: "Bitte warten....",
+        typologyCreated: "Typologie wurde erstellt"
+  },
+  typologyScorePage: {
+    conditions: "Bedingungen",
+    rules: "Regeln",
+    outcomes: "Ergebnisse",
+    others: "Andere",
+    recentlyRemoved: "Kürzlich Entfernt",
+    typologyInformation: "Typologie Informationen",
+    rulesAttached: "Angefügte Regeln",
+    outcomesAttached: "Angefügte Ergebnisse",
+    rulesCount: "Regeln",
+    outcomesCount: "Ergebnisse",
+    maxScore: "Maximale Punktzahl",
+    search: 'Suchen'
 
   }
 };
