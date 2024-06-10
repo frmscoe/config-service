@@ -71,6 +71,8 @@ export const Rules: React.FunctionComponent<RulesAttachedProps> = ({
 
     const onDragStart = (e: any, index: any, type?: string) => {
         const config = configurations[index] || {};
+        const[,ruleId] = config.ruleId.split('rule/');
+        config.ruleId = ruleId || config.ruleId;
         e.dataTransfer.setData('application/reactflow', 'node');
         e.dataTransfer.setData('type', type || 'rule');
         e.dataTransfer.setData('index', index);
@@ -148,8 +150,8 @@ export const Rules: React.FunctionComponent<RulesAttachedProps> = ({
                         }}
                         onClick={() => setSelectedRuleIndex(r._key)}
                         data-testid="rule-drag-item"
-                        style={{ border: '2px solid #4CAE47' }}
-                        className="flex cursor-move justify-between items-center px-2 border mx-1 p-2 mb-2">
+                        style={{ border: selectedRule === r._key ? '2px solid #4CAE47' : '' }}
+                        className="flex cursor-move justify-between items-center border-gray-400 px-2 border mx-1 p-2 mb-2">
                         <FileDoneOutlined className="w-1/4" style={{ fontSize: '1rem', cursor: 'pointer' }} />
                         <Typography className="w-3/4 text-gray-500">
                             {r.name}
@@ -203,7 +205,7 @@ export const Rules: React.FunctionComponent<RulesAttachedProps> = ({
                         <FallOutlined className="w-1/4" style={{ fontSize: '1rem', cursor: 'pointer' }} />
 
                         <Typography className="w-3/4 text-gray-500">
-                            {selectedRule !== null ? `${value?.name || ''}-config-${config.cfg}` : ''}
+                            {selectedRule !== null ? `${value?.name || ''}-config-${config.cfg || ''}` : ''}
                         </Typography>
                     </div>
                 })

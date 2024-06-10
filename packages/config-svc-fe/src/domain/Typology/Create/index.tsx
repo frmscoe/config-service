@@ -15,6 +15,7 @@ import { Modal } from "antd";
 import { useCommonTranslations } from "~/hooks";
 import { useRouter } from "next/router";
 import { useParams } from "next/navigation";
+import { getTypology } from "../Score/service";
 
 export interface AttachedRules extends IRule {
     attachedConfigs: IRuleConfig[];
@@ -66,9 +67,6 @@ const CreateEditTopologyPage = () => {
     const router = useRouter();
     const {id} = useParams();
 
-    console.log(id);
-
-
     const schema = useMemo(() => {
         return yup.object().shape({
           name: yup.string().required(),
@@ -79,7 +77,7 @@ const CreateEditTopologyPage = () => {
         });
       }, []);
 
-      const {control, handleSubmit, formState, watch, reset, trigger, getValues} = useForm({
+      const {control, handleSubmit, formState, watch, reset, trigger, getValues, setValue} = useForm({
         resolver: yupResolver(schema),
         mode: 'onChange'
       });
@@ -168,7 +166,6 @@ const CreateEditTopologyPage = () => {
                     className: 'bg-green-500 text-white'
                 },
                 onOk: async() => {
-                    console.log('save changes');
                     trigger(['name', 'description', 'major', 'minor', 'patch']);
                    if(formState.isValid) {
                     await save(getValues(), true);
@@ -185,7 +182,6 @@ const CreateEditTopologyPage = () => {
             })
         }
     }
-
 
     const fetchRuleWithConfigurations = useCallback(() => {
         setError('');
@@ -211,13 +207,13 @@ const CreateEditTopologyPage = () => {
         const currentNodes = nodes;
         const newNodes = nodes.filter((n) => id !== n.id);
         setNodes([...newNodes]);
-        setEdges((prev) => {
-            const newEdges = prev.filter((r) => r.id !== id);
-            return [...newEdges];
-        })
+        const newEdges = edges.filter((r) => r.id !== id);
+        setEdges([...newEdges]);
         if (type === 'rule') {
+            const newEdges = edges.filter((r) => r.source !== id)
+            .filter((r) => r.target !== id);
+            setEdges([...newEdges]);
             const rule = rules.find((r) => r._key === id);
-          
             setNodes([...newNodes.filter((n: any) => {
                 if(n.type === 'rule') {
                     return true;
@@ -341,7 +337,12 @@ const CreateEditTopologyPage = () => {
                 const node = {
                     ...nodeDefaults,
                     id: rule._key,
-                    data: { label: rule.name, ...rule, onDelete: handleDelete, type: 'rule', showDelete: true },
+                    data: { 
+                        label: rule.name, 
+                        ...rule, 
+                        onDelete: handleDelete, 
+                        type: 'rule', 
+                        showDelete: true },
                     position: { x: 250, y: 100 },
                     type: 'customNode'
                 }
@@ -384,7 +385,7 @@ const CreateEditTopologyPage = () => {
                     id: config._key,
                     position: { x: 500, y: 100 },
                     data: {
-                        label: `${parentNode?.data?.name}-config-${config.cfg}`,
+                        label: `${parentNode?.data?.name || ''}-config-${config.cfg || ''}`,
                         type: 'config',
                         onDelete: handleDelete,
                         showDelete: true,
@@ -399,7 +400,6 @@ const CreateEditTopologyPage = () => {
                     target: nodeConfig.id,
                     type: 'smoothstep'
                 }
-
                 setNodes([...nodes, nodeConfig]);
                 setEdges([...edges, edge]);
                 updateLayout([...nodes, nodeConfig], [...edges, edge]);
@@ -440,7 +440,7 @@ const CreateEditTopologyPage = () => {
                         id: config._key,
                         position: { x: 500, y: 100 },
                         data: {
-                            label: `${parentNode?.data?.name}-config-${config.cfg}`,
+                            label: `${parentNode?.data?.name || ''}-config-${config.cfg || ''}`,
                             ...config,
                             type: 'config',
                             onDelete: handleDelete,
@@ -451,7 +451,7 @@ const CreateEditTopologyPage = () => {
 
                     const configEdge = {
                         id: configNode.id,
-                        source: parentNode.id,
+                        source: rule._key,
                         target: configNode.id,
                         type: 'smoothstep'
                     }
@@ -471,6 +471,30 @@ const CreateEditTopologyPage = () => {
             fetchRuleWithConfigurations();
         } else {
             //fetch typology and show rules 
+            getTypology(id as string)
+            .then(({data}) => {
+                setValue('name', data?.name || '');
+                setValue('description', data?.desc || '');
+                const [major, minor, patch] =  (data?.cfg || '').split('.')
+                setValue('major', Number(major) || 0, {shouldDirty: true, shouldTouch: true});
+                setValue('minor', Number(minor) || 0, {shouldDirty: true, shouldTouch: true});
+                setValue('patch', Number(patch) || 0, {shouldDirty: true, shouldTouch: true});
+                let rulesArray: IRule[] = [];
+                data?.ruleWithConfigs.forEach((d) => {
+                    const rule = {
+                        ...d.rule,
+                        ruleConfigs: (d.ruleConfigs || []).map((c) => ({...c, ruleId: d.rule._key})) as any,
+                    } as Partial<IRule>
+                    rulesArray.push(rule as IRule);
+                });
+
+                setRules(rulesArray);
+
+            }).catch((e) => {
+                setError(e.response?.data?.message || e?.message || 'Something went wrong getting configurations');
+            }).finally(() => {
+                setLoadingRules(false);
+            })
         }
     }, [fetchRuleWithConfigurations, canViewRuleWithConfigs, id]);
 

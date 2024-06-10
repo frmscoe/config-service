@@ -1,4 +1,4 @@
-import { Row, Col, Spin, Button } from 'antd';
+import { Row, Col, Spin, Button, Typography } from 'antd';
 import React, { DragEventHandler } from 'react';
 import { Rules } from './Rules';
 import { IRule } from '~/domain/Rule/RuleDetailPage/service';
@@ -47,10 +47,10 @@ export const Create: React.FunctionComponent<Props> = ({ rules, loadingRules, ..
   }
   return (
     <div className='pr-2' style={{ minHeight: '80vh' }}>
-      <div className='flex justify-end w-full mb-2 gap-2'>
-        <Button onClick={props.onOpenScoreMode}>Open in Scoring View</Button>
-        <Button>Keep in Drafts</Button>
-        <Button loading={props.saveLoading} onClick={props.handleSubmit(props.onSubmit)} className='text-white' style={{ backgroundColor: '#56b453' }}>Save</Button>
+      <div className='flex justify-between w-full mb-2 gap-2'>
+        <div className='flex gap-2 ml-auto'>
+          <Button loading={props.saveLoading} onClick={props.handleSubmit(props.onSubmit)} className='text-white' style={{ backgroundColor: '#56b453' }}>Save</Button>
+        </div>
       </div>
       <Row className='h-full w-full'>
         <Col span={5}>

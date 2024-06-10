@@ -96,6 +96,8 @@ const ScorePage = () => {
                     }
                 }
             })
+        } else {
+            router.push(`/typology/edit/${id}`);
         }
     }
 
@@ -268,8 +270,10 @@ const ScorePage = () => {
                         type: 'operator',
                         score: 0,
                         outcomeId: outcomeNode.id,
+                        firstNode: outcomeNode.id,
+                        secondNode: lastScoreNode.id,
                     },
-                    position: { x: scoreNode.position.x - 100, y: scoreNode.position.y + 100 },
+                    position: { x: scoreNode.position.x - 100, y: scoreNode.position.y },
                     type: 'operatorNode',
                 };
                 newNodes.push(operatorNode);
@@ -356,8 +360,8 @@ const ScorePage = () => {
             setLoadingRules(true);
             getTypology(id as string)
                 .then(({ data }) => {
-                    setTypology(data);
-                    setRules(data.ruleWithConfigs || []);
+                    setTypology(data as ITypology);
+                    setRules(data?.ruleWithConfigs || []);
                     const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(data?.ruleWithConfigs || []);
                     setNodes((prev) => ([...prev, ...newNodes]));
                     setEdges((prev) => ([...prev, ...newEdges]));

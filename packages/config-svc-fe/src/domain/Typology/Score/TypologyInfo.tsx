@@ -50,7 +50,7 @@ const TypologyDetails: React.FunctionComponent<Props> = ({ rules, outcomes, node
     return <div>
         <div className="flex justify-between w-2/3 px-2 mt-2">
             <Typography.Paragraph className="text-gray-500">{t('typologyScorePage.rules')}</Typography.Paragraph>
-            <Typography.Paragraph className="text-gray-500" data-testid="outcomes-by-rules">{rulesWithOutcomes}/{rules.length}</Typography.Paragraph>
+            <Typography.Paragraph className="text-gray-500" data-testid="outcomes-by-rules">{rulesWithOutcomes} of {rules.length}</Typography.Paragraph>
         </div>
 
         <div className="flex px-2 justify-between w-2/3">

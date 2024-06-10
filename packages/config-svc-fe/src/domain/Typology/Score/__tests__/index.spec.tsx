@@ -93,12 +93,14 @@ const data: ITypology = {
                     {
                         "reason": "Band Reason 2",
                         "subRuleRef": "0.1",
-                        "value": 1
+                        "value": 1,
+                        outcome: false
                     },
                     {
                         "reason": "Reason 2",
                         "subRuleRef": "0.2",
-                        "value": 2
+                        "value": 2,
+                        outcome: false
                     }
                 ],
                 "exitConditions": [
@@ -291,7 +293,7 @@ describe('ScorePage', () => {
 
         // verify that outcomes attached number is 1
         expect(screen.getByTestId('outcome-count').innerHTML).toBe('1');
-        expect(screen.getByTestId('outcomes-by-rules').innerHTML).toBe('1/1');
+        expect(screen.getByTestId('outcomes-by-rules').innerHTML).toBe('1 of 1');
         expect(screen.getByTestId('outcome-score').innerHTML).toBe('0');
 
         //open attached outcomes panel
@@ -509,7 +511,7 @@ describe('ScorePage', () => {
         expect(screen.getByTestId('outcome-score').innerHTML).toBe('40');
         //updates count in typology information
         expect(screen.getByTestId('outcome-count').innerHTML).toBe('2');
-        expect(screen.getByTestId('outcomes-by-rules').innerHTML).toBe('1/1');
+        expect(screen.getByTestId('outcomes-by-rules').innerHTML).toBe('1 of 1');
 
         //Delete Outcome
         const removeIcon = screen.getAllByTestId('remove-node');
@@ -520,7 +522,7 @@ describe('ScorePage', () => {
 
         //Test resets count in information section
         expect(screen.getByTestId('outcome-count').innerHTML).toBe('1');
-        expect(screen.getByTestId('outcomes-by-rules').innerHTML).toBe('1/1');
+        expect(screen.getByTestId('outcomes-by-rules').innerHTML).toBe('1 of 1');
 
         mock.mockReset();
     });

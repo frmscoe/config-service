@@ -34,7 +34,7 @@ export const Structure: React.FunctionComponent<Props> = ({ rulesAttached }) => 
             key: 1, 
             children: [
                 ...(sortAlphabetically(rules, 'name') as AttachedRules[]).map((rule) => {
-                    const children = rule.attachedConfigs.map((config, i) =>({title: `${rule.name}-config-${config.cfg}`, key: config._key}))
+                    const children = rule.attachedConfigs.map((config, i) =>({title: `${rule.name || ''}-config-${config.cfg || ''}`, key: config._key}))
                     return {
                         title: rule.name,
                         key: rule._key,

@@ -53,7 +53,7 @@ export const RulesConfigurationsAttached:  React.FunctionComponent<RulesAttached
         if(text.trim().length) {
             rulesAttached.forEach((rule) => {
                 const configs = rule.attachedConfigs.map((config) => ({...config, ruleName: rule.name}));
-                const results = configs.filter((c) => c.cfg.includes(text));
+                const results = configs.filter((c) => c.cfg?.includes(text));
                 setConfigurations([...results]);
             })
         } else {
@@ -86,7 +86,7 @@ export const RulesConfigurationsAttached:  React.FunctionComponent<RulesAttached
             !configurations.length ? <Empty description={t('typologyCreatePage.noRuleConfigurations')} /> : null
         }
         {configurations.map((config, i) =>  <div key={i} className="flex justify px-2">
-            <Typography.Paragraph data-testid="attached-config">{`${config.ruleName}-config-${config.cfg}`} </Typography.Paragraph>
+            <Typography.Paragraph data-testid="attached-config">{`${config.ruleName}-config-${config.cfg || ''}`} </Typography.Paragraph>
 
         </div>)}
     </div>

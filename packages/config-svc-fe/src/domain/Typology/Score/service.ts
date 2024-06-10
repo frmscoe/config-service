@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import { Api } from "~/client";
 import { getRandomNumber } from "~/utils/getRandomNumberHelper";
 
@@ -122,9 +123,19 @@ export interface ITypology {
     outcome: boolean
   }
   
-  export interface Band {}
+  export interface Band {
+    reason: string
+    subRuleRef: string
+    upperLimit?: number;
+    lowerLimit?: number;
+  }
   
-  export interface Case {}
+  export interface Case {
+    reason: string
+    subRuleRef: string
+    outcome: boolean;
+    value?: number;
+  }
   
   export interface Parameter {
     ParameterType: string
@@ -132,7 +143,7 @@ export interface ITypology {
   }
   
   
-export const getTypology = (id?: string) => {
+export const getTypology = (id?: string): Promise<AxiosResponse<ITypology | null>> => {
     return Api.get(`/typology/${id}`);
 }
 

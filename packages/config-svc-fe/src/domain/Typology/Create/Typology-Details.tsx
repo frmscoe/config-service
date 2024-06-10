@@ -11,9 +11,8 @@ watch: UseFormWatch<any>;
 const TypologyDetails: React.FunctionComponent<Props> = ({attachedRules, watch}) => {
     const [configurations, setConfigurations] = useState<IConfig[]>([]);
     const [values, setValues] = useState({minor: null, major: null, patch: null});
-    watch(['minor', 'major', 'patch']);
 
-    useEffect(() => {}, [watch]);
+    watch(['minor', 'major', 'patch']);
 
     useEffect(() => {
         const subscription = watch((value, { name }) => {
@@ -24,8 +23,7 @@ const TypologyDetails: React.FunctionComponent<Props> = ({attachedRules, watch})
                 }))
             }
         }
-
-        )
+        );
         return () => subscription.unsubscribe()
     }, [watch]);
     

@@ -14,10 +14,10 @@ import { IRemovedProps, Removed } from './Removed';
 import TypologyDetails from './TypologyInfo';
 import { OutcomesAttached, RulesAttached } from './Attached';
 import { useCommonTranslations } from '~/hooks';
-import error from 'next/error';
+import { RuleWithConfig } from './service';
 
 interface Props {
-  rules: IRule[];
+  rules: RuleWithConfig[];
   loadingRules: boolean;
   nodes: any[];
   edges: any[];
@@ -96,8 +96,6 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
   return (
     <div className='pr-2' style={{ minHeight: '80vh' }}>
       <div className='flex justify-end w-full mb-2 gap-2'>
-      <Button onClick={props.onOpenTypologyView}>Open in Typology View</Button>
-      <Button>Keep in Drafts</Button>
       <Button className='bg-green-500 text-white'>Submit</Button>
       </div>
       <Row className='h-full w-full'>

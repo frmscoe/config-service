@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import CreateEditTopologyPage from '../index';
 import * as configService from '~/domain/Rule/RuleConfig/RuleConfigList/service';
 import '../../../../../setup';
+import * as service from '~/domain/Typology/Score/service';
 // Mock the hooks and services
 jest.mock('~/hooks/usePrivileges');
 jest.mock('~/domain/Rule/RuleConfig/RuleConfigList/service');
@@ -60,7 +61,7 @@ describe('CreateEditTopologyPage', () => {
             canEditTypology: false,
             canReviewTypology: false
         });
-
+        jest.spyOn(service,'getTypology').mockResolvedValueOnce({data: null} as any);
         const result = render(<CreateEditTopologyPage />);
         expect(screen.queryByText('Rules')).not.toBeInTheDocument();
         expect(result.queryByText('Recently removed')).not.toBeInTheDocument();
