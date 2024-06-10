@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { PrivilegeService } from '../privilege/privilege.service';
 import { CreateTypologyDto } from './dto/create-typology.dto';
+import { TypologyRuleWithConfigs } from './entities/typology.entity';
 
 describe('TypologyController', () => {
   let controller: TypologyController;
@@ -19,15 +20,15 @@ describe('TypologyController', () => {
     })),
     findAll: jest.fn(() => ({
       count: 2,
+      page: 1,
+      countInPage: 2,
       data: [
         {
           _key: 'test-typology-id-1',
           name: 'Test Typology 1',
           desc: 'Test Typology Description 1',
           cfg: '1.0.0',
-          typologyCategoryUUID: [
-            'test-category-uuid-1',
-          ],
+          typologyCategoryUUID: ['test-category-uuid-1'],
           rules_rule_configs: [],
           ownerId: 'user@xample.com',
           state: '01_DRAFT',
@@ -37,9 +38,7 @@ describe('TypologyController', () => {
           name: 'Test Typology 2',
           desc: 'Test Typology Description 2',
           cfg: '1.0.0',
-          typologyCategoryUUID: [
-            'test-category-uuid-1',
-          ],
+          typologyCategoryUUID: ['test-category-uuid-1'],
           rules_rule_configs: [],
           ownerId: 'user2@example.com',
           state: '01_DRAFT',
@@ -47,14 +46,56 @@ describe('TypologyController', () => {
       ],
     })),
     findOne: jest.fn((id) => ({
-      _key: id,
+      _key: 'test-typology-id',
       name: 'Test Typology',
       desc: 'Test Typology Description',
       cfg: '1.0.0',
       typologyCategoryUUID: ['test-category-uuid-1'],
       rules_rule_configs: [],
-      ownerId: 'test-user@example.com',
+      ruleWithConfigs: [
+        {
+          rule: {
+            _id: 'rule/sample-uuid-3',
+            _key: 'sample-uuid-3',
+            name: 'Rule 3',
+            cfg: '1.0.0',
+          },
+          ruleConfigs: [
+            {
+              _id: 'rule_config/sample-uuid-4',
+              _key: 'sample-uuid-4',
+              cfg: '1.0.0',
+              ruleId: 'rule/sample-uuid-3',
+              config: {
+                parameters: [],
+                exitConditions: [],
+                bands: [],
+                cases: [],
+              },
+            },
+            {
+              _id: 'rule_config/sample-uuid-5',
+              _key: 'sample-uuid-5',
+              cfg: '1.0.0',
+              ruleId: 'rule/sample-uuid-3',
+              config: {
+                parameters: [],
+                exitConditions: [],
+                bands: [],
+                cases: [],
+              },
+            },
+          ],
+        },
+      ],
+      ownerId: 'owner-id',
       state: '01_DRAFT',
+      createdAt: '2021-08-02T00:00:00.000Z',
+      updatedAt: '2021-08-02T00:00:00.000Z',
+      updatedBy: 'user1',
+      approverId: 'approver1',
+      referenceId: 1,
+      originatedId: null,
     })),
   };
 
@@ -118,9 +159,7 @@ describe('TypologyController', () => {
         name: 'Test Typology 1',
         desc: 'Test Typology Description 1',
         cfg: '1.0.0',
-        typologyCategoryUUID: [
-          'test-category-uuid-1',
-        ],
+        typologyCategoryUUID: ['test-category-uuid-1'],
         rules_rule_configs: [],
         ownerId: 'user@xample.com',
         state: '01_DRAFT',
@@ -130,9 +169,7 @@ describe('TypologyController', () => {
         name: 'Test Typology 2',
         desc: 'Test Typology Description 2',
         cfg: '1.0.0',
-        typologyCategoryUUID: [
-          'test-category-uuid-1',
-        ],
+        typologyCategoryUUID: ['test-category-uuid-1'],
         rules_rule_configs: [],
         ownerId: 'user2@example.com',
         state: '01_DRAFT',
@@ -141,6 +178,8 @@ describe('TypologyController', () => {
 
     const expectedResponse = {
       count: 2,
+      page: 1,
+      countInPage: 2,
       data: expectedTypologies,
     };
 
@@ -154,15 +193,57 @@ describe('TypologyController', () => {
 
   it('should retrieve a single typology', async () => {
     const typologyId = 'test-typology-id';
-    const expectedTypology = {
-      _key: typologyId,
+    const expectedTypology: TypologyRuleWithConfigs = {
+      _key: 'test-typology-id',
       name: 'Test Typology',
       desc: 'Test Typology Description',
       cfg: '1.0.0',
       typologyCategoryUUID: ['test-category-uuid-1'],
       rules_rule_configs: [],
-      ownerId: 'test-user@example.com',
+      ruleWithConfigs: [
+        {
+          rule: {
+            _id: 'rule/sample-uuid-3',
+            _key: 'sample-uuid-3',
+            name: 'Rule 3',
+            cfg: '1.0.0',
+          },
+          ruleConfigs: [
+            {
+              _id: 'rule_config/sample-uuid-4',
+              _key: 'sample-uuid-4',
+              cfg: '1.0.0',
+              ruleId: 'rule/sample-uuid-3',
+              config: {
+                parameters: [],
+                exitConditions: [],
+                bands: [],
+                cases: [],
+              },
+            },
+            {
+              _id: 'rule_config/sample-uuid-5',
+              _key: 'sample-uuid-5',
+              cfg: '1.0.0',
+              ruleId: 'rule/sample-uuid-3',
+              config: {
+                parameters: [],
+                exitConditions: [],
+                bands: [],
+                cases: [],
+              },
+            },
+          ],
+        },
+      ],
+      ownerId: 'owner-id',
       state: '01_DRAFT',
+      createdAt: '2021-08-02T00:00:00.000Z',
+      updatedAt: '2021-08-02T00:00:00.000Z',
+      updatedBy: 'user1',
+      approverId: 'approver1',
+      referenceId: 1,
+      originatedId: null,
     };
 
     // Act

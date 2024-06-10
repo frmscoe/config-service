@@ -190,6 +190,8 @@ describe('TypologyService', () => {
       const mockCursor = {
         next: jest.fn().mockResolvedValue({
           count: 2,
+          page: 1,
+          countInPage: 2,
           data: [
             { _key: '123', name: 'Typology 1', state: '01_DRAFT' },
             { _key: '456', name: 'Typology 2', state: '01_DRAFT' },
@@ -217,6 +219,8 @@ describe('TypologyService', () => {
       const options = { page: 1, limit: 10 };
       const expectedTypologies = {
         count: 2,
+        page: 1,
+        countInPage: 2,
         data: [
           { _key: '123', name: 'Typology 1', state: '01_DRAFT' },
           { _key: '456', name: 'Typology 2', state: '01_DRAFT' },
@@ -244,11 +248,14 @@ describe('TypologyService', () => {
                 _id: 'rule/sample-uuid-3',
                 _key: 'sample-uuid-3',
                 name: 'Rule 3',
+                cfg: '1.0.0',
               },
               ruleConfigs: [
                 {
                   _id: 'rule_config/sample-uuid-4',
                   _key: 'sample-uuid-4',
+                  cfg: '1.0.0',
+                  ruleId: 'rule/sample-uuid-3',
                   config: {
                     parameters: [],
                     exitConditions: [],
@@ -259,6 +266,8 @@ describe('TypologyService', () => {
                 {
                   _id: 'rule_config/sample-uuid-5',
                   _key: 'sample-uuid-5',
+                  cfg: '1.0.0',
+                  ruleId: 'rule/sample-uuid-3',
                   config: {
                     parameters: [],
                     exitConditions: [],
@@ -310,11 +319,14 @@ describe('TypologyService', () => {
               _id: 'rule/sample-uuid-3',
               _key: 'sample-uuid-3',
               name: 'Rule 3',
+              cfg: '1.0.0',
             },
             ruleConfigs: [
               {
                 _id: 'rule_config/sample-uuid-4',
                 _key: 'sample-uuid-4',
+                cfg: '1.0.0',
+                ruleId: 'rule/sample-uuid-3',
                 config: {
                   parameters: [],
                   exitConditions: [],
@@ -325,6 +337,8 @@ describe('TypologyService', () => {
               {
                 _id: 'rule_config/sample-uuid-5',
                 _key: 'sample-uuid-5',
+                cfg: '1.0.0',
+                ruleId: 'rule/sample-uuid-3',
                 config: {
                   parameters: [],
                   exitConditions: [],

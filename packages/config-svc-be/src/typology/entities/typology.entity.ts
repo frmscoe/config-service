@@ -134,6 +134,22 @@ class RuleConfigsSummary {
   _key: string;
 
   @ApiProperty({
+    description: 'Version of the rule configuration.',
+    example: '1.0.0',
+  })
+  @IsString()
+  cfg: string;
+
+  @ApiProperty(
+    {
+      description: 'Identifier of the rule document from the rule collection.',
+      example: 'rule/sample-uuid-3',
+    }
+  )
+  @IsString()
+  ruleId: string;
+
+  @ApiProperty({
     description: 'Config details',
     type: Config,
   })
@@ -159,6 +175,10 @@ class RuleSummary {
   @ApiProperty({ description: 'Name of the rule.', example: 'Rule 3' })
   @IsString()
   name: string;
+
+  @ApiProperty({ description: 'Version of the rule.', example: '1.0.0' })
+  @IsString()
+  cfg: string;
 }
 class RuleWithConfigs {
   @ApiProperty({ description: 'Details of the rule', type: RuleSummary })

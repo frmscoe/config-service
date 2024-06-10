@@ -60,29 +60,33 @@ export class TypologyService {
     }
   }
 
-  async findAll(options: {
+  async findAll(options: { page: number; limit: number }): Promise<{
+    total: number;
     page: number;
-    limit: number;
-  }): Promise<{ count: number; data: Typology[] }> {
+    countInPage: number;
+    data: Typology[];
+  }> {
     const { page, limit } = options;
     const db = this.arangoDatabaseService.getDatabase();
     const offset: number = (page - 1) * limit;
 
+    // AQL query to fetch both total count and paginated results
     const query = `
-    LET result = (
+    LET totalCount = (FOR typology IN @@collection FILTER typology.edited != @edited COLLECT WITH COUNT INTO length RETURN length)[0]
+    LET pageResults = (
       FOR typology IN @@collection
       FILTER typology.edited != @edited
       SORT typology.createdAt ASC
       LIMIT @offset, @limit
       RETURN typology
     )
-    LET count = LENGTH(result)
-    RETURN { count, data: result }
-  `;
+    RETURN { count: totalCount, page: @page, countInPage: LENGTH(pageResults), data: pageResults }
+    `;
 
     const bindVars = {
       '@collection': TYPOLOGY_COLLECTION,
       edited: true,
+      page: page,
       offset: offset,
       limit: limit,
     };
@@ -111,6 +115,8 @@ export class TypologyService {
               RETURN {
                 _id: configDocument._id,
                 _key: configDocument._key,
+                cfg: configDocument.cfg,
+                ruleId: configDocument.ruleId,
                 config: configDocument.config
               }
           )
@@ -118,7 +124,8 @@ export class TypologyService {
             rule: {
               _id: rule._id,
               _key: rule._key,
-              name: rule.name
+              name: rule.name,
+              cfg: rule.cfg,
             },
             ruleConfigs: configs
           }

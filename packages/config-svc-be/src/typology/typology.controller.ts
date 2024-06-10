@@ -64,7 +64,12 @@ export class TypologyController {
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ): Promise<{ count: number; data: Typology[] }> {
+  ): Promise<{
+    total: number;
+    page: number;
+    countInPage: number;
+    data: Typology[];
+  }> {
     return this.typologyService.findAll({ page, limit });
   }
 
