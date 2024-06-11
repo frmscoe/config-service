@@ -20,6 +20,15 @@ Before you get started, the following need to be installed:
 - **[NestJS](https://nestjs.com/)**. **_Version 10.0.0_** is currently used to build our restful service. We don't guarantee everything works with other versions.
 - **[npm](https://www.npmjs.com/)**. We are currently using npm to manage our dependancies.
 
+#### Additional Requirements for Linux Users
+
+If you are developing on a Linux-based system, you will also need to install build tools to compile native addons used by Node.js. For Debian-based systems (such as Ubuntu), run the following commands:
+
+```bash
+sudo apt update
+sudo apt install build-essential
+```
+
 ### Pre-requisites
 
 It is assumed that you have installed Mojaloop Security BC and associated services. If you have not, please do so before continuing. Instruction and documentation are available [here](../../docs/deployment/Mojaloop-Platform-Shared-Tools-Deployment.md)
@@ -37,7 +46,7 @@ git clone git@github.com:frmscoe/config-service.git
 cd into the repo
 
 ```bash
-cd config-svc/packages/config-svc-be
+cd config-service/packages/config-svc-be
 ```
 
 Use the correct Node.js version
@@ -258,7 +267,7 @@ Open a new terminal and run the following command:
 curl -X POST "http://localhost:3202/platformRoles/basic-application/add_privileges" \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer <New_BearerTOKEN>' \
---data '["SECURITY_CREATE_RULE", "SECURITY_UPDATE_RULE", "SECURITY_GET_RULES", "SECURITY_GET_RULE", "SECURITY_GET_RULE_RULE_CONFIG", "SECURITY_DELETE_RULE", "SECURITY_DISABLE_RULE", "SECURITY_CREATE_RULE_CONFIG", "SECURITY_UPDATE_RULE_CONFIG", "SECURITY_GET_RULE_CONFIGS", "SECURITY_GET_RULE_CONFIG", "SECURITY_DELETE_RULE_CONFIG", "SECURITY_DISABLE_RULE_CONFIG"]'
+--data '["SECURITY_CREATE_RULE", "SECURITY_UPDATE_RULE", "SECURITY_GET_RULES", "SECURITY_GET_RULE", "SECURITY_GET_RULE_RULE_CONFIG", "SECURITY_DELETE_RULE", "SECURITY_DISABLE_RULE", "SECURITY_CREATE_RULE_CONFIG", "SECURITY_UPDATE_RULE_CONFIG", "SECURITY_GET_RULE_CONFIGS", "SECURITY_GET_RULE_CONFIG", "SECURITY_DELETE_RULE_CONFIG", "SECURITY_DISABLE_RULE_CONFIG", "SECURITY_CREATE_TYPOLOGY", "SECURITY_UPDATE_TYPOLOGY", "SECURITY_GET_TYPOLOGIES", "SECURITY_GET_TYPOLOGY", "SECURITY_DELETE_TYPOLOGY", "SECURITY_DISABLE_TYPOLOGY"]'
 ```
 
 - At this time you can test the config-svc-be on <http://localhost:3007/>.

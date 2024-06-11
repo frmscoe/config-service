@@ -4,6 +4,18 @@ This guide provides step-by-step instructions for deploying the Mojaloop Platfor
 
 > ⚠️ Important Note: These instructions are primarily for MacBook (macOS) users, but they should also be applicable for Linux and Windows Subsystem for Linux (WSL2) environments. If you encounter any issues, or if any commands do not work for you, please create an issue to provide feedback or request assistance. The deployment has been tested on a WSL2 installation.
 
+### Requirements
+
+Before you get started, ensure the following software is installed:
+
+- **Docker**:
+  - **Linux (Ubuntu)**: Docker is essential for running containers. Install it by following the detailed instructions on the [Docker Ubuntu Installation Guide](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+  - **Windows**: Docker Desktop is necessary for creating and managing Docker containers. Ensure Docker is installed and running by following the instructions on the [official Docker Desktop for Windows installation page](https://docs.docker.com/desktop/install/windows-install/).
+  - **macOS**: Install Docker Desktop by following the instructions provided on the [Docker Desktop for macOS installation page](https://docs.docker.com/desktop/install/mac-install/).
+
+Ensure that Docker is configured to start on boot, and verify its installation by running `docker --version` in your terminal or command prompt.
+
+
 ## 1. Cloning the Mojaloop Platform Shared Tools Repository
 
 We are going to deploy all code in a code directory, under your home - please adapt the instructions according to your specific requirements.
@@ -81,7 +93,7 @@ cp ../grafana_datasources.yml ./grafana_data/datasource.yml
 
 5. Review the contents of the .env file using your preferred editing tool.
 
-- For macOS: Update the ROOT_VOLUME_DEVICE_PATH to reflect the absolute path.
+- For macOS and Linux Ubuntu: Update the ROOT_VOLUME_DEVICE_PATH to reflect the absolute path.
 - For Windows WSL:
 
   - Avoid using the Windows mnt drive for defining paths.
@@ -97,6 +109,20 @@ sysctl -w vm.max_map_count=262144 # might require sudo
 ```
 
 ### Start Infrastructure Containers
+
+#### Configuring Docker Access
+
+To run Docker commands without the `sudo` prefix, you must add your user to the Docker group. This step grants the user permission to access the Docker daemon. To add your current user to the Docker group, run:
+
+```shell
+sudo usermod -aG docker $USER
+```
+
+>Important: After running this command, you will need to log out and back in for these changes to take effect, or you can use the following command to apply the changes immediately:
+
+```shell
+newgrp docker
+```
 
 Start the docker containers using docker compose up (in the exec dir)
 

@@ -11,14 +11,14 @@
 
 ### Setting up the local site
 
-1. Navigate to the `config-svc-fe` folder
+1. Open a new terminal window and navigate to the `config-svc-fe` folder
 
 ```bash
 cd packages/config-svc-fe
 ```
 
 2. Check the version of node in the `./packages/config-svc-fe/.nvmrc`
-3. Run `nvm use` or `nvm use {.nvmrc node version}` to change to the correct version 
+3. Run `nvm use` or `nvm use {.nvmrc node version}` to change to the correct version
 4. Run `npm install` to install all dependencies.
 5. Copy the `.env.sample` file and save as your `.env` file:
 
@@ -38,9 +38,9 @@ cp .env.sample .env.local
 
 3. **NEXT_PUBLIC_SECURITY_BC_URL**
 
-    use `http://localhost:3201`. This is the url for mojaloop/security-bc-authentication-svc:0.5.4 
+    use `http://localhost:3201`. This is the url for mojaloop/security-bc-authentication-svc:0.5.4
 
-4. **NEXT_PUBLIC_SECURITY_BC_CLIENT_ID** 
+4. **NEXT_PUBLIC_SECURITY_BC_CLIENT_ID**
 
     This is the client id for one of the builtin IAM applications. This can be found under the mojaloop admin ui. ***security-bc-ui*** is the default client_id
 
@@ -93,7 +93,7 @@ npm install
 
 ## Create User Account and privileges
 
- 1. Follow these [steps](https://github.com/lextego/config-svc/blob/main/docs/02-deployment/90-mojaloop-platform-shared-tools-deployment.md#mojaloop-vnext-admin-ui) to setup the mojaloop admin ui
+ 1. Follow these [steps](../../docs/deployment/Mojaloop-Platform-Shared-Tools-Deployment.md#mojaloop-vnext-admin-ui) to setup the mojaloop admin ui.
 
  2. Once done access the UI on http://localhost:4200
 
@@ -117,18 +117,18 @@ password: superMegaPass
 
  6. On the create user page enter details for the user including the fields below and click create
     - User Type (default Hub User)
-    - Email 
+    - Email
     - Full Name
     - Password
     - Password confirmation
 
- 7. Once the user is created you will be redirected to the users page with url in this format http://localhost:4200/security/builtin_iam/users/{user_email}. 
+ 7. Once the user is created you will be redirected to the users page with url in this format http://localhost:4200/security/builtin_iam/users/{user_email}.
 
  8. On the users detail page click **Add Roles** button to open a modal to give the user some roles.
 
- 9. Select **admin** role in the dropdown and click **Add roles** button to save these roles. 
+ 9. Select **admin** role in the dropdown and click **Add roles** button to save these roles.
 
- 10. On the same users page. Look for **Associated Roles** Section which has a table with columns 
+ 10. On the same users page. Look for **Associated Roles** Section which has a table with columns
     - Name
     - Description
     - Actions
@@ -137,14 +137,10 @@ password: superMegaPass
 
  12. Once on the roles management page. Select the **Add Privileges** Tab to go and manage some privileges for the user.
 
- 13. Select the application to assign privileges in the **Application** drop down. 
+ 13. Select the application to assign privileges in the **Application** drop down.
 
  14. In the List. Check all the privileges you want to assign the user and click the **Add Selected privileges(s) to Role** button. This privileges will be assigned to the user.
 
-
- 
-
- 
 ### Troubleshooting
 
 **Error**: If you get the following error then port 3001 is already in use.
@@ -174,13 +170,11 @@ password: superMegaPass
 
 How to use [https://www.youtube.com/watch?v=KruSUqLdxQA]
 
- 
 [Firefox](https://addons.mozilla.org/en-US/firefox/addon/cors-everywhere/)
 
 How to use [https://github.com/spenibus/cors-everywhere-firefox-addon?tab=readme-ov-file#usage]
 
 Please read the install and activation steps for each extensions provided in the store
-
 
 ## Checking / Testing
 
