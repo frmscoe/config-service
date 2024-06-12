@@ -282,6 +282,24 @@ npm install
 
 #### 3. How to start the web app
 
+##### Update the start script
+
+Open the package.json file in the root directory of the project and update the start script in the scripts section as follows:
+
+```shell
+"scripts": {
+  "start": "NODE_OPTIONS=--openssl-legacy-provider ng serve --host 0.0.0.0 --proxy-config proxy.conf.json --no-live-reload",
+  // other scripts...
+}
+```
+
+This configuration:
+
+- Ensures the application uses the OpenSSL legacy provider due to compatibility issues with certain TLS configurations.
+- Allows your application to be accessed from any device on the same network by setting the host to 0.0.0.0.
+- Uses proxy.conf.json to route specific URL requests via a proxy, which is useful for integrating with APIs that might have CORS restrictions.
+- Disables live reloading to stabilize memory usage during development.
+
 ##### Start the local development server
 
 In the root directory of the project (which contains the file "package.json"):
