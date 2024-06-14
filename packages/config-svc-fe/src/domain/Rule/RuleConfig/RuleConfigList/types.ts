@@ -1,20 +1,17 @@
 export interface ExitCondition {
     subRuleRef: string;
-    outcome: boolean;
     reason: string;
 }
 
 export interface Band {
     subRuleRef: string;
     upperLimit: number;
-    outcome: boolean;
     reason: string;
 }
 
 export interface Case {
     subRuleRef: string;
     value: string;
-    outcome: boolean;
     reason: string;
 }
 

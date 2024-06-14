@@ -25,12 +25,12 @@ export const ruleConfigSchema: { schema: SchemaOptions; computedValues: any } =
           originatedID: { type: 'string', default: null },
           edited: { type: 'boolean', default: false },
           config: {
-            type: 'object',
+            type: ['object', 'null'],
             properties: {
               parameters: {
-                type: 'array',
+                type: ['array', 'null'],
                 items: {
-                  type: 'object',
+                  type: ['object', 'null'],
                   properties: {
                     ParameterName: { type: 'string' },
                     ParameterValue: { type: ['string', 'number'] },
@@ -39,37 +39,34 @@ export const ruleConfigSchema: { schema: SchemaOptions; computedValues: any } =
                 },
               },
               exitConditions: {
-                type: 'array',
+                type: ['array', 'null'],
                 items: {
-                  type: 'object',
+                  type: ['object', 'null'],
                   properties: {
                     subRuleRef: { type: 'string' },
-                    outcome: { type: 'boolean' },
                     reason: { type: 'string' },
                   },
                 },
               },
               bands: {
-                type: 'array',
+                type: ['array', 'null'],
                 items: {
-                  type: 'object',
+                  type: ['object', 'null'],
                   properties: {
                     subRuleRef: { type: 'string' },
-                    upperLimit: { type: ['number', 'null'] },
-                    lowerLimit: { type: ['number', 'null'] },
-                    outcome: { type: 'boolean' },
+                    upperLimit: { type: ['number', 'string', 'null'] },
+                    lowerLimit: { type: ['number', 'string', 'null'] },
                     reason: { type: 'string' },
                   },
                 },
               },
               cases: {
-                type: 'array',
+                type: ['array', 'null'],
                 items: {
-                  type: 'object',
+                  type: ['object', 'null'],
                   properties: {
                     subRuleRef: { type: 'string' },
                     value: { type: ['string', 'number'] },
-                    outcome: { type: 'boolean' },
                     reason: { type: 'string' },
                   },
                 },

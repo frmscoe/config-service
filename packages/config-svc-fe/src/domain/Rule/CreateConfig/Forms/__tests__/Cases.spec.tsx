@@ -14,8 +14,8 @@ describe('cases component', () => {
         append: jest.fn(),
         remove: jest.fn(),
         fields: [
-            { id: 1, reason: 'Test Reason 1', outcome: true, value: 'Value 1' },
-            { id: 2, reason: 'Test Reason 2', outcome: false, value: 'Value 2' }
+            { id: 1, reason: 'Test Reason 1', value: 'Value 1' },
+            { id: 2, reason: 'Test Reason 2', value: 'Value 2' }
         ],
         move: jest.fn(),
         prepend: jest.fn(),

@@ -8,8 +8,5 @@ export class Band {
   upperLimit: number;
 
   @ApiProperty()
-  outcome: boolean;
-
-  @ApiProperty()
   reason: string;
 }

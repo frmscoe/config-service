@@ -10,7 +10,6 @@
         "exitConditions": [
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "No verifiable creditor account activity detected"
           }
         ],
@@ -18,27 +17,23 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 86400000,
-            "outcome": true,
             "reason": "Creditor account is less than 1 day old"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 86400000,
             "upperLimit": 2592000000,
-            "outcome": true,
             "reason": "Creditor account is between 1 and 30 days old"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 2592000000,
             "upperLimit": 7776000000,
-            "outcome": true,
             "reason": "Creditor account is between 30 and 90 days old"
           },
           {
             "subRuleRef": ".04",
             "lowerLimit": 7776000000,
-            "outcome": true,
             "reason": "Creditor account is more than 90 days old"
           }
         ]
@@ -58,13 +53,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 5,
-            "outcome": false,
             "reason": "No transaction convergence detected on debtor account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 5,
-            "outcome": true,
             "reason": "Transaction convergence detected on debtor account"
           }
         ]
@@ -80,7 +73,6 @@
         "exitConditions": [
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "No verifiable creditor account activity detected"
           }
         ],
@@ -88,20 +80,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 7889229000,
-            "outcome": true,
             "reason": "Creditor account not dormant in the last 3 months"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 7889229000,
             "upperLimit": 31556926000,
-            "outcome": true,
             "reason": "Creditor account dormant for between 3 and 12 months"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 31556926000,
-            "outcome": true,
             "reason": "Creditor account dormant for more than 12 months"
           }
         ]
@@ -117,7 +106,6 @@
         "exitConditions": [
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "No verifiable debtor account activity detected"
           }
         ],
@@ -125,20 +113,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 7889229000,
-            "outcome": true,
             "reason": "Debtor account not dormant in the last 3 months"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 7889229000,
             "upperLimit": 31556926000,
-            "outcome": true,
             "reason": "Debtor account dormant for between 3 and 12 months"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 31556926000,
-            "outcome": true,
             "reason": "Debtor account dormant for more than 12 months"
           }
         ]
@@ -157,12 +142,10 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -170,20 +153,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "No similar amounts detected in the most recent transactions from the debtor"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "Two similar amounts detected in the most recent transactions from the debtor"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 3,
-            "outcome": true,
             "reason": "Three or more similar amounts detected in the most recent transactions from the debtor"
           }
         ]
@@ -199,12 +179,10 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -213,20 +191,17 @@
             "subRuleRef": ".01",
             "lowerLimit": 0,
             "upperLimit": 1,
-            "outcome": true,
             "reason": "Identical descriptions for consecutive successful transactions"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 1,
             "upperLimit": 5,
-            "outcome": true,
             "reason": "Similar descriptions for consecutive successful transactions"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 5,
-            "outcome": false,
             "reason": "Significantly different descriptions for consecutive successful transactions"
           }
         ]
@@ -244,12 +219,10 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -257,20 +230,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "No recent transactions to the same creditor account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "Two recent transactions to the same creditor account"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 3,
-            "outcome": true,
             "reason": "Three or more recent transactions to the same creditor account"
           }
         ]
@@ -288,22 +258,18 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": true,
             "reason": "No variance in transaction history and the volume of recent incoming transactions shows an increase for the debtor"
           },
           {
             "subRuleRef": ".x04",
-            "outcome": false,
             "reason": "No variance in transaction history and the volume of recent incoming transactions is less than or equal to the historical average for the debtor"
           }
         ],
@@ -311,20 +277,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "The volume of recent outgoing transactions is within acceptable limits for the debtor"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "The volume of recent outgoing transactions shows a moderate increase for the debtor"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 3,
-            "outcome": true,
             "reason": "The volume of recent outgoing transactions shows a significant increase for the debtor"
           }
         ]
@@ -342,22 +305,18 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": true,
             "reason": "No variance in transaction history and the volume of recent incoming transactions shows an increase for the creditor"
           },
           {
             "subRuleRef": ".x04",
-            "outcome": false,
             "reason": "No variance in transaction history and the volume of recent incoming transactions is less than or equal to the historical average for the creditor"
           }
         ],
@@ -365,20 +324,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "The volume of recent incoming transactions is within acceptable limits for the creditor"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "The volume of recent incoming transactions shows a moderate increase for the creditor"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 3,
-            "outcome": true,
             "reason": "The volume of recent incoming transactions shows a significant increase for the creditor"
           }
         ]
@@ -398,13 +354,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 5,
-            "outcome": false,
             "reason": "No Transaction convergence detected on creditor account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 5,
-            "outcome": true,
             "reason": "Transaction convergence detected on creditor account"
           }
         ]
@@ -424,13 +378,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 5,
-            "outcome": false,
             "reason": "No Transaction divergence detected on source account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 5,
-            "outcome": true,
             "reason": "Transaction divergence detected on source account"
           }
         ]
@@ -448,12 +400,10 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -461,13 +411,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 1.5,
-            "outcome": false,
             "reason": "Outgoing transfer within historical limits"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 1.5,
-            "outcome": true,
             "reason": "Exceptionally large outgoing transfer detected"
           }
         ]
@@ -483,22 +431,18 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": true,
             "reason": "No variance in transaction history and the amount of the incoming transactions shows an increase for the creditor"
           },
           {
             "subRuleRef": ".x04",
-            "outcome": false,
             "reason": "No variance in transaction history and the amount of the incoming transactions is less than or equal to the historical average for the creditor"
           }
         ],
@@ -506,20 +450,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "The amount of the incoming transaction is within acceptable limits for the creditor"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
             "upperLimit": 4,
-            "outcome": true,
             "reason": "The amount of the incoming transaction shows a moderate increase for the creditor"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 4,
-            "outcome": true,
             "reason": "The amount of the incoming transaction shows a significant increase for the creditor"
           }
         ]
@@ -538,12 +479,10 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -551,13 +490,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 4,
-            "outcome": false,
             "reason": "The creditor has received an insignificant number of transactions with the same amount in the last 24 hours"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 4,
-            "outcome": true,
             "reason": "The creditor has received a significant number of transactions with the same amount in the last 24 hours"
           }
         ]
@@ -576,17 +513,14 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": false,
             "reason": "No non-commissioned transaction mirroring detected"
           }
         ],
@@ -594,13 +528,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": true,
             "reason": "Immediate non-commissioned transaction mirroring detected"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
-            "outcome": true,
             "reason": "Aggregated non-commissioned transaction mirroring detected"
           }
         ]
@@ -619,17 +551,14 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": false,
             "reason": "No non-commissioned transaction mirroring detected"
           }
         ],
@@ -637,13 +566,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": true,
             "reason": "Immediate non-commissioned transaction mirroring detected"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
-            "outcome": true,
             "reason": "Aggregated non-commissioned transaction mirroring detected"
           }
         ]
@@ -663,17 +590,14 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": false,
             "reason": "No commissioned transaction mirroring detected"
           }
         ],
@@ -681,13 +605,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": true,
             "reason": "Immediate commissioned transaction mirroring detected"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
-            "outcome": true,
             "reason": "Aggregated commissioned transaction mirroring detected"
           }
         ]
@@ -707,17 +629,14 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": false,
             "reason": "No commissioned transaction mirroring detected"
           }
         ],
@@ -725,13 +644,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": true,
             "reason": "Immediate commissioned transaction mirroring detected"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
-            "outcome": true,
             "reason": "Aggregated commissioned transaction mirroring detected"
           }
         ]
@@ -750,27 +667,23 @@
             "subRuleRef": ".01",
             "lowerLimit": 0,
             "upperLimit": 18,
-            "outcome": true,
             "reason": "The debtor is younger than 18 years old"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 18,
             "upperLimit": 30,
-            "outcome": true,
             "reason": "The debtor is 18 years or older and younger than 30 years of age"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 30,
             "upperLimit": 50,
-            "outcome": true,
             "reason": "The debtor is 30 years or older and younger than 50 years of age"
           },
           {
             "subRuleRef": ".04",
             "lowerLimit": 50,
-            "outcome": true,
             "reason": "The debtor is 50 years or older"
           }
         ]
@@ -786,7 +699,6 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Unsuccessful transaction"
           }
         ],
@@ -794,20 +706,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": true,
             "reason": "First successful payment from this debtor to creditor account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "Second successful payment from this debtor to creditor account"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 3,
-            "outcome": false,
             "reason": "Third or more successful payment from this debtor to creditor account"
           }
         ]
@@ -825,27 +734,23 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 1,
-            "outcome": true,
             "reason": "To date, no successful payments have been made from debtor account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 1,
             "upperLimit": 2,
-            "outcome": true,
             "reason": "To date, one successful payment has been made from debtor account"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "To date, two successful payments have been made from debtor account"
           },
           {
             "subRuleRef": ".04",
             "lowerLimit": 3,
-            "outcome": false,
             "reason": "To date, more than three successful payments have been made from debtor account"
           }
         ]
@@ -863,27 +768,23 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 1,
-            "outcome": true,
             "reason": "To date, no successful payments have been made to creditor account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 1,
             "upperLimit": 2,
-            "outcome": true,
             "reason": "To date, one successful payment has been made to creditor account"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "To date, two successful payments have been made to creditor account"
           },
           {
             "subRuleRef": ".04",
             "lowerLimit": 3,
-            "outcome": false,
             "reason": "To date, more than three successful payments have been made to creditor account"
           }
         ]
@@ -899,22 +800,18 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           },
           {
             "subRuleRef": ".x03",
-            "outcome": true,
             "reason": "No variance in transaction history and the amount of the incoming transactions shows an increase for the debtor"
           },
           {
             "subRuleRef": ".x04",
-            "outcome": false,
             "reason": "No variance in transaction history and the amount of the incoming transactions is less than or equal to the historical average for the debtor"
           }
         ],
@@ -922,20 +819,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "The amount of the outgoing transaction is within acceptable limits for the debtor"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "The amount of the outgoing transaction shows a moderate increase for the debtor"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 3,
-            "outcome": true,
             "reason": "The amount of the outgoing transaction shows a significant increase for the debtor"
           }
         ]
@@ -953,12 +847,10 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "At least 50 historical transactions required"
           }
         ],
@@ -966,13 +858,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 15.507,
-            "outcome": false,
             "reason": "Benfords Law: Debtor transaction history indicates a low probability of fictitious amounts"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 15.507,
-            "outcome": true,
             "reason": "Benfords Law: Debtor transaction history indicates a high probability of fictitious amounts"
           }
         ]
@@ -990,12 +880,10 @@
         "exitConditions": [
           {
             "subRuleRef": ".x00",
-            "outcome": false,
             "reason": "Incoming transaction is unsuccessful"
           },
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "At least 50 historical transactions required"
           }
         ],
@@ -1003,13 +891,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 15.507,
-            "outcome": false,
             "reason": "Benfords Law: Creditor transaction history indicates a low probability of fictitious amounts"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 15.507,
-            "outcome": true,
             "reason": "Benfords Law: Creditor transaction history indicates a high probability of fictitious amounts"
           }
         ]
@@ -1027,7 +913,6 @@
         "exitConditions": [
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -1035,27 +920,23 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 5,
-            "outcome": true,
             "reason": "Reasonable walking speed"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 5,
             "upperLimit": 15,
-            "outcome": true,
             "reason": "Reasonable cycling speed"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 15,
             "upperLimit": 50,
-            "outcome": true,
             "reason": "Reasonable driving speed"
           },
           {
             "subRuleRef": ".04",
             "lowerLimit": 50,
-            "outcome": true,
             "reason": "Ludicrous speed"
           }
         ]
@@ -1073,7 +954,6 @@
         "exitConditions": [
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -1081,20 +961,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 1,
-            "outcome": true,
             "reason": "The debtor has never transacted within 5km of this location"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 1,
             "upperLimit": 3,
-            "outcome": true,
             "reason": "The debtor has very few prior transactions within 5km of this location"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 3,
-            "outcome": false,
             "reason": "The debtor frequently transacts near this location"
           }
         ]
@@ -1110,7 +987,6 @@
         "exitConditions": [
           {
             "subRuleRef": ".x01",
-            "outcome": false,
             "reason": "Insufficient transaction history"
           }
         ],
@@ -1118,20 +994,17 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 60000,
-            "outcome": true,
             "reason": "Suspiciously quick follow-up transaction"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 60000,
             "upperLimit": 300000,
-            "outcome": true,
             "reason": "Surprisingly quick follow-up transaction"
           },
           {
             "subRuleRef": ".03",
             "lowerLimit": 300000,
-            "outcome": false,
             "reason": "Follow-up transaction speed within acceptable limits"
           }
         ]
@@ -1148,25 +1021,21 @@
         "cases": [
           {
             "subRuleRef": ".00",
-            "outcome": false,
             "reason": "The transaction type is not defined in this rule configuration"
           },
           {
             "subRuleRef": ".01",
             "value": "WITHDRAWAL",
-            "outcome": true,
             "reason": "The transaction is identified as a cash withdrawal"
           },
           {
             "subRuleRef": ".02",
             "value": "PAYMENT",
-            "outcome": true,
             "reason": "The transaction is identified as a merchant payment"
           },
           {
             "subRuleRef": ".03",
             "value": "TRANSFER",
-            "outcome": true,
             "reason": "The transaction is identified as a direct funds transfer"
           }
         ]
@@ -1184,13 +1053,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "Debtor has only one account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
-            "outcome": true,
             "reason": "Debtor has more one account"
           }
         ]
@@ -1208,13 +1075,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 2,
-            "outcome": false,
             "reason": "Creditor has only one account"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 2,
-            "outcome": true,
             "reason": "Creditor has more one account"
           }
         ]
@@ -1235,13 +1100,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 3,
-            "outcome": false,
             "reason": "Upstream transaction divergence within acceptable limits"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 3,
-            "outcome": true,
             "reason": "Upstream transaction divergence detected"
           }
         ]
@@ -1259,13 +1122,11 @@
           {
             "subRuleRef": ".01",
             "upperLimit": 10000,
-            "outcome": false,
             "reason": "Transaction amount within regulatory limits"
           },
           {
             "subRuleRef": ".02",
             "lowerLimit": 10000,
-            "outcome": true,
             "reason": "Transaction amount exceeds regulatory threshold"
           }
         ]

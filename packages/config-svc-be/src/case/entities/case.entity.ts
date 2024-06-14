@@ -8,8 +8,5 @@ export class Case {
   value: string;
 
   @ApiProperty()
-  outcome: boolean;
-
-  @ApiProperty()
   reason: string;
 }

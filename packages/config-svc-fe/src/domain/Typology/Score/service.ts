@@ -120,7 +120,6 @@ export interface ITypology {
   export interface ExitCondition {
     reason: string
     subRuleRef: string
-    outcome: boolean
   }
   
   export interface Band {
@@ -133,7 +132,6 @@ export interface ITypology {
   export interface Case {
     reason: string
     subRuleRef: string
-    outcome: boolean;
     value?: number;
   }
   
@@ -174,28 +172,23 @@ export const config = {
     ],
     "exitConditions": [
         {
-            "outcome": true,
             "reason": "Insufficient transaction history. At least 50 historical transactions are required",
             "subRuleRef": ".x01",
 
         },
         {
-            "outcome": true,
             "reason": "Insufficient transaction history. At least 50 historical transactions are required",
             "subRuleRef": ".x02",
         },
         {
-            "outcome": true,
             "reason": "Insufficient transaction history. At least 50 historical transactions are required",
             "subRuleRef": ".x03",
         },
         {
-            "outcome": true,
             "reason": "No variance in transaction history and the volume of recent incoming transactions shows an increase",
             "subRuleRef": ".x04",
         },
         {
-            "outcome": true,
             "reason": "No variance in transaction history and the volume of recent incoming transactions is less than or equal to the historical average",
             "subRuleRef": ".x05",
         }

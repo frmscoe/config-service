@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsBoolean,
-  IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -22,6 +21,8 @@ export class Parameters {
     description: 'Can be a string or number',
     example: 0.1,
   })
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
   ParameterValue: string | number;
 
   @ApiProperty({
@@ -36,10 +37,6 @@ export class ExitConditions {
   @ApiProperty()
   @IsString()
   subRuleRef: string;
-
-  @ApiProperty()
-  @IsBoolean()
-  outcome: boolean;
 
   @ApiProperty()
   @IsString()
@@ -57,32 +54,25 @@ export class Band {
 
   @ApiProperty({
     description: 'Upper limit for the band',
-    example: 2,
-    type: Number,
+    example: '2',
+    type: 'number or string',
     required: false,
   })
   @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  upperLimit?: number;
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
+  upperLimit?: string | number;
 
   @ApiProperty({
     description: 'Lower limit for the band',
-    example: 1,
-    type: Number,
+    example: '1',
+    type: 'number or string',
     required: false,
   })
   @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  lowerLimit?: number;
-
-  @ApiProperty({
-    description: 'Outcome when conditions within this band are met',
-    example: false,
-  })
-  @IsBoolean()
-  outcome: boolean;
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
+  lowerLimit?: string | number;
 
   @ApiProperty({
     description: 'Reasoning or explanation for the outcome',
@@ -105,16 +95,11 @@ export class Case {
   @ApiProperty({
     description: 'Explicit value to check against',
     example: 'WITHDRAWAL',
+    type: 'string or number',
   })
-  @IsString()
-  value: string;
-
-  @ApiProperty({
-    description: 'Outcome when this case condition is met',
-    example: true,
-  })
-  @IsBoolean()
-  outcome: boolean;
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
+  value: string | number;
 
   @ApiProperty({
     description: 'Reasoning or explanation for the outcome',
@@ -129,37 +114,41 @@ export class Config {
     description: 'Parameters associated with the config.',
     type: [Parameters],
   })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Parameters)
-  parameters: Parameters[];
+  parameters?: Parameters[];
 
   @ApiProperty({
     description: 'Exit conditions associated with the config.',
     type: [ExitConditions],
   })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ExitConditions)
-  exitConditions: ExitConditions[];
+  exitConditions?: ExitConditions[];
 
   @ApiProperty({
     description: 'Bands associated with the config.',
     type: [Band],
   })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Band)
-  bands: Band[];
+  bands?: Band[];
 
   @ApiProperty({
     description: 'Cases associated with the config.',
     type: [Case],
   })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Case)
-  cases: Case[];
+  cases?: Case[];
 }
 
 export class RuleConfig {
@@ -212,8 +201,9 @@ export class RuleConfig {
   ruleId: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => Config)
-  config: Config;
+  config?: Config;
 }

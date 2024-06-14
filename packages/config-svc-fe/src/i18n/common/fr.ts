@@ -115,7 +115,6 @@ export const frCommon = {
   upperLimit: "UpperLimit",
   ruleConfiguration: "Rule Configuration",
   ruleBuilder: "Rule builder",
-  outcome: "Outcome",
   bands: "Bands",
   cases: "Cases",
   ruleInfo: "Rule Info",

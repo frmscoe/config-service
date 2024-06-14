@@ -3,22 +3,18 @@ import { Icon } from "~/components/common/Icon";
 export const exitConditions = [
   {
     subRuleRef: ".x00",
-    outcome: false,
     reason: ".x00 No verifiable creditor account activity detected",
   },
   {
     subRuleRef: ".x01",
-    outcome: false,
     reason: ".x01 No verifiable creditor account activity detected",
   },
   {
     subRuleRef: ".x03",
-    outcome: false,
     reason: ".x03 No verifiable creditor account activity detected",
   },
   {
     subRuleRef: ".x04",
-    outcome: false,
     reason: ".x04 No verifiable creditor account activity detected",
   },
 ];
