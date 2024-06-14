@@ -64,7 +64,8 @@ const CreateRuleConfigPage = () => {
                         return {
                             lowerLimit:  covertValue(data.bands[index - 1].value,band.dataType),
                             upperLimit: covertValue(band.value, data.dataType),  
-                            subRuleRef: `0.${index + 1}`
+                            subRuleRef: `0.${index + 1}`,
+                            reason: band.reason,
                         }
                     }), {
                         lowerLimit: covertValue(data.bandMaximumCondition,data.dataType),
