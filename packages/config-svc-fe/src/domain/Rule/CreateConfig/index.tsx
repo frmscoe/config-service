@@ -48,7 +48,7 @@ const CreateRuleConfigPage = () => {
         try {
             setLoading(true);
             const obj = {
-                ruleId: id,
+                ruleId: `rule/${id}`,
                 desc: data.description,
                 cfg: `${data.major}.${data.minor || 0}.${data.patch || 0}`,
                 config: {
