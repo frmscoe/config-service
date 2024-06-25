@@ -1,8 +1,20 @@
 # Platform Shared Tools Deployment
 
-This guide provides step-by-step instructions for deploying the Mojaloop Platform Shared Tools currently used by the Configuration Service to create a reference installation for the 
+This guide provides step-by-step instructions for deploying the Mojaloop Platform Shared Tools currently used by the Configuration Service to create a reference installation for the Mojaloop vNext project.
 
 > ⚠️ Important Note: These instructions are primarily for MacBook (macOS) users, but they should also be applicable for Linux and Windows Subsystem for Linux (WSL2) environments. If you encounter any issues, or if any commands do not work for you, please create an issue to provide feedback or request assistance. The deployment has been tested on a WSL2 installation.
+
+### Requirements
+
+Before you get started, ensure the following software is installed:
+
+- **Docker**:
+  - **Linux (Ubuntu)**: Docker is essential for running containers. Install it by following the detailed instructions on the [Docker Ubuntu Installation Guide](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+  - **Windows**: Docker Desktop is necessary for creating and managing Docker containers. Ensure Docker is installed and running by following the instructions on the [official Docker Desktop for Windows installation page](https://docs.docker.com/desktop/install/windows-install/).
+  - **macOS**: Install Docker Desktop by following the instructions provided on the [Docker Desktop for macOS installation page](https://docs.docker.com/desktop/install/mac-install/).
+
+Ensure that Docker is configured to start on boot, and verify its installation by running `docker --version` in your terminal or command prompt.
+
 
 ## 1. Cloning the Mojaloop Platform Shared Tools Repository
 
@@ -13,7 +25,7 @@ First, navigate to the [Mojaloop Platform Shared Tools Repo](https://github.com/
 Next, clone the repository into your code directory using the following command in your terminal:
 
 ```shell
-  git clone https://github.com/mojaloop/platform-shared-tools
+  git clone https://github.com/mojaloop/platform-shared-tools --branch beta1
 ```
 
 ## 2. Building Kafka, ElasticSearch and MongoDB for local infrastructure
@@ -81,7 +93,7 @@ cp ../grafana_datasources.yml ./grafana_data/datasource.yml
 
 5. Review the contents of the .env file using your preferred editing tool.
 
-- For macOS: Update the ROOT_VOLUME_DEVICE_PATH to reflect the absolute path.
+- For macOS and Linux Ubuntu: Update the ROOT_VOLUME_DEVICE_PATH to reflect the absolute path.
 - For Windows WSL:
 
   - Avoid using the Windows mnt drive for defining paths.
@@ -97,6 +109,20 @@ sysctl -w vm.max_map_count=262144 # might require sudo
 ```
 
 ### Start Infrastructure Containers
+
+#### Configuring Docker Access
+
+To run Docker commands without the `sudo` prefix, you must add your user to the Docker group. This step grants the user permission to access the Docker daemon. To add your current user to the Docker group, run:
+
+```shell
+sudo usermod -aG docker $USER
+```
+
+>Important: After running this command, you will need to log out and back in for these changes to take effect, or you can use the following command to apply the changes immediately:
+
+```shell
+newgrp docker
+```
 
 Start the docker containers using docker compose up (in the exec dir)
 
@@ -255,6 +281,24 @@ npm install
 ```
 
 #### 3. How to start the web app
+
+##### Update the start script
+
+Open the package.json file in the root directory of the project and update the start script in the scripts section as follows:
+
+```shell
+"scripts": {
+  "start": "NODE_OPTIONS=--openssl-legacy-provider ng serve --host 0.0.0.0 --proxy-config proxy.conf.json --no-live-reload",
+  // other scripts...
+}
+```
+
+This configuration:
+
+- Ensures the application uses the OpenSSL legacy provider due to compatibility issues with certain TLS configurations.
+- Allows your application to be accessed from any device on the same network by setting the host to 0.0.0.0.
+- Uses proxy.conf.json to route specific URL requests via a proxy, which is useful for integrating with APIs that might have CORS restrictions.
+- Disables live reloading to stabilize memory usage during development.
 
 ##### Start the local development server
 

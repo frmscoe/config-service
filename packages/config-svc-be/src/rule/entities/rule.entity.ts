@@ -5,9 +5,11 @@ import {
   IsString,
   IsOptional,
   IsBoolean,
+  ValidateNested,
 } from 'class-validator';
 import { DataTypeEnum, StateEnum, SourceEnum } from '../schema/rule.schema';
 import { RuleConfig } from '../../rule-config/entities/rule-config.entity';
+import { Type } from 'class-transformer';
 
 export class Rule {
   @ApiProperty({ example: '123' })
@@ -31,7 +33,7 @@ export class Rule {
     description: 'Type of data the rule deals with',
   })
   @IsEnum(DataTypeEnum)
-  dataType: DataTypeEnum;
+  dataType?: DataTypeEnum;
 
   @ApiProperty({ example: 'rule-001' })
   @IsString()
@@ -82,23 +84,10 @@ export class Rule {
   source: SourceEnum;
 }
 
-export class RuleWithConfig {
-  @ApiProperty()
-  _key: string;
-
-  @ApiProperty()
-  name: string;
-
-  @ApiProperty()
-  cfg: string;
-
-  @ApiProperty()
-  state: string;
-
-  @ApiProperty()
-  ownerId: string;
-
-  @ApiProperty({ type: () => [RuleConfig] })
+export class RuleWithConfig extends Rule {
+  @ApiProperty({ type: () => RuleConfig, isArray: true })
+  @ValidateNested({ each: true })
+  @Type(() => RuleConfig)
   ruleConfigs: RuleConfig[];
 }
 
@@ -106,6 +95,6 @@ export class RuleWithConfigResponse {
   @ApiProperty()
   count: number;
 
-  @ApiProperty({ type: () => [RuleWithConfig], isArray: true })
+  @ApiProperty({ type: () => RuleWithConfig, isArray: true })
   rules: RuleWithConfig[];
 }

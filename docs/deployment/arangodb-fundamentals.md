@@ -27,7 +27,7 @@ You can choose one of the following:
 In order to start an ArangoDB instance, run:
 
 ```bash
-docker run -e ARANGO_ROOT_PASSWORD=1 -p 8529:8529 -d --name arangodb-instance arangodb/arangodb
+docker run -e ARANGO_ROOT_PASSWORD=1 -p 8529:8529 -d --restart unless-stopped --name arangodb-instance arangodb/arangodb
 ```
 
 - `-e ARANGO_ROOT_PASSWORD=1:` The -e flag is used to set environment variables inside the container. In this case, ARANGO_ROOT_PASSWORD=1 sets the root password of the ArangoDB instance to 1. It's important to choose a secure password for production environments.
@@ -35,6 +35,8 @@ docker run -e ARANGO_ROOT_PASSWORD=1 -p 8529:8529 -d --name arangodb-instance ar
 - `-p 8529:8529:` The -p flag maps a port on the host to a port in the container. This command maps port 8529 on the host to port 8529 inside the container, which is the default port that ArangoDB listens on for connections.
 
 - `-d:` This flag runs the container in detached mode, meaning the container runs in the background and does not block the terminal session.
+
+- `--restart unless-stopped:` This flag tells Docker to restart the container automatically unless it is explicitly stopped. This ensures that the ArangoDB instance is always running, even if the host machine is restarted.
 
 - `--name arangodb-instance:` The --name flag assigns a name to the container, making it easier to manage. In this case, the container is named arangodb-instance.
 

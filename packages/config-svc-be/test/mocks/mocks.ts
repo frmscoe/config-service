@@ -22,14 +22,12 @@ export const ruleConfig = {
     exitConditions: [
       {
         subRuleRef: '.x00',
-        outcome: false,
         reason: 'Incoming transaction is unsuccessful',
       },
     ],
     cases: [
       {
         subRuleRef: '.00',
-        outcome: false,
         reason:
           'The transaction type is not defined in this rule configuration',
         value: 'UNDEFINED',
@@ -37,7 +35,6 @@ export const ruleConfig = {
       {
         subRuleRef: '.01',
         value: 'WITHDRAWAL',
-        outcome: true,
         reason: 'The transaction is identified as a cash withdrawal',
       },
     ],

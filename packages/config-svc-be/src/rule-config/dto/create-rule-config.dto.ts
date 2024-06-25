@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsString, ValidateNested } from 'class-validator';
+import {
+  IsOptional,
+  IsObject,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { Config } from '../entities/rule-config.entity';
 
@@ -30,8 +35,9 @@ export class CreateRuleConfigDto {
       'Configuration details including parameters, exit conditions, bands, or cases.',
     type: () => Config,
   })
+  @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => Config)
-  config: Config;
+  config?: Config;
 }

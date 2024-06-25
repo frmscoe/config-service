@@ -7,6 +7,7 @@ const AccessDeniedPage = () => {
     const {t} = useCommonTranslations();
     return (
         <Result
+            data-testid="access-denied"
             status="403"
             title="403"
             subTitle={t('accessPage.message')}

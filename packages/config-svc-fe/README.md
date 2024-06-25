@@ -11,14 +11,14 @@
 
 ### Setting up the local site
 
-1. Navigate to the `config-svc-fe` folder
+1. Open a new terminal window and navigate to the `config-svc-fe` folder
 
 ```bash
 cd packages/config-svc-fe
 ```
 
 2. Check the version of node in the `./packages/config-svc-fe/.nvmrc`
-3. Run `nvm use` or `nvm use {.nvmrc node version}` to change to the correct version 
+3. Run `nvm use` or `nvm use {.nvmrc node version}` to change to the correct version
 4. Run `npm install` to install all dependencies.
 5. Copy the `.env.sample` file and save as your `.env` file:
 
@@ -30,19 +30,19 @@ cp .env.sample .env.local
 
 1. **PORT**
 
-    Port for which the frontend client will be running on. Default is 4000
+   Port for which the frontend client will be running on. Default is 4000
 
 2. **NEXT_PUBLIC_CONFIG_SVC_BE_URL**
 
-    use `http://localhost:3007`. This is the url of the config-svc backend  which runs on default port of 3007.
+   use `http://localhost:3007`. This is the url of the config-svc backend which runs on default port of 3007.
 
 3. **NEXT_PUBLIC_SECURITY_BC_URL**
 
-    use `http://localhost:3201`. This is the url for mojaloop/security-bc-authentication-svc:0.5.4 
+   use `http://localhost:3201`. This is the url for mojaloop/security-bc-authentication-svc:0.5.4
 
-4. **NEXT_PUBLIC_SECURITY_BC_CLIENT_ID** 
+4. **NEXT_PUBLIC_SECURITY_BC_CLIENT_ID**
 
-    This is the client id for one of the builtin IAM applications. This can be found under the mojaloop admin ui. ***security-bc-ui*** is the default client_id
+   This is the client id for one of the builtin IAM applications. This can be found under the mojaloop admin ui. **_security-bc-ui_** is the default client_id
 
 ### Generate local certificates for https:
 
@@ -93,11 +93,11 @@ npm install
 
 ## Create User Account and privileges
 
- 1. Follow these [steps](https://github.com/lextego/config-svc/blob/main/docs/02-deployment/90-mojaloop-platform-shared-tools-deployment.md#mojaloop-vnext-admin-ui) to setup the mojaloop admin ui
+1. Follow these [steps](https://github.com/lextego/config-svc/blob/main/docs/02-deployment/90-mojaloop-platform-shared-tools-deployment.md#mojaloop-vnext-admin-ui) to setup the mojaloop admin ui
 
- 2. Once done access the UI on http://localhost:4200
+2. Once done access the UI on http://localhost:4200
 
- 3. Login using the default user accounts below
+3. Login using the default user accounts below
 
 ```text
 Please note the Default users:
@@ -111,40 +111,40 @@ username: admin
 password: superMegaPass
 ```
 
- 4. Go to **SETTINGS** sections and click **Security** and select **Builtin IAM - Users**
+4. Go to **SETTINGS** sections and click **Security** and select **Builtin IAM - Users**
 
- 5. On the **Builtin IAM - Users** Page click on the **Create User** button in the top right corner
+5. On the **Builtin IAM - Users** Page click on the **Create User** button in the top right corner
 
- 6. On the create user page enter details for the user including the fields below and click create
-    - User Type (default Hub User)
-    - Email 
-    - Full Name
-    - Password
-    - Password confirmation
+6. On the create user page enter details for the user including the fields below and click create
 
- 7. Once the user is created you will be redirected to the users page with url in this format http://localhost:4200/security/builtin_iam/users/{user_email}. 
+   - User Type (default Hub User)
+   - Email
+   - Full Name
+   - Password
+   - Password confirmation
 
- 8. On the users detail page click **Add Roles** button to open a modal to give the user some roles.
+7. Once the user is created you will be redirected to the users page with url in this format http://localhost:4200/security/builtin_iam/users/{user_email}.
 
- 9. Select **admin** role in the dropdown and click **Add roles** button to save these roles. 
+8. On the users detail page click **Add Roles** button to open a modal to give the user some roles.
 
- 10. On the same users page. Look for **Associated Roles** Section which has a table with columns 
+9. Select admin role in the dropdown and click Add roles button to save these roles.
+
+   **Note:** Currently, we are temporarily using the admin role. We will create specific roles for the configuration service once they are defined.
+
+10. On the same users page, look for the Associated Roles Section which has a table with columns:
+
     - Name
     - Description
     - Actions
 
- 11. Under the **Name** section. Click on the Admin role to go to the role management page to configure Some privileges for this user.
+11. Under the **Name** section. Click on the Admin role to go to the role management page to configure Some privileges for this user.
 
- 12. Once on the roles management page. Select the **Add Privileges** Tab to go and manage some privileges for the user.
+12. Once on the roles management page. Select the **Add Privileges** Tab to go and manage some privileges for the user.
 
- 13. Select the application to assign privileges in the **Application** drop down. 
+13. Select the application to assign privileges in the **Application** drop down.
 
- 14. In the List. Check all the privileges you want to assign the user and click the **Add Selected privileges(s) to Role** button. This privileges will be assigned to the user.
+14. In the List. Check all the privileges you want to assign the user and click the **Add Selected privileges(s) to Role** button. This privileges will be assigned to the user.
 
-
- 
-
- 
 ### Troubleshooting
 
 **Error**: If you get the following error then port 3001 is already in use.
@@ -174,13 +174,11 @@ password: superMegaPass
 
 How to use [https://www.youtube.com/watch?v=KruSUqLdxQA]
 
- 
 [Firefox](https://addons.mozilla.org/en-US/firefox/addon/cors-everywhere/)
 
 How to use [https://github.com/spenibus/cors-everywhere-firefox-addon?tab=readme-ov-file#usage]
 
 Please read the install and activation steps for each extensions provided in the store
-
 
 ## Checking / Testing
 

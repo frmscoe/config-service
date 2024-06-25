@@ -116,7 +116,7 @@ const RuleConfig: React.FunctionComponent<Props> = ({
                 onFilter: (value, record) => record.cfg.toLowerCase().includes(value as string),
             },
             {
-                title: commonTranslations('rulesListPage.table.description'), dataIndex: 'dsc', key: 'dsc',
+                title: commonTranslations('rulesListPage.table.description'), dataIndex: 'desc', key: 'desc',
                 sorter: (a: IRule, b: IRule) => a.state.localeCompare(b.desc),
                 filtered: !!searchText.trim().length,
                 onFilter: (value, record) => record.desc.toLowerCase().includes(value as string),

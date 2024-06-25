@@ -56,8 +56,8 @@ describe('RuleConfigService', () => {
 
     const expectedSaveResult = {
       ...createRuleConfigDto,
-      _key: '123',
       ownerId: 'user1',
+      _key: expect.any(String),
       state: '01_DRAFT',
     };
 
@@ -70,12 +70,9 @@ describe('RuleConfigService', () => {
     const result = await service.create(createRuleConfigDto, req as any);
 
     // Assertions
-    expect(dbMock.getDatabase().collection().save).toHaveBeenCalledWith({
-      ...createRuleConfigDto,
-      ownerId: 'user1',
-      _key: expect.any(String),
-      state: '01_DRAFT',
-    });
+    expect(dbMock.getDatabase().collection().save).toHaveBeenCalledWith(
+      expectedSaveResult,
+    );
     expect(result).toEqual(expectedSaveResult);
   });
 

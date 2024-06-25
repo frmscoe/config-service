@@ -67,7 +67,7 @@ export class RuleController {
 
   @Get('/rule-config')
   @Roles(RulePrivileges.GET_RULE_RULE_CONFIG)
-  @ApiOperation({ summary: 'Retrieve all rule configurations' })
+  @ApiOperation({ summary: 'Retrieve all rules and rule configs' })
   @ApiQuery({ name: 'page', type: 'number', required: false, example: 1 })
   @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
   @ApiOkResponse({

@@ -2,6 +2,10 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
+  eslint: {
+    // Ignores linting for builds and only enable it for development
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     const destinationUrl = process.env.NEXT_PUBLIC_SECURITY_BC_URL;
 

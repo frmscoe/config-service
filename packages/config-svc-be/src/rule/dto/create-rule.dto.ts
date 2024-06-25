@@ -21,7 +21,9 @@ export class CreateRuleDto {
     example: DataTypeEnum.NUMERIC,
     enum: DataTypeEnum,
     description: 'Type of data the rule deals with',
+    required: false,
   })
+  @IsOptional()
   @IsEnum(DataTypeEnum)
   readonly dataType: DataTypeEnum;
 

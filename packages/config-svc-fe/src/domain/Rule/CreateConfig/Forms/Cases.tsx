@@ -68,7 +68,11 @@ const Cases: React.FunctionComponent<IProps> = ({ control, caseFields, formState
     }, [caseFields.append, getValue, caseFields.insert])
 
     return (
-        <Form layout='horizontal'>
+        <Form layout='horizontal'
+        labelCol={{ span: 3 }}
+        wrapperCol={{ span: 20 }}
+        style={{ textAlign: 'start' }}
+        >
 
             {caseFields.fields.map((field, index) => (
                 <>
@@ -104,6 +108,8 @@ const Cases: React.FunctionComponent<IProps> = ({ control, caseFields, formState
                         defaultValue=""
                         render={({ field }) => <Form.Item
                             label="Value"
+                            className="py-0 mb-2"
+                            labelAlign="left"
                             validateStatus={(formState?.errors?.cases && formState?.errors?.cases[index]?.value?.message) ? 'error' : ''}
                             help={(formState?.errors?.cases && formState?.errors?.cases[index]?.value?.message)}
                         >
@@ -113,6 +119,8 @@ const Cases: React.FunctionComponent<IProps> = ({ control, caseFields, formState
                     <Form.Item label={t('createRuleConfigPage.caseForm.reason')}
                         validateStatus={(formState?.errors?.cases && formState?.errors?.cases[index]?.reason?.message) ? 'error' : ''}
                         help={(formState?.errors?.cases && formState?.errors?.cases[index]?.reason?.message)}
+                        className="py-0 mb-2"
+                        labelAlign="left"
                     >
                         <Controller
                             name={`cases[${index}].reason` as any}
@@ -240,11 +248,14 @@ export const ValueField = ({ dataType = 'numeric', ...props }) => {
     if (dataType === 'TIME') {
         return (
             <>
-                <Form.Item label=" ">
-                    <InputNumber className="w-full" data-testid="epoch-input" value={props.value} onChange={handleEpochTimeChange} />
-                </Form.Item>
-                <Form layout="vertical" className="grid-cols-5 grid gap-3  mb-6">
-                    <Form.Item label="   ">
+                <InputNumber className="w-full mb-1" data-testid="epoch-input" value={props.value} onChange={handleEpochTimeChange} />
+
+                <Form layout="vertical" className="grid-cols-5 grid gap-3  mb-2" 
+                 style={{ textAlign: 'start' }}
+                >
+                    <Form.Item label="   "
+                    
+                    >
                         <Select data-testid="data-type" className="w-1/4" onChange={handleDataTypeChange}>
                             {[{ label: '+ve', value: '+' }, { label: '-ve', value: '-' }].map((sign,i) => (
                                 <Select.Option key={i} value={sign.value} >

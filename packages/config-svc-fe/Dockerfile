@@ -1,23 +1,28 @@
-# Use a Node.js base image with version 20.10.0
+# Use the Node.js base image
 FROM node:20.10.0
 
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
-
-# Install dependencies
+# Copy package files and install dependencies
+COPY packages/config-svc-fe/package*.json ./
 RUN npm install
 
-# Copy the rest of the application code
-COPY . .
+# Copy the rest of your application's source code
+COPY packages/config-svc-fe/ ./
 
-# Copy environment files
-COPY .env ./
+# Generate and copy certificates
+RUN mkdir -p certificates && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout certificates/localhost.key \
+    -out certificates/localhost.crt \
+    -subj "/C=AU/ST=Some-State/L=/O=Internet Widgits Pty Ltd/OU=/CN=/emailAddress="
 
-# Expose the port defined in the environment variable
+# Copy environment variables
+COPY packages/config-svc-fe/.env.sample ./.env.local
+
+# Expose the port the app runs on, ensure the PORT environment variable is set for production
 EXPOSE ${PORT}
 
-# Command to run the application
+# Development mode
 CMD ["npm", "run", "dev"]

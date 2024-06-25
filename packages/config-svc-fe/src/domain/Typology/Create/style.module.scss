@@ -1,0 +1,72 @@
+.input-border {
+  border-color: #56b453;
+}
+
+.custom-node {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  min-width: 10rem;
+  width: 100;
+}
+
+.custom-node-content {
+  display: flex;
+  align-items: center;
+}
+
+.delete-icon {
+  margin-left: 10px;
+  color: #ff4d4f;
+  cursor: pointer;
+}
+
+.custom-node.selected {
+  border-color: #1890ff;
+}
+
+.group-node {
+  border: 1px dashed #ccc;
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 5px;
+  position: relative;
+  min-width: 20rem;
+
+  .group-node-content {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .group-node-children {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+    flex-direction: column;
+  }
+
+  .child-node {
+    background-color: #fff;
+    border-radius: 3px;
+    padding: 5px;
+    margin: 5px;
+  }
+}
+
+.react-flow__handle.source[data-id^="outcome"]::before,
+.react-flow__handle.source[data-id^="score"]::before {
+  content: '';
+  position: absolute;
+  background-color: #ccc;
+  width: 2px;
+  height: 100%;
+  top: 0;
+  left: 0;
+}

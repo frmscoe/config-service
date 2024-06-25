@@ -235,6 +235,7 @@ export const esCommon = {
         dataType: 'Tipo de Datos',
         selectDataType: 'Seleccionar Tipo de Datos',
         exit: 'Salir',
+        success: 'Regla creada con éxito',
         errors: {
             nameRequired: 'El nombre es obligatorio',
             nameLength: 'El nombre debe tener al menos 3 caracteres',
@@ -281,12 +282,12 @@ export const esCommon = {
         title: "Configuración de Regla",
 
         "information": "Información",
-      "parameters": "Parámetros",
-      "exitConditions": "Condiciones de salida",
-      "band": "Banda",
-      "cases": "Casos",
-      "save": "Guardar",
-      "exit": "Salir",
+        "parameters": "Parámetros",
+        "exitConditions": "Condiciones de salida",
+        "band": "Banda",
+        "cases": "Casos",
+        "save": "Guardar",
+        "exit": "Salir",
         errors: {
             minorRequired: 'El menor es obligatorio',
             patchRequired: 'El parche es obligatorio',
@@ -363,5 +364,61 @@ export const esCommon = {
             add: 'Añadir'
         }
     },
+    typologyListPage: {
+        table: {
+            name: "Nombre",
+            version: "Versión",
+            description: "Descripción",
+            state: "Condición",
+            owner: "Dueño",
+            createdAt: "Crear en",
+            updatedAt: "Actualizar en",
+            review: "Revisar",
+            action: "Acción",
+            modify: "Modificar"
+        },
+        retry: 'Reintentar',
+        create: 'Crear',
+        searchDescription: 'Buscar descripción',
+        reset: 'Restablecer',
+        search: 'Buscar'
+    },
+    typologyCreatePage: {
+        title: 'Reglas',
+        searchRules: 'Buscar Reglas',
+        recentlyRemoved: 'Eliminado recientemente',
+        ruleConfiguration: 'Configuración de Reglas',
+        searchConfigurations: 'Buscar Configuraciones',
+        noRuleConfigurations: 'No hay Configuraciones de Reglas',
+        setRule: 'Por favor, establezca una regla para mostrar configuraciones',
+        rulesAttached: "Reglas adjuntas",
+        noRulesAttached: "No hay reglas adjuntas",
+        configurations: "configuración",
+        noConfigurations: "Sin configuraciones",
+        rulesConfigurationsAttached: "Configuraciones de reglas adjuntas",
+        structureTitle: "Estructura",
+        searchPlaceholder: "Buscar",
+        saving: "Guardando.....",
+        pleaseWait: "Por favor espera....",
+        typologyCreated: "Tipología ha sido creada"
+
+
+    },
+
+    typologyScorePage: {
+        conditions: "Condiciones",
+        rules: "Reglas",
+        outcomes: "Resultados",
+        others: "Otros",
+        recentlyRemoved: "Recientemente Eliminados",
+        typologyInformation: "Información de Tipología",
+        rulesAttached: "Reglas Adjuntas",
+        outcomesAttached: "Resultados Adjuntos",
+        rulesCount: "Reglas",
+        outcomesCount: "Resultados",
+        maxScore: "Puntuación Máxima",
+        search: 'Buscar'
+
+    }
 
 }

@@ -4,7 +4,6 @@ import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCommonTranslations } from '~/hooks';
-import { RULE_DATA_TYPES } from '~/constants';
 
 
 const { Item: FormItem } = Form;
@@ -14,7 +13,6 @@ export interface FormData {
     major?: number;
     minor?: number;
     patch?: number;
-    dataType: string;
 
 }
 
@@ -38,7 +36,6 @@ const CreateRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props })
             major: yup.number().optional().integer(t('createRulePage.errors.majorInteger')).min(0, t('createRulePage.errors.patchMin')),
             minor: yup.number().optional().integer(t('createRulePage.errors.minorInteger')).min(0, t('createRulePage.errors.majorMin')),
             patch: yup.number().optional().integer(t('createRulePage.errors.patchInteger')).min(0, t('createRulePage.errors.minorMin')),
-            dataType: yup.string().required(t('createRulePage.errors.dataTypeRequired')),
         });
     }, [t])
 
@@ -96,27 +93,6 @@ const CreateRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props })
                             name="description"
                             control={control}
                             render={({ field }) => <Input.TextArea {...field} placeholder={t('createRulePage.description')} />}
-                        />
-                    </FormItem>
-
-                    <FormItem
-                        label={t('createRulePage.dataType')}
-                        validateStatus={errors.dataType ? 'error' : ''}
-                        help={errors.dataType && errors.dataType.message}
-                        htmlFor='dataType'
-                    >
-                        <Controller
-                            name="dataType"
-                            control={control}
-                            render={({ field }) => (
-                                <Select {...field} placeholder={t('createRulePage.selectDataType')}>
-                                    {RULE_DATA_TYPES.map((state) => (
-                                        <Select.Option value={state.value}>
-                                            {t(`ruleDataTypes.${state.key}`)}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            )}
                         />
                     </FormItem>
 

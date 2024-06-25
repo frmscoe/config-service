@@ -1,66 +1,154 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Band } from '../../band/entities/band.entity';
-import { Case } from '../../case/entities/case.entity';
 import {
   IsArray,
-  IsBoolean,
   IsObject,
+  IsOptional,
   IsString,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class Parameters {
-  @ApiProperty()
+export class Parameters {
+  @ApiProperty({
+    description: 'Name of the parameter',
+    example: 'max_query_limit',
+  })
   @IsString()
   ParameterName: string;
 
-  @ApiProperty({ description: 'Can be a string or number' })
+  @ApiProperty({
+    description: 'Can be a string or number',
+    example: 0.1,
+  })
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
   ParameterValue: string | number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Type of the parameter',
+    example: 'number',
+  })
   @IsString()
   ParameterType: string;
 }
 
-class ExitConditions {
+export class ExitConditions {
   @ApiProperty()
   @IsString()
   subRuleRef: string;
-
-  @ApiProperty()
-  @IsBoolean()
-  outcome: boolean;
 
   @ApiProperty()
   @IsString()
   reason: string;
 }
 
+export class Band {
+  @ApiProperty({
+    description:
+      'Reference to a sub-rule, typically an identifier used internally within the rule logic',
+    example: '.01',
+  })
+  @IsString()
+  subRuleRef: string;
+
+  @ApiProperty({
+    description: 'Upper limit for the band',
+    example: '2',
+    type: 'number or string',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
+  upperLimit?: string | number;
+
+  @ApiProperty({
+    description: 'Lower limit for the band',
+    example: '1',
+    type: 'number or string',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
+  lowerLimit?: string | number;
+
+  @ApiProperty({
+    description: 'Reasoning or explanation for the outcome',
+    example:
+      'No similar amounts detected in the most recent transactions from the debtor',
+  })
+  @IsString()
+  reason: string;
+}
+
+export class Case {
+  @ApiProperty({
+    description:
+      'Reference to a sub-rule, typically an identifier used internally within the rule logic',
+    example: '.00',
+  })
+  @IsString()
+  subRuleRef: string;
+
+  @ApiProperty({
+    description: 'Explicit value to check against',
+    example: 'WITHDRAWAL',
+    type: 'string or number',
+  })
+  @ValidateIf((o) => o.value !== undefined)
+  @Type(() => Object)
+  value: string | number;
+
+  @ApiProperty({
+    description: 'Reasoning or explanation for the outcome',
+    example: 'The transaction is identified as a cash withdrawal',
+  })
+  @IsString()
+  reason: string;
+}
+
 export class Config {
-  @ApiProperty({ type: [Parameters] })
+  @ApiProperty({
+    description: 'Parameters associated with the config.',
+    type: [Parameters],
+  })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Parameters)
-  parameters: Parameters[];
+  parameters?: Parameters[];
 
-  @ApiProperty({ type: [ExitConditions] })
+  @ApiProperty({
+    description: 'Exit conditions associated with the config.',
+    type: [ExitConditions],
+  })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ExitConditions)
-  exitConditions: ExitConditions[];
+  exitConditions?: ExitConditions[];
 
-  @ApiProperty({ type: [Band] })
+  @ApiProperty({
+    description: 'Bands associated with the config.',
+    type: [Band],
+  })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Band)
-  bands: Band[];
+  bands?: Band[];
 
-  @ApiProperty({ type: [Case] })
+  @ApiProperty({
+    description: 'Cases associated with the config.',
+    type: [Case],
+  })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Case)
-  cases: Case[];
+  cases?: Case[];
 }
 
 export class RuleConfig {
@@ -113,8 +201,9 @@ export class RuleConfig {
   ruleId: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => Config)
-  config: Config;
+  config?: Config;
 }

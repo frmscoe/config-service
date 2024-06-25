@@ -59,7 +59,7 @@ export const ruleSchema: { schema: SchemaOptions; computedValues: any } = {
           enum: Object.values(SourceEnum),
         },
       },
-      required: ['name', 'cfg', 'dataType', 'state', 'desc', 'ownerId'],
+      required: ['name', 'cfg', 'state', 'desc', 'ownerId'],
       additionalProperties: false,
     },
   },

@@ -23,24 +23,27 @@ export class AuthService {
 
   async userProfile(req: Request): Promise<AuthDto> {
     const user = req['user'];
-    try {
-      const response = await fetch(`${AUTHORIZATION_BASEURL}/platformRoles`, {
-        method: 'GET',
-        headers: { Authorization: req.headers.authorization },
-      });
-      const privileges = await response.json();
-      const permissions = privileges
-        .filter((privilege: { id: string }) =>
-          user.platformRoleIds.includes(privilege.id),
-        )
-        .map((result) => result.privileges)
-        .flat();
-      return {
-        ...user,
-        privileges: permissions,
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message);
+    const response = await fetch(`${AUTHORIZATION_BASEURL}/platformRoles`, {
+      method: 'GET',
+      headers: { Authorization: req.headers.authorization },
+    });
+
+    if (!response.ok) {
+      throw new BadRequestException('Failed to fetch platform roles');
     }
+
+    const privileges = await response.json();
+
+    if (!privileges) {
+      throw new Error(`There are no privileges for the ${user.username}`);
+    }
+
+    const permissions = privileges
+      .filter((privilege: { id: any }) =>
+        user.platformRoleIds.includes(privilege.id),
+      )
+      .flatMap((privilege: { privileges: any }) => privilege.privileges);
+
+    return { ...user, privileges: permissions };
   }
 }

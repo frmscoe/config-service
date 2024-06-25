@@ -23,14 +23,15 @@ const CreateRulePage: React.FunctionComponent<Props> = (props) => {
                 cfg:  '1.0.0',
                 desc: data.description,
                 state: '01_DRAFT',
-                dataType: data.dataType,
                 name: data.name,
+                dataType: 'NUMERIC', //removed option
             });
-            setSuccess(t('successCreate'));
+            setSuccess(t('createRulePage.success'));
             props.afterCreate && props.afterCreate();
             setTimeout(() => {
                 setSuccess('');
             }, 3000);
+            props.setOpen(false);
         } catch (e: any) {
             setError(e?.response?.data?.message || e?.message || t('generalError'));
         } finally {

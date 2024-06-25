@@ -1,20 +1,17 @@
 export interface ExitCondition {
     subRuleRef: string;
-    outcome: boolean;
     reason: string;
 }
 
 export interface Band {
     subRuleRef: string;
     upperLimit: number;
-    outcome: boolean;
     reason: string;
 }
 
 export interface Case {
     subRuleRef: string;
     value: string;
-    outcome: boolean;
     reason: string;
 }
 
@@ -24,10 +21,10 @@ export interface Parameters {
 }
 
 export interface Config {
-    parameters: Parameters;
+    parameters: Parameters[];
     exitConditions: ExitCondition[];
     bands: Band[];
-    case: Case[];
+    cases: Case[];
 }
 
 export interface IRuleConfig {
@@ -38,7 +35,7 @@ export interface IRuleConfig {
     state: string;
     desc: string;
     ruleId: string;
-    config: Config;
+    config?: Config;
     ownerId: string;
     createdAt: string;
     updatedAt: string;

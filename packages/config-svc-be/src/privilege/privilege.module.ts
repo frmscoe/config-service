@@ -2,6 +2,7 @@ import { Module, UnauthorizedException } from '@nestjs/common';
 import { PrivilegeService } from './privilege.service';
 import { RulePrivilegesDefinition } from '../rule/privilege.constant';
 import { RuleConfigPrivilegesDefinition } from '../rule-config/privilege.constant';
+import { TypologyPrivilegesDefinition } from '../typology/privilege.constant';
 @Module({
   providers: [PrivilegeService],
   exports: [PrivilegeService],
@@ -16,6 +17,7 @@ export class PrivilegeModule {
       authorizationClient.addPrivilegesArray([
         ...RulePrivilegesDefinition,
         ...RuleConfigPrivilegesDefinition,
+        ...TypologyPrivilegesDefinition,
       ]);
       await authorizationClient.bootstrap(true);
       await authorizationClient.init();

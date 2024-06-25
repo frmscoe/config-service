@@ -221,10 +221,18 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
 
 
     return (
-        <Form layout='horizontal'>
+        <Form layout='horizontal' 
+        // labelCol={{ span: 6 }}
+        // wrapperCol={{ span: 20 }}
+        style={{ textAlign: 'start' }}
+        >
             <div className='flex gap-2'>
-                <Form.Item label={t('createRuleConfigPage.bandForm.minimum')}>
+                <Form.Item label={t('createRuleConfigPage.bandForm.minimum')}
+                
+                
+                >
                     <Controller
+                    
                         name={'bandMinimumCondition'}
                         control={control}
                         defaultValue={0}
@@ -263,6 +271,11 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
                         <Form.Item label={'UpperLimit'}
                             validateStatus={(formState?.errors?.bands && formState?.errors?.bands[index]?.value?.message) ? 'error' : ''}
                             help={(formState?.errors?.bands && formState?.errors?.bands[index]?.value?.message)}
+                            labelCol={{ span: 4 }}
+                            wrapperCol={{ span: 20 }}
+                            labelAlign="left"
+                            className="py-0 my-2"
+
                         >
                             <Controller
                                 name={'bandMaximumCondition'}
@@ -293,6 +306,10 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
                         <Form.Item label={t('createRuleConfigPage.bandForm.reason')}
                             validateStatus={(formState?.errors?.bands && formState?.errors?.bands[index]?.reason?.message) ? 'error' : ''}
                             help={(formState?.errors?.bands && formState?.errors?.bands[index]?.reason?.message)}
+                            labelCol={{ span: 4 }}
+                            wrapperCol={{ span: 20 }}
+                            labelAlign="left"
+                            className="py-0 my-2"
                         >
                             <Controller
                                 name={`bands[${index}].reason` as any}
@@ -443,10 +460,11 @@ export const ValueField: React.FunctionComponent<ValueProps> = ({ dataType = 'nu
         // To parse the input to number
         const parser = (value: any) => value.replace(/\$\s?|(,*)/g, '');
         return <>
-            <Form.Item label=" ">
-                <InputNumber className="w-full" data-testid="epoch-input" value={props.value} onChange={handleEpochTimeChange as any} />
-            </Form.Item>
-            <Form layout="vertical" className="flex flex-wrap mt-3 mb-2">
+            <InputNumber className="w-full" data-testid="epoch-input" value={props.value} onChange={handleEpochTimeChange as any} />
+
+            <Form layout="vertical" className="flex flex-wrap mt-3 mb-2 w-full"
+           
+            >
                 <Form.Item label="   ">
                     <Select data-testid="data-type" className="w-12" onChange={handleDataTypeChange}>
                         {[{ label: '+ve', value: '+' }, { label: '-ve', value: '-' }].map((sign) => (

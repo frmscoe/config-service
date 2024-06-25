@@ -56,7 +56,6 @@ describe('CreateRule Form', () => {
         // Check if the form fields are rendered
         expect(screen.getByPlaceholderText(/name/i)).toBeInTheDocument();
         expect(screen.getByPlaceholderText(/description/i)).toBeInTheDocument();
-        expect(screen.getByRole('combobox')).toBeInTheDocument();
         expect(screen.getByText(/submit/i)).toBeInTheDocument();
     });
 
@@ -69,8 +68,6 @@ describe('CreateRule Form', () => {
             fireEvent.change(screen.getByPlaceholderText(/name/i), { target: { value: 'Test Rule' } });
             fireEvent.change(screen.getByPlaceholderText(/description/i), { target: { value: 'Test Description' } });
         });
-        fireEvent.mouseDown(screen.getByRole("combobox"));
-        fireEvent.click(screen.getAllByText(/currency/i)[1]);
         fireEvent.click(screen.getByText(/submit/i));  
 
         // Wait for the form submission to be called
@@ -90,7 +87,6 @@ describe('CreateRule Form', () => {
         await waitFor(() => {
             expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
             expect(screen.getByText(/Description is required/i)).toBeInTheDocument();
-            expect(screen.getByText(/Data type required/i)).toBeInTheDocument();
         });
     });
 

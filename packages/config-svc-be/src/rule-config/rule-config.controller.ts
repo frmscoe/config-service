@@ -32,7 +32,7 @@ import { RuleConfigPrivilege } from './privilege.constant';
 import { RuleConfig } from './entities/rule-config.entity';
 
 @ApiTags('Rule Config')
-@ApiBearerAuth() // Ensures Swagger UI prompts for token
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('rule-config')
 export class RuleConfigController {
@@ -55,7 +55,7 @@ export class RuleConfigController {
   @ApiQuery({ name: 'page', type: 'number', required: false, example: 1 })
   @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
   @ApiOkResponse({
-    description: 'List of rule configurations',
+    description: 'All rule configurations have been successfully retrieved.',
     type: RuleConfig,
     isArray: true,
   })
@@ -70,7 +70,7 @@ export class RuleConfigController {
   @Roles(RuleConfigPrivilege.GET_RULE_CONFIG)
   @ApiOperation({ summary: 'Get a single rule configuration by ID' })
   @ApiOkResponse({
-    description: 'Rule configuration details',
+    description: 'The rule configuration has been successfully retrieved.',
     type: RuleConfig,
   })
   findOne(@Param('id') id: string) {
@@ -81,7 +81,7 @@ export class RuleConfigController {
   @Roles(RuleConfigPrivilege.UPDATE_RULE_CONFIG)
   @ApiOperation({ summary: 'Update a rule configuration' })
   @ApiOkResponse({
-    description: 'Update single rule config',
+    description: 'The rule configuration has been successfully updated.',
     type: RuleConfig,
   })
   update(
@@ -101,7 +101,7 @@ export class RuleConfigController {
   @Roles(RuleConfigPrivilege.DELETE_RULE_CONFIG)
   @ApiOperation({ summary: 'Delete a rule configuration' })
   @ApiNoContentResponse({
-    description: 'Delete a single rule config',
+    description: 'The rule configuration has been successfully deleted.',
     type: RuleConfig,
   })
   remove(@Param('id') id: string, @Request() req) {
@@ -113,7 +113,7 @@ export class RuleConfigController {
   @Roles(RuleConfigPrivilege.DISABLE_RULE_CONFIG)
   @ApiOperation({ summary: 'Disable a rule configuration' })
   @ApiOkResponse({
-    description: 'Disabling a single rule config',
+    description: 'The rule configuration has been successfully disabled.',
     type: RuleConfig,
   })
   async disableRule(

@@ -60,25 +60,34 @@ export class RuleConfigService {
   }): Promise<{ count: number; data: RuleConfig[] }> {
     const { limit, page } = options;
     const db = this.arangoDatabaseService.getDatabase();
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
+
+    const query = `
+    LET result = (
+        FOR config IN @@collection
+        FILTER config.edited != @edited
+        SORT config.createdAt ASC
+        LIMIT @offset, @limit
+        RETURN config
+    )
+    LET count = LENGTH(result)
+    RETURN { count, data: result }
+  `;
+
+    const bindVars = {
+      '@collection': RULE_CONFIG_COLLECTION,
+      edited: true,
+      offset: offset,
+      limit: limit,
+    };
+
     try {
-      const cursor = await db.query(
-        `
-        LET result = (
-            FOR config IN ${RULE_CONFIG_COLLECTION}
-            FILTER config.edited != @edited
-            sort config.createdAt ASC
-            LIMIT ${skip}, ${limit}
-            RETURN config
-        )
-        LET count = LENGTH(result)
-        RETURN { count, data: result }
-        `,
-        { edited: true },
-      );
+      const cursor = await db.query(query, bindVars);
       return await cursor.next();
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw new InternalServerErrorException(
+        `Failed to retrieve rule configurations: ${e.message}`,
+      );
     }
   }
 
@@ -87,7 +96,7 @@ export class RuleConfigService {
     try {
       return await db.collection(RULE_CONFIG_COLLECTION).document(id);
     } catch (e) {
-      throw new NotFoundException(`rule config with id ${id} not found`);
+      throw new NotFoundException(`No rule configuration found with ID ${id}`);
     }
   }
 
