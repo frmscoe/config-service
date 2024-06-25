@@ -69,7 +69,7 @@ describe('Rule component', () => {
         getRules.mockRejectedValueOnce({ data: { message: 'Error'} });
         usePrivileges.mockReturnValue({ canViewRules: true });
 
-
+        
         render(<Rule />);
 
         // Simulate retry action

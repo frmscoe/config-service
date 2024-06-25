@@ -12,6 +12,7 @@ import { ArangoDatabaseService } from './arango-database/arango-database.service
 import { PrivilegeService } from './privilege/privilege.service';
 import { BandModule } from './band/band.module';
 import { CaseModule } from './case/case.module';
+import { NetworkMapModule } from './network-map/network-map.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CaseModule } from './case/case.module';
     TypologyConfigModule,
     BandModule,
     CaseModule,
+    NetworkMapModule,
   ],
   controllers: [AppController],
   providers: [AppService, ArangoDatabaseService, PrivilegeService],

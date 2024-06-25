@@ -3,6 +3,7 @@ import { PrivilegeService } from './privilege.service';
 import { RulePrivilegesDefinition } from '../rule/privilege.constant';
 import { RuleConfigPrivilegesDefinition } from '../rule-config/privilege.constant';
 import { TypologyPrivilegesDefinition } from '../typology/privilege.constant';
+import { NetworkMapPrivilegesDefinition } from '../network-map/privilege.constant';
 @Module({
   providers: [PrivilegeService],
   exports: [PrivilegeService],
@@ -18,6 +19,7 @@ export class PrivilegeModule {
         ...RulePrivilegesDefinition,
         ...RuleConfigPrivilegesDefinition,
         ...TypologyPrivilegesDefinition,
+        ...NetworkMapPrivilegesDefinition,
       ]);
       await authorizationClient.bootstrap(true);
       await authorizationClient.init();

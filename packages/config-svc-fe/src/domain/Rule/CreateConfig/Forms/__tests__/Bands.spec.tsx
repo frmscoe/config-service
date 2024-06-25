@@ -377,7 +377,7 @@ describe('ValueField component', () => {
         fireEvent.change(secondInput, { target: { value: '1' } });
     
         // Check if onChange function is called with the correct value
-        expect(onChange).toHaveBeenCalledWith(1);
+        expect(onChange).toHaveBeenCalledWith(1000);
     
       });
 

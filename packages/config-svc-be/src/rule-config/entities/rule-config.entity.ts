@@ -158,11 +158,11 @@ export class RuleConfig {
 
   @ApiProperty()
   @IsString()
-  _id: string;
+  _id?: string;
 
   @ApiProperty()
   @IsString()
-  _rev: string;
+  _rev?: string;
 
   @ApiProperty()
   @IsString()
@@ -178,19 +178,23 @@ export class RuleConfig {
 
   @ApiProperty()
   @IsString()
-  createdAt: string;
+  @IsOptional()
+  createdAt?: string;
 
   @ApiProperty()
   @IsString()
-  updatedAt: string;
+  @IsOptional()
+  updatedAt?: string;
 
   @ApiProperty()
   @IsString()
-  updatedBy: string;
+  @IsOptional()
+  updatedBy?: string;
 
   @ApiProperty()
   @IsString()
-  approverId: string;
+  @IsOptional()
+  approverId?: string;
 
   @ApiProperty()
   @IsString()
@@ -199,6 +203,10 @@ export class RuleConfig {
   @ApiProperty()
   @IsString()
   ruleId: string;
+
+  @ApiProperty()
+  @IsString()
+  originatedID: string;
 
   @ApiProperty()
   @IsOptional()

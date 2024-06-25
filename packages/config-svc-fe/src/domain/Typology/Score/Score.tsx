@@ -17,7 +17,7 @@ import { useCommonTranslations } from '~/hooks';
 import { RuleWithConfig } from './service';
 
 interface Props {
-  rules: RuleWithConfig[];
+  rules: RuleWithConfig[] | any[];
   loadingRules: boolean;
   nodes: any[];
   edges: any[];
@@ -26,15 +26,15 @@ interface Props {
   onEdgesChange: any;
   onDrop: DragEventHandler;
   flowRef: any
-  ruleOptions: IRule[];
-  setRuleOptions: (rules: IRule[]) => void;
+  ruleOptions: RuleWithConfig[];
+  setRuleOptions: (rules: RuleWithConfig[]) => void;
   selectedRule: null | string;
   setSelectedRuleIndex: (index: string | null) => void;
   attachedRules: AttachedRules[];
   ruleDragIndex: null | number;
   setRuleDragIndex: (index: number | null) => void;
   handleDelete: (id: string, type: string) => void;
-  recentlyRemovedRules: IRule[] | IRuleConfig[];
+  recentlyRemovedRules: RuleWithConfig[] | IRuleConfig[];
   onNodeClick: NodeMouseHandler;
   saveLoading: boolean;
   handleSelectRule: (id: string) => void;
@@ -59,7 +59,10 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
         key: '2',
         label: t('typologyScorePage.rules'),
         style: { padding: 0 },
-        children: <Rules rules={rules} {...props} />,
+        children: <Rules 
+          rules={rules} 
+          {...props} 
+          />,
       },
       {
         key: '3',
@@ -96,7 +99,9 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
   return (
     <div className='pr-2' style={{ minHeight: '80vh' }}>
       <div className='flex justify-end w-full mb-2 gap-2'>
-      <Button className='bg-green-500 text-white'>Submit</Button>
+      <Button onClick={props.onOpenTypologyView}>{t('typologyScorePage.openScoringView')}</Button>
+      <Button>{t('typologyScorePage.keepInDrafts')}</Button>
+      <Button className='bg-green-500 text-white'>{t('submit')}</Button>
       </div>
       <Row className='h-full w-full'>
         <Col span={5}>

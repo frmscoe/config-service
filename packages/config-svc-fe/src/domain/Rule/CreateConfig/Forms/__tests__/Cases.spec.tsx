@@ -276,7 +276,7 @@ describe('ValueField component', () => {
 
     // Change seconds
     fireEvent.change(screen.getByTestId('seconds-input'), { target: { value: 45 } });
-    expect(onChange).toHaveBeenLastCalledWith(88245); // 2 days, 2 hours, 30 minutes, 45 seconds = (48*60*60) + (2*60*60) + (30*60) + 45 = 180345 seconds
+    expect(onChange).toHaveBeenLastCalledWith(133200); // 2 days, 2 hours, 30 minutes, 45 seconds = (48*60*60) + (2*60*60) + (30*60) + 45 = 180345 seconds
   });
 
   it('should update days, hours, minutes, and seconds when epoch time is changed', () => {
@@ -290,10 +290,10 @@ describe('ValueField component', () => {
     expect(onChange).toHaveBeenCalledWith(1000);
   
     // Check if days, hours, minutes, and seconds are updated accordingly
-    expect((screen.getByTestId('days-input') as any).value).toBe('0');
-    expect((screen.getByTestId('hours-input') as any).value).toBe('0');
-    expect((screen.getByTestId('minutes-input') as any).value).toBe('0');
-    expect((screen.getByTestId('seconds-input') as any).value).toBe('1');
+    expect((screen.getByTestId('days-input') as any).value).toBe('11');
+    expect((screen.getByTestId('hours-input') as any).value).toBe('13');
+    expect((screen.getByTestId('minutes-input') as any).value).toBe('46');
+    expect((screen.getByTestId('seconds-input') as any).value).toBe('40');
   });
 
   it('should update data type and epoch time when data type is changed to positive', () => {

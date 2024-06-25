@@ -1,4 +1,4 @@
-import { Row, Col, Spin, Button, Typography } from 'antd';
+import { Row, Col, Spin, Button } from 'antd';
 import React, { DragEventHandler } from 'react';
 import { Rules } from './Rules';
 import { IRule } from '~/domain/Rule/RuleDetailPage/service';
@@ -9,8 +9,9 @@ import { Structure } from './Structure';
 import TypologyDetails from './Typology-Details';
 import { IRuleConfig } from '~/domain/Rule/RuleConfig/RuleConfigList/types';
 import { AttachedRules } from '.';
-import { Connection, EdgeChange, Node, NodeChange, NodeMouseHandler } from 'reactflow';
+import { NodeMouseHandler } from 'reactflow';
 import { FormState, Control, UseFormHandleSubmit, UseFormWatch } from 'react-hook-form';
+import { useCommonTranslations } from '~/hooks';
 
 interface Props {
   rules: IRule[];
@@ -42,15 +43,16 @@ interface Props {
 
 }
 export const Create: React.FunctionComponent<Props> = ({ rules, loadingRules, ...props }) => {
+  const{t} = useCommonTranslations();
   if (loadingRules) {
     return <Spin data-testid="spinner" className='w-full h-full mx-auto' />
   }
   return (
     <div className='pr-2' style={{ minHeight: '80vh' }}>
-      <div className='flex justify-between w-full mb-2 gap-2'>
-        <div className='flex gap-2 ml-auto'>
-          <Button loading={props.saveLoading} onClick={props.handleSubmit(props.onSubmit)} className='text-white' style={{ backgroundColor: '#56b453' }}>Save</Button>
-        </div>
+      <div className='flex justify-end w-full mb-2 gap-2'>
+        <Button disabled={props.saveLoading} onClick={props.onOpenScoreMode}>{t('typologyScorePage.openScoringView')}</Button>
+        <Button disabled={props.saveLoading} onClick={props.handleSubmit(props.onSubmit)}>{t('typologyScorePage.keepInDrafts')}</Button>
+        <Button loading={props.saveLoading} onClick={props.handleSubmit(props.onSubmit)} className='text-white' style={{ backgroundColor: '#56b453' }}>Save</Button>
       </div>
       <Row className='h-full w-full'>
         <Col span={5}>

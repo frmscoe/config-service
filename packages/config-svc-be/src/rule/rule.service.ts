@@ -170,7 +170,7 @@ export class RuleService {
       const db = this.arangoDatabaseService.getDatabase();
       const rule = await db
         .collection(RULE_COLLECTION)
-        .update(id, updateRuleDto);
+        .update(id, updateRuleDto, { returnNew: true });
       return rule.new;
     } catch (error) {
       throw new BadRequestException(error.message);

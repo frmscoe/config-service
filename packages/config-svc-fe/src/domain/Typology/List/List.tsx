@@ -133,7 +133,7 @@ const List: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 key: 'action',
                 render: (_, record) => (
                     <Space size="middle">
-                        {canEditTypology && <Button type='link'>{commonTranslations('typologyListPage.table.modify')} </Button>}
+                        {canEditTypology && <Link href={`/typology/edit/${record._key}`} className='text-blue-500'>{commonTranslations('typologyListPage.table.modify')} </Link>}
                        {canReviewTypology && <Link href={`/typology/${record._key}/score`} type='link' className='text-blue-500'>Score </Link>}
                     </Space>
                 ),

@@ -1,14 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
-class RulesRuleConfigsDto {
+export class RulesRuleConfigsDto {
   @ApiProperty({
     description: 'Identifier of the rule document from the rule collection.',
     example: 'rule/sample-uuid-3',
   })
   @IsString()
-  readonly ruleId: string;
+  @IsOptional()
+  readonly ruleId?: string;
 
   @ApiProperty({
     description:
@@ -16,8 +23,9 @@ class RulesRuleConfigsDto {
     example: ['rule_config/sample-uuid-4', 'rule_config/sample-uuid-5'],
   })
   @IsArray()
+  @IsOptional()
   @IsString({ each: true })
-  readonly ruleConfigId: string[];
+  readonly ruleConfigId?: string[];
 }
 
 export class CreateTypologyDto {

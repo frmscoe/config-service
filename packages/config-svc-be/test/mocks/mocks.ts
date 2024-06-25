@@ -1,14 +1,18 @@
 import { faker } from '@faker-js/faker';
 import { DataTypeEnum } from '../../src/rule/schema/rule.schema';
+import { Typology } from '../../src/typology/entities/typology.entity';
+import { CreateRuleDto } from '../../src/rule/dto/create-rule.dto';
+import { CreateRuleConfigDto } from '../../src/rule-config/dto/create-rule-config.dto';
 
-export const rule = {
+export const createRuleDto: CreateRuleDto = {
   name: faker.string.sample(),
   cfg: '1.0.0',
   dataType: DataTypeEnum['CURRENCY'],
   desc: faker.string.sample(),
 };
 
-export const ruleConfig = {
+export const createRuleConfigDto: CreateRuleConfigDto = {
+  ruleId: faker.string.uuid(),
   cfg: '1.0.0',
   desc: faker.string.sample(),
   config: {
@@ -40,4 +44,15 @@ export const ruleConfig = {
     ],
     bands: [],
   },
+};
+
+export const typology: Typology = {
+  _key: faker.string.uuid(),
+  name: faker.string.sample(),
+  desc: faker.string.sample(),
+  cfg: '1.0.0',
+  rules_rule_configs: [],
+  ownerId: faker.internet.email(),
+  state: '01_DRAFT',
+  typologyCategoryUUID: [faker.string.uuid()],
 };

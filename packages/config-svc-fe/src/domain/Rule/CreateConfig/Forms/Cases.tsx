@@ -167,15 +167,15 @@ export const ValueField = ({ dataType = 'numeric', ...props }) => {
 
     const convertEpochTime = useCallback((time: number) => {
         return convertMillisecondsToDHMS(time);
-    }, [])
+    }, []);
 
     const handleEpochTimeChange = (time: number | null) => {
         setEpochTime(time);
         const timeObj = convertEpochTime(time as number);
-        setHours(timeObj.hours);
-        setMinutes(timeObj.minutes);
-        setDays(timeObj.days);
-        setSeconds(timeObj.seconds);
+        setHours(timeObj.hours <= 0 ? Math.abs(timeObj.hours) : timeObj.hours);
+        setMinutes(timeObj.minutes <= 0 ? Math.abs(timeObj.minutes) : timeObj.minutes);
+        setDays(timeObj.days <= 0 ? Math.abs(timeObj.days) : timeObj.days);
+        setSeconds(timeObj.seconds <= 0 ? Math.abs(timeObj.seconds) : timeObj.seconds);
         props.onChange(time);
     }
 
@@ -231,7 +231,7 @@ export const ValueField = ({ dataType = 'numeric', ...props }) => {
     };
 
 
-    if (dataType === 'NUMERIC') {
+    if (dataType === 'NUMERIC' || dataType === 'CURRENCY') {
         return <InputNumber  {...props} />
     }
 

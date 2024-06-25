@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -144,8 +145,109 @@ export class TypologyService {
     }
   }
 
-  update(id: number, updateTypologyDto: UpdateTypologyDto) {
-    return `This action updates a #${id} typology`;
+  async duplicateTypology(
+    id: string,
+    updateTypologyDto: UpdateTypologyDto,
+    req: Request,
+  ): Promise<Typology> {
+    const db = this.arangoDatabaseService.getDatabase();
+    const collection = db.collection(TYPOLOGY_COLLECTION);
+
+    // Fetch the existing typology by id
+    const existingTypology: Typology = await this.findOne(id);
+    if (!existingTypology) {
+      throw new NotFoundException(`No typology found with ID ${id}`);
+    }
+
+    // Check for existing typology with the same originatedId
+    const cursor = await db.query(
+      `
+      FOR typology IN @@collection
+      FILTER typology.originatedId == @id
+      RETURN typology
+    `,
+      { '@collection': TYPOLOGY_COLLECTION, id: id },
+    );
+    const childTypology: Typology[] = await cursor.all();
+
+    // If a child typology already exists, throw an exception
+    if (childTypology.length > 0) {
+      throw new ForbiddenException(
+        `Could not update typology with id ${id}, typology is already updated`,
+      );
+    }
+
+    // Prepare the new typology
+    const {
+      name,
+      cfg,
+      desc,
+      typologyCategoryUUID,
+      rules_rule_configs,
+      referenceId,
+    } = existingTypology;
+
+    const newTypology: Typology = {
+      name,
+      cfg,
+      desc,
+      typologyCategoryUUID,
+      rules_rule_configs,
+      referenceId,
+      ...updateTypologyDto,
+      _key: uuidv4(),
+      ownerId: req['user'].username,
+      updatedBy: req['user'].username,
+      state: StateEnum['01_DRAFT'],
+      originatedId: id,
+    };
+
+    // Save the new typology in the database
+    try {
+      const typology = await collection.save(newTypology, { returnNew: true });
+      await this.update(id, { edited: true });
+      return typology.new;
+    } catch (error) {
+      if (error.isArangoError) {
+        switch (error.errorNum) {
+          case 1620:
+            throw new BadRequestException(
+              `Failed to update typology: ${error.message}`,
+            );
+          default:
+            throw new InternalServerErrorException(
+              `An unexpected database error occurred: ${error.message}`,
+            );
+        }
+      } else {
+        throw new InternalServerErrorException(
+          `An unexpected server error occurred: ${error.message}`,
+        );
+      }
+    }
+  }
+
+  async update(
+    id: string,
+    updateTypologyDto: UpdateTypologyDto,
+  ): Promise<Typology> {
+    const db = this.arangoDatabaseService.getDatabase();
+
+    // Check if the typology exists
+    const exists = await db.collection(TYPOLOGY_COLLECTION).documentExists(id);
+    if (!exists) {
+      throw new NotFoundException(`Typology with ID ${id} not found.`);
+    }
+
+    // Perform the update operation
+    const result = await db
+      .collection(TYPOLOGY_COLLECTION)
+      .update(id, updateTypologyDto, { returnNew: true });
+    if (!result) {
+      throw new InternalServerErrorException('Failed to update typology.');
+    }
+
+    return result.new;
   }
 
   remove(id: number) {

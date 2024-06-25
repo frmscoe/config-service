@@ -27,7 +27,7 @@ export const frCommon = {
   state: "State",
   actions: "Actions",
   modify: "Modify",
-  submit: "Submit",
+  submit: 'Soumettre',
   review: "Review",
   minimum: "Minimum",
   maximum: "Maximum",
@@ -394,7 +394,12 @@ export const frCommon = {
     searchPlaceholder: "Rechercher",
     saving: "Enregistrement.....",
     pleaseWait: "Veuillez patienter....",
-    typologyCreated: "La typologie a été créée"
+    typologyCreated: "La typologie a été créée",
+    "typologyDetails": "Détails de la Typologie",
+    "version": "Version",
+    "ruleConfigs": "Configurations de Règles",
+    typologyUpdated: 'La typologie a été mise à jour avec succès',
+
   },
 
   typologyScorePage: {
@@ -410,6 +415,37 @@ export const frCommon = {
     outcomesCount: "Résultats",
     maxScore: "Score Maximum",
     search: 'Rechercher',
-
+  "openScoringView": "Ouvrir en vue de notation",
+  "keepInDrafts": "Garder en brouillons"
+},
+ruleReviewPage: {
+  version: 'Version',
+  description: 'Description',
+  created: 'Créé',
+  updated: 'Mis à jour',
+  state: 'État',
+  rule: 'Règle',
+  review: 'Revoir',
+  backToList: 'Retour à la liste',
+  approve: 'Approuver',
+  cancel: 'Annuler',
+  errorTitle: 'Erreur',
+  errorMessage: 'Une erreur est survenue',
+  retry: 'Réessayer'
+},
+ruleConfigReviewPage: {
+  version: 'Version',
+  description: 'Description',
+  created: 'Créé',
+  updated: 'Mis à jour',
+  state: 'État',
+  rule: 'Règle',
+  review: 'Revoir',
+  backToList: 'Retour à la liste',
+  approve: 'Approuver',
+  cancel: 'Annuler',
+  errorTitle: 'Erreur',
+  errorMessage: 'Une erreur est survenue',
+  retry: 'Réessayer'
 }
 };

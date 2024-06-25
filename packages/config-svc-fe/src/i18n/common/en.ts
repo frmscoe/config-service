@@ -401,7 +401,11 @@ export const enCommon = {
     searchPlaceholder: "Search",
     saving: "Saving.....",
     pleaseWait: "Please wait....",
-    typologyCreated: "Typology has been created"
+    typologyCreated: "Typology has been created",
+    typologyDetails: "Typology Details",
+    version: "Version",
+    ruleConfigs: "Rule Configs",
+    typologyUpdated: 'Typology has been updated successfully',
   },
 
   typologyScorePage: {
@@ -417,8 +421,39 @@ export const enCommon = {
     outcomesCount: "Outcomes",
     maxScore: "Max Score",
     search: 'Search',
+  "openScoringView": "Open in Scoring View",
+  "keepInDrafts": "Keep in Drafts"
 
-
-  }
+  },
+  ruleReviewPage: {
+    version: 'Version',
+    description: 'Description',
+    created: 'Created',
+    updated: 'Updated',
+    state: 'State',
+    rule: 'Rule',
+    review: 'Review',
+    backToList: 'Back to List',
+    approve: 'Approve',
+    cancel: 'Cancel',
+    errorTitle: 'Error',
+    errorMessage: 'An error occurred',
+    retry: 'Retry'
+  },
+  ruleConfigReviewPage: {
+    version: 'Version',
+    description: 'Description',
+    created: 'Created',
+    updated: 'Updated',
+    state: 'State',
+    rule: 'Rule',
+    review: 'Review',
+    backToList: 'Back to List',
+    approve: 'Approve',
+    cancel: 'Cancel',
+    errorTitle: 'Error',
+    errorMessage: 'An error occurred',
+    retry: 'Retry'
+}
 
 };

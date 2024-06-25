@@ -4,10 +4,12 @@ import { ArangoDatabaseService } from '../arango-database/arango-database.servic
 import {
   BadRequestException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateTypologyDto } from './dto/create-typology.dto';
-import { TypologyRuleWithConfigs } from './entities/typology.entity';
+import { Typology, TypologyRuleWithConfigs } from './entities/typology.entity';
 import { MockArangoError } from '../../test/mocks/mock-arango-error';
+import { UpdateTypologyDto } from './dto/update-typology.dto';
 
 describe('TypologyService', () => {
   let service: TypologyService;
@@ -364,6 +366,118 @@ describe('TypologyService', () => {
 
       // Assert
       expect(result).toEqual(typology);
+    });
+  });
+
+  describe('update', () => {
+    beforeEach(async (): Promise<void> => {
+      const mockCollection = {
+        update: jest.fn(),
+        documentExists: jest.fn(),
+      };
+
+      dbMock = {
+        getDatabase: jest.fn(() => ({
+          collection: jest.fn(() => mockCollection),
+        })),
+      };
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          TypologyService,
+          { provide: ArangoDatabaseService, useValue: dbMock },
+        ],
+      }).compile();
+
+      service = module.get<TypologyService>(TypologyService);
+    });
+
+    it('should update and return the updated typology', async () => {
+      const updateTypologyDto: UpdateTypologyDto = {
+        name: 'Updated Typology',
+        desc: 'Updated description',
+        cfg: '1.1.0',
+        typologyCategoryUUID: ['uuid2'],
+        rules_rule_configs: [
+          {
+            ruleId: 'rule/sample-uuid-3',
+            ruleConfigId: ['rule_config/sample-uuid-6'],
+          },
+        ],
+      };
+
+      dbMock.getDatabase().collection().documentExists.mockResolvedValue(true);
+
+      dbMock
+        .getDatabase()
+        .collection()
+        .update.mockResolvedValue({
+          new: {
+            ...updateTypologyDto,
+            _key: 'existing-id',
+            ownerId: 'existing-owner',
+            state: '01_DRAFT',
+            createdAt: '2021-08-31T00:00:00.000Z',
+            updatedAt: '2021-08-31T00:00:00.000Z',
+            updatedBy: 'user1',
+          },
+        });
+
+      const result: Typology = await service.update(
+        'existing-id',
+        updateTypologyDto,
+      );
+
+      expect(result).toEqual({
+        ...updateTypologyDto,
+        _key: 'existing-id',
+        ownerId: 'existing-owner',
+        state: '01_DRAFT',
+        createdAt: '2021-08-31T00:00:00.000Z',
+        updatedAt: '2021-08-31T00:00:00.000Z',
+        updatedBy: 'user1',
+      });
+    });
+
+    it('should throw NotFoundException if the typology does not exist', async () => {
+      const updateTypologyDto: UpdateTypologyDto = {
+        name: 'Non-Existent Typology',
+        desc: 'Description of non-existent typology',
+        cfg: '1.0.0',
+        typologyCategoryUUID: ['uuid3'],
+        rules_rule_configs: [],
+      };
+
+      dbMock.getDatabase().collection().documentExists.mockResolvedValue(false);
+
+      await expect(
+        service.update('non-existent-id', updateTypologyDto),
+      ).rejects.toThrow(
+        new NotFoundException('Typology with ID non-existent-id not found.'),
+      );
+    });
+
+    it('should handle database update errors', async () => {
+      const updateTypologyDto: UpdateTypologyDto = {
+        name: 'Typology with Update Error',
+        desc: 'This should fail on update',
+        cfg: '1.0.0',
+        typologyCategoryUUID: ['uuid4'],
+        rules_rule_configs: [],
+      };
+
+      dbMock.getDatabase().collection().documentExists.mockResolvedValue(true);
+
+      const arangoError: MockArangoError = new MockArangoError(
+        'Database update error',
+        1621,
+      );
+
+      dbMock.getDatabase().collection().update.mockRejectedValue(arangoError);
+
+      await expect(
+        service.update('existing-id', updateTypologyDto),
+      ).rejects.toThrow(new BadRequestException('Database update error'));
     });
   });
 });

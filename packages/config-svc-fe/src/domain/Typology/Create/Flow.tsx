@@ -57,13 +57,13 @@ const ScoreNode: React.FunctionComponent<any> = ({ data, id }) => {
         <div
             className={styles['custom-node']}
             data-testid="score-node">
-            <div className={styles['custom-node-content']}>
-                <Form layout="vertical" >
-                    <Form.Item className="py-0 my-0">
+            <div >
+                <Form layout="vertical" className="py-0 my-0" >
+                    <Form.Item className="py-0 my-0 text-center">
                         <InputNumber
                             data-testid={`score-input`}
                             type="number"
-                            className="w-4/4 text-center"
+                            className={`${styles['custom-input']} w-4/4 py-0 my-0`}
                             placeholder="Score"
                             value={data.score || 0}
                             onChange={onChange}

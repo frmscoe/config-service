@@ -6,14 +6,13 @@ import usePrivileges from "~/hooks/usePrivileges";
 import AccessDeniedPage from "~/components/common/AccessDenied";
 import { useNodesState, useEdgesState, Position, addEdge, NodeMouseHandler, Node, ConnectionLineType } from "reactflow";
 import { IRuleConfig } from "~/domain/Rule/RuleConfig/RuleConfigList/types";
-import dagre from 'dagre';
 import { useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
-import { createTypology } from "./service";
+import { createNodesAndEdges, createTypology, updateLayout, updateTypology } from "./service";
 import { Modal } from "antd";
 import { useCommonTranslations } from "~/hooks";
-import { useRouter } from "next/router";
+import { Router, useRouter } from "next/router";
 import { useParams } from "next/navigation";
 import { getTypology } from "../Score/service";
 
@@ -25,8 +24,7 @@ const nodeDefaults = {
     targetPosition: Position.Left,
     type: 'customNode'
 };
-const nodeWidth = 172;
-const nodeHeight = 36;
+
 
 const initialNodes = [
     {
@@ -47,14 +45,14 @@ const initialEdges = [
     },
 ];
 const CreateEditTopologyPage = () => {
-  
+
     const [rules, setRules] = useState<IRule[]>([]);
     const [ruleOptions, setRuleOptions] = useState<IRule[]>([]);
     const [modal, contextHolder] = Modal.useModal();
     const [page, setPage] = useState(1);
     const [loadingRules, setLoadingRules] = useState(true);
     const [error, setError] = useState('');
-    const { canCreateTypology, canViewRuleWithConfigs } = usePrivileges();
+    const { canCreateTypology, canViewRuleWithConfigs, canEditTypology } = usePrivileges();
     const reactFlowWrapper = useRef<any>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -63,27 +61,31 @@ const CreateEditTopologyPage = () => {
     const [ruleDragIndex, setRuleDragIndex] = useState<number | null>(null);
     const [removedRules, setRemoveRules] = useState<IRule[] | IRuleConfig[]>([]);
     const [saveLoading, setSaveLoading] = useState(false);
-    const {t} = useCommonTranslations();
+    const [saved, setSaved] = useState(false);
+    const { t } = useCommonTranslations();
     const router = useRouter();
-    const {id} = useParams();
+    const { id } = useParams();
+    const isEditMode = useMemo(() => {
+        return !!id;
+    }, [id])
 
     const schema = useMemo(() => {
         return yup.object().shape({
-          name: yup.string().required(),
-          description: yup.string().required(),
-          minor: yup.number().required(),
-          major: yup.number().required(),
-          patch: yup.number().required(),
+            name: yup.string().required(),
+            description: yup.string().required(),
+            minor: yup.number().required(),
+            major: yup.number().required(),
+            patch: yup.number().required(),
         });
-      }, []);
+    }, []);
 
-      const {control, handleSubmit, formState, watch, reset, trigger, getValues, setValue} = useForm({
+    const { control, handleSubmit, formState, watch, reset, trigger, getValues, setValue } = useForm({
         resolver: yupResolver(schema),
         mode: 'onChange'
-      });
+    });
 
-      const save = async(data: any, openScoreMode = false) => {
-        const instanceLoading  = modal.info({
+    const save = async (data: any, openScoreMode = false) => {
+        const instanceLoading = modal.info({
             title: t('typologyCreatePage.saving'),
             content: t('typologyCreatePage.pleaseWait'),
             okButtonProps: {
@@ -97,32 +99,66 @@ const CreateEditTopologyPage = () => {
             const obj = {
                 state: '01-Draft',
                 desc: data.description,
-                cfg: `${data.major || 0 }.${data.minor || 0}.${data.patch || 0}`,
+                cfg: `${data.major || 0}.${data.minor || 0}.${data.patch || 0}`,
                 name: data.name,
                 typologyCategoryUUID: [],
-                rules_rule_configs: attachedRules.map((rule) => ({ruleId: rule._id, ruleConfigId: rule.attachedConfigs.map((c) => (c._id))})),
+                rules_rule_configs: attachedRules.map((rule) => ({ ruleId: rule._id, ruleConfigId: rule.attachedConfigs.map((c) => (c._id)) })),
             }
-           const res = await createTypology(obj);
-            reset();
-            instanceLoading.destroy();
-            const instanceSuccess = modal.success({
-                title: 'Success',
-                content: t('typologyCreatePage.typologyCreated'),
-                okButtonProps: {
-                    style: {
-                        backgroundColor: 'red',
+            if (isEditMode) {
+                //save changes and do nothing;
+                const res = await updateTypology({
+                    ...obj,
+                }, id as string);
+                const instanceSuccess = modal.success({
+                    title: 'Success',
+                    content: t('typologyCreatePage.typologyUpdated'),
+                    okButtonProps: {
+                        style: {
+                            backgroundColor: 'red',
+                        }
+                    }
+                });
+                setSaved(true);
+
+                instanceLoading.destroy();
+                setTimeout(() => {
+                    instanceSuccess.destroy();
+                }, 3000);
+                if (openScoreMode) {
+                    router.push(`/typology/${res.data._key}/score`);
+                } else {
+                    if (res.data?._key) {
+                        router.push(`/typology/edit/${res.data._key}`);
                     }
                 }
-              });
-              setNodes([...initialNodes]);
-              setEdges([...initialEdges]);
-              setAttachedRules([]);
-              setTimeout(() => {
-                instanceSuccess.destroy();
-              }, 10000);
-              if(openScoreMode) {
-                router.push(`/typology/${res?.data?._key}/score`);
-              }
+            } else {
+                const res = await createTypology(obj);
+                reset();
+                instanceLoading.destroy();
+                const instanceSuccess = modal.success({
+                    title: 'Success',
+                    content: t('typologyCreatePage.typologyCreated'),
+                    okButtonProps: {
+                        style: {
+                            backgroundColor: 'red',
+                        }
+                    }
+                });
+                setNodes([...initialNodes]);
+                setEdges([...initialEdges]);
+                setAttachedRules([]);
+                setTimeout(() => {
+                    instanceSuccess.destroy();
+                }, 10000);
+                setSaved(true);
+                if (openScoreMode) {
+                    router.push(`/typology/${res?.data?._key}/score`);
+                } else {
+                    router.push(`/typology/edit/${res?.data?._key}`);
+
+                }
+            }
+
         } catch (e: any) {
             instanceLoading.destroy();
             setError(e?.response?.data?.message || e?.message || 'Something went wrong');
@@ -134,49 +170,45 @@ const CreateEditTopologyPage = () => {
                         backgroundColor: 'red',
                     }
                 }
-              });
+            });
         } finally {
             setSaveLoading(false);
+            instanceLoading.destroy();
         }
-         
-      }
-  
-      const onSubmit = async (data: any) => {
+
+    }
+
+    const onSubmit = async (data: any) => {
         await save(data);
-      }
-  
-     ;
+    };
 
     const onConnect = useCallback(
         (params: any) =>
-          setEdges((eds) =>
-            addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds)
-          ),
+            setEdges((eds) =>
+                addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds)
+            ),
         []
     );
 
     const onOpenScoreMode = () => {
-        if(formState.isDirty || attachedRules.length) {
+        if (formState.isDirty || attachedRules.length) {
             modal.confirm({
                 title: 'Save in Drafts',
                 content: 'Would you like to save your changes as draft before switching to score view',
                 cancelText: 'Dont Save',
                 okText: 'Save Changes',
-                okButtonProps:{
+                okButtonProps: {
                     className: 'bg-green-500 text-white'
                 },
-                onOk: async() => {
-                    trigger(['name', 'description', 'major', 'minor', 'patch']);
-                   if(formState.isValid) {
+                onOk: async () => {
                     await save(getValues(), true);
-                   }
                 }
             })
         } else {
             modal.info({
                 title: 'No changes',
                 content: 'No changes have been yet. Please add new changes before switching to scoring view',
-                okButtonProps:{
+                okButtonProps: {
                     className: 'bg-green-500 text-white'
                 }
             })
@@ -188,13 +220,17 @@ const CreateEditTopologyPage = () => {
         setLoadingRules(true);
         getRulesWithConfigs({ page, limit: 100 })
             .then(({ data }) => {
-                setRules(data?.rules || []);
+                if (!isEditMode) {
+                    setRules(data?.rules || []);
+                } else {
+                    handleSetEditData(data?.rules || [])
+                }
             }).finally(() => {
                 setLoadingRules(false)
             }).catch((e) => {
                 setError(e.response?.data?.message || e?.message || 'Something went wrong getting configurations');
             })
-    }, [page]);
+    }, [page, isEditMode]);
 
     const onNodeClick: NodeMouseHandler = (_event, node) => {
         if (node.type === 'customNode' && node.data.type === 'rule') {
@@ -211,11 +247,11 @@ const CreateEditTopologyPage = () => {
         setEdges([...newEdges]);
         if (type === 'rule') {
             const newEdges = edges.filter((r) => r.source !== id)
-            .filter((r) => r.target !== id);
+                .filter((r) => r.target !== id);
             setEdges([...newEdges]);
             const rule = rules.find((r) => r._key === id);
             setNodes([...newNodes.filter((n: any) => {
-                if(n.type === 'rule') {
+                if (n.type === 'rule') {
                     return true;
                 }
                 return (n?.data?.ruleId) !== id;
@@ -224,7 +260,7 @@ const CreateEditTopologyPage = () => {
                 const newAttached = prev.filter((r) => r._key !== id);
                 return [...newAttached];
             });
-            
+
             if (rule) {
                 setRemoveRules((prev) => {
                     const nonExistRemovedConfigs = [];
@@ -235,8 +271,8 @@ const CreateEditTopologyPage = () => {
                     }
                     removedConfigs.forEach((config) => {
                         const exist = prev.find((r) => r._key === config.id);
-                        if(!exist) {
-                            nonExistRemovedConfigs.push({...config.data, ruleName: rule.name});
+                        if (!exist) {
+                            nonExistRemovedConfigs.push({ ...config.data, ruleName: rule.name });
                         }
 
                     })
@@ -246,6 +282,12 @@ const CreateEditTopologyPage = () => {
                     ] as IRule[]
                 });
                 setRuleOptions((prev) => {
+                    const ruleExists = prev.find((r) => r._key === rule._key);
+                    if (ruleExists) {
+                        return [
+                            ...prev,
+                        ]
+                    }
                     return [
                         ...prev,
                         rule,
@@ -283,7 +325,7 @@ const CreateEditTopologyPage = () => {
         const attachedRulesIds = attachedRules.map((r) => r._key);
         const newOptions = rules.filter((r) => r._key !== rule._key);
         setRuleOptions([...newOptions.filter((r) => !attachedRulesIds.includes(r._key))]);
-        const newAttachedRules =  [...attachedRules, { ...rule, attachedConfigs: [] }];
+        const newAttachedRules = [...attachedRules, { ...rule, attachedConfigs: [] }];
 
         const currentAttachedRules = newAttachedRules;
         const updateRuleIndex = newAttachedRules.findIndex((r) => r._key === config.ruleId);
@@ -296,32 +338,6 @@ const CreateEditTopologyPage = () => {
         setAttachedRules([...currentAttachedRules]);
 
     }, [attachedRules, rules,]);
-
-    const updateLayout = (nodes: any[], edges: any[]) => {
-        const graph = new dagre.graphlib.Graph();
-        graph.setGraph({rankdir: 'LR'});
-        graph.setDefaultEdgeLabel(() => ({}));
-
-        nodes.forEach(node => {
-            graph.setNode(node.id, { width: nodeWidth, height: nodeHeight  }); // Set width and height for each node
-        });
-
-        edges.forEach(edge => {
-            graph.setEdge(edge.source, edge.target); // Add edges to the graph
-        });
-
-        dagre.layout(graph); // Apply Dagre layout algorithm
-
-        // Update positions of nodes based on Dagre layout
-        const layoutedNodes = nodes.map(node => ({
-            ...node,
-            position: {
-                x: graph.node(node.id).x - nodeWidth / 2 ,
-                y: graph.node(node.id).y - nodeHeight / 2
-            }
-        }));
-        setNodes(layoutedNodes); 
-    }
 
     const onDrop = useCallback((event: any) => {
         event.preventDefault();
@@ -343,22 +359,7 @@ const CreateEditTopologyPage = () => {
                         onDelete: handleDelete, 
                         type: 'rule', 
                         showDelete: true },
-                    position: { x: 250, y: 100 },
-                    type: 'customNode'
-                }
-                const edge = {
-                    id: rule._key,
-                    source: '1',
-                    target: node.id,
-                }
-                setNodes([...nodes, node]);
-                setEdges([...edges, edge])
-            } else {
-                const node = {
-                    ...nodeDefaults,
-                    id: rule._key,
-                    data: { label: rule.name, ...rule, onDelete: handleDelete, type: 'rule', showDelete: true },
-                    position: { x: 250, y: nodes[nodes.length - 1].position.y + 100 },
+                    position: { x: 250, y: nodes[0]?.position?.y || 100 },
                     type: 'customNode'
                 }
                 const edge = {
@@ -370,6 +371,23 @@ const CreateEditTopologyPage = () => {
                 setNodes([...nodes, node]);
                 setEdges([...edges, edge]);
                 updateLayout([...nodes, node], [...edges, edge]);
+            } else {
+                const node = {
+                    ...nodeDefaults,
+                    id: rule._key,
+                    data: { label: rule.name, ...rule, onDelete: handleDelete, type: 'rule', showDelete: true },
+                    position: { x: 250, y: nodes[nodes.length - 1].position.y + 50 },
+                    type: 'customNode'
+                }
+                const edge = {
+                    id: rule._key,
+                    source: '1',
+                    target: node.id,
+                    type: 'smoothstep'
+                }
+                const layedOutNodes = updateLayout([...nodes, node], [...edges, edge]);
+                setNodes([...layedOutNodes]);
+                setEdges([...edges, edge]);
             }
             const attachedRulesIds = attachedRules.map((r) => r._key);
             const newOptions = rules.filter((r) => r._key !== rule._key);
@@ -380,7 +398,7 @@ const CreateEditTopologyPage = () => {
             const config: IRuleConfig = JSON.parse(data);
             const parentNode: any = nodes.find((n: any) => n.id === config.ruleId && (n?.data?.type) === 'rule');
             //handle if rule for rule configuration has been added already;
-            if (parentNode) {               
+            if (parentNode) {
                 const nodeConfig = {
                     id: config._key,
                     position: { x: 500, y: 100 },
@@ -400,9 +418,9 @@ const CreateEditTopologyPage = () => {
                     target: nodeConfig.id,
                     type: 'smoothstep'
                 }
-                setNodes([...nodes, nodeConfig]);
                 setEdges([...edges, edge]);
-                updateLayout([...nodes, nodeConfig], [...edges, edge]);
+                const layedOutNodes = updateLayout([...nodes, nodeConfig], [...edges, edge]);
+                setNodes(layedOutNodes);
                 const currentAttachedRules = attachedRules;
                 const updateRuleIndex = attachedRules.findIndex((r) => r._key === config.ruleId);
                 if (updateRuleIndex !== -1) {
@@ -435,7 +453,7 @@ const CreateEditTopologyPage = () => {
                         source: '1',
                         target: parentNode.id,
                         type: 'smoothstep'
-                    }                  
+                    }
                     const configNode = {
                         id: config._key,
                         position: { x: 500, y: 100 },
@@ -455,9 +473,9 @@ const CreateEditTopologyPage = () => {
                         target: configNode.id,
                         type: 'smoothstep'
                     }
-                    setNodes([...nodes, parentNode, configNode]);
                     setEdges([...edges, parentEdge, configEdge]);
-                    updateLayout([...nodes, parentNode, configNode], [...edges, parentEdge, configEdge]);
+                    const layedOutNodes = updateLayout([...nodes, parentNode, configNode], [...edges, parentEdge, configEdge]);
+                    setNodes(layedOutNodes);
                     handleRuleNodeAdded(rule, config);
 
                 }
@@ -466,39 +484,73 @@ const CreateEditTopologyPage = () => {
         }
     }, [nodes, rules, attachedRules, edges, handleDelete]);
 
-    useEffect(() => {
-        if (canViewRuleWithConfigs && !id) {
-            fetchRuleWithConfigurations();
-        } else {
-            //fetch typology and show rules 
-            getTypology(id as string)
-            .then(({data}) => {
-                setValue('name', data?.name || '');
-                setValue('description', data?.desc || '');
-                const [major, minor, patch] =  (data?.cfg || '').split('.')
-                setValue('major', Number(major) || 0, {shouldDirty: true, shouldTouch: true});
-                setValue('minor', Number(minor) || 0, {shouldDirty: true, shouldTouch: true});
-                setValue('patch', Number(patch) || 0, {shouldDirty: true, shouldTouch: true});
+    const handleSetEditData = useCallback((rules: IRule[]) => {
+        getTypology(id as string)
+            .then(({ data }) => {
+                setValue('name', data?.name || '', { shouldDirty: true, shouldTouch: true });
+                setValue('description', data?.desc || '', { shouldDirty: true, shouldTouch: true });
+                const [major, minor, patch] = (data?.cfg || '').split('.')
+                setValue('major', !isNaN(Number(major)) ? Number(major) : 0, { shouldDirty: true, shouldTouch: true });
+                setValue('minor', !isNaN(Number(minor)) ? Number(minor) : 0, { shouldDirty: true, shouldTouch: true });
+                setValue('patch', !isNaN(Number(patch)) ? Number(patch) : 0, { shouldDirty: true, shouldTouch: true });
                 let rulesArray: IRule[] = [];
                 data?.ruleWithConfigs.forEach((d) => {
                     const rule = {
                         ...d.rule,
-                        ruleConfigs: (d.ruleConfigs || []).map((c) => ({...c, ruleId: d.rule._key})) as any,
+                        ruleConfigs: (d.ruleConfigs || []).map((c) => ({ ...c, ruleId: d.rule._key })) as any,
                     } as Partial<IRule>
                     rulesArray.push(rule as IRule);
                 });
-
-                setRules(rulesArray);
+                const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(rulesArray, handleDelete);
+                const layedOutNodes = updateLayout([...initialNodes, ...newNodes], [...initialEdges, ...newEdges]);
+                setNodes([...layedOutNodes]);
+                setEdges([...initialEdges, ...newEdges]);
+                const options: IRule[] = [];
+                rules.forEach((r) => {
+                    const exists = rulesArray.find((rule) => rule._key === r._key);
+                    if (!exists) {
+                        options.push(r);
+                    }
+                });
+                setRules(rules);
+                setRuleOptions([...options]);
+                setAttachedRules([...rulesArray.map((r) => ({ ...r, attachedConfigs: r.ruleConfigs }))])
 
             }).catch((e) => {
                 setError(e.response?.data?.message || e?.message || 'Something went wrong getting configurations');
             }).finally(() => {
                 setLoadingRules(false);
             })
+    }, [id]);
+
+    useEffect(() => {
+        if (canViewRuleWithConfigs) {
+            fetchRuleWithConfigurations();
         }
-    }, [fetchRuleWithConfigurations, canViewRuleWithConfigs, id]);
+    }, [fetchRuleWithConfigurations, canViewRuleWithConfigs]);
+
+    useEffect(() => {
+        const handler = () => {
+            if ((formState.isDirty || attachedRules.length)) {
+                if(!saved && !isEditMode) {
+                    const confirm = window.confirm('You have unsaved changes. Are you sure you want to navigate away');
+                    if (!confirm) {
+                        throw 'Please save changes to continue';
+                    }
+                }
+            }
+            setSaved(false);
+        }
+        Router.events.on('beforeHistoryChange', handler);
+        return () => {
+            Router.events.off("beforeHistoryChange", handler);
+        };
+    }, [formState.isDirty, attachedRules, saved, isEditMode]);
 
     if (!canCreateTypology) {
+        return <AccessDeniedPage />
+    }
+    if (isEditMode && !canEditTypology) {
         return <AccessDeniedPage />
     }
     return <> <Create
@@ -530,7 +582,7 @@ const CreateEditTopologyPage = () => {
         onOpenScoreMode={onOpenScoreMode}
 
     />
-    {contextHolder}
+        {contextHolder}
     </>
 }
 export default CreateEditTopologyPage;

@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_CONFIG_SVC_BE_URL}/api`
+    baseURL: `${process.env.NEXT_PUBLIC_CONFIG_SVC_BE_URL}/api`,
+    timeout: 20000
 });
 
 instance.interceptors.request.use(

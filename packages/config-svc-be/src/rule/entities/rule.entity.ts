@@ -18,11 +18,13 @@ export class Rule {
 
   @ApiProperty({ example: 'rule/123' })
   @IsString()
-  _id: string;
+  @IsOptional()
+  _id?: string;
 
   @ApiProperty({ example: 'some-revision' })
   @IsString()
-  _rev: string;
+  @IsOptional()
+  _rev?: string;
 
   @ApiProperty({ example: '1.0.0', description: 'Configuration version' })
   @IsString()
@@ -33,6 +35,7 @@ export class Rule {
     description: 'Type of data the rule deals with',
   })
   @IsEnum(DataTypeEnum)
+  @IsOptional()
   dataType?: DataTypeEnum;
 
   @ApiProperty({ example: 'rule-001' })
@@ -53,19 +56,23 @@ export class Rule {
 
   @ApiProperty({ type: Date })
   @IsDate()
-  createdAt: Date;
+  @IsOptional()
+  createdAt?: Date;
 
   @ApiProperty({ type: Date })
   @IsDate()
-  updatedAt: Date;
+  @IsOptional()
+  updatedAt?: Date;
 
   @ApiProperty({ example: 'user@example.com' })
   @IsString()
-  updatedBy: string;
+  @IsOptional()
+  updatedBy?: string;
 
   @ApiProperty({ example: 'user@example.com' })
   @IsString()
-  approverId: string;
+  @IsOptional()
+  approverId?: string;
 
   @ApiProperty({ example: 'sample-uuid', required: false })
   @IsOptional()
@@ -77,11 +84,13 @@ export class Rule {
     description: 'Whether the rule has been edited',
   })
   @IsBoolean()
-  edited: boolean;
+  @IsOptional()
+  edited?: boolean;
 
   @ApiProperty({ enum: SourceEnum, description: 'Where the rule come from' })
   @IsEnum(SourceEnum)
-  source: SourceEnum;
+  @IsOptional()
+  source?: SourceEnum;
 }
 
 export class RuleWithConfig extends Rule {

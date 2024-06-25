@@ -400,7 +400,11 @@ export const esCommon = {
         searchPlaceholder: "Buscar",
         saving: "Guardando.....",
         pleaseWait: "Por favor espera....",
-        typologyCreated: "Tipología ha sido creada"
+        typologyCreated: "Tipología ha sido creada",
+        "typologyDetails": "Detalles Tipología",
+        "version": "Versión",
+        "ruleConfigs": "Configuraciones de Reglas",
+        typologyUpdated: 'La tipología se ha actualizado correctamente',
 
 
     },
@@ -417,8 +421,39 @@ export const esCommon = {
         rulesCount: "Reglas",
         outcomesCount: "Resultados",
         maxScore: "Puntuación Máxima",
-        search: 'Buscar'
-
+        search: 'Buscar',
+        "openScoringView": "Abrir en Vista de Puntuación",
+        "keepInDrafts": "Guardar en Borradores"
+    },
+    ruleReviewPage: {
+        version: 'Versión',
+        description: 'Descripción',
+        created: 'Creado',
+        updated: 'Actualizado',
+        state: 'Estado',
+        rule: 'Regla',
+        review: 'Revisión',
+        backToList: 'Volver a la lista',
+        approve: 'Aprobar',
+        cancel: 'Cancelar',
+        errorTitle: 'Error',
+        errorMessage: 'Ocurrió un error',
+        retry: 'Reintentar'
+    },
+    ruleConfigReviewPage: {
+        version: 'Versión',
+        description: 'Descripción',
+        created: 'Creado',
+        updated: 'Actualizado',
+        state: 'Estado',
+        rule: 'Regla',
+        review: 'Revisión',
+        backToList: 'Volver a la lista',
+        approve: 'Aprobar',
+        cancel: 'Cancelar',
+        errorTitle: 'Error',
+        errorMessage: 'Ocurrió un error',
+        retry: 'Reintentar'
     }
 
 }

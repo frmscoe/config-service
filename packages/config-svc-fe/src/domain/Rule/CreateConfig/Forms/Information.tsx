@@ -150,7 +150,6 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
                             checked={field.value}
                             onChange={() => {
                                 const value = !field.value
-                                console.log({value}, 'case');
                                 field.onChange(value);
                                 setValue('category', value ? 'isCase' : '');
                                 if(value && isBand.value) {

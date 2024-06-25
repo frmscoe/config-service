@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { IConfig } from "./Rules-Attached";
 import { AttachedRules } from ".";
 import {UseFormWatch } from "react-hook-form";
+import { useCommonTranslations } from "~/hooks";
 
 export interface Props {
 attachedRules: AttachedRules[];
@@ -11,6 +12,7 @@ watch: UseFormWatch<any>;
 const TypologyDetails: React.FunctionComponent<Props> = ({attachedRules, watch}) => {
     const [configurations, setConfigurations] = useState<IConfig[]>([]);
     const [values, setValues] = useState({minor: null, major: null, patch: null});
+    const{t} = useCommonTranslations();
 
     watch(['minor', 'major', 'patch']);
 
@@ -43,21 +45,21 @@ const TypologyDetails: React.FunctionComponent<Props> = ({attachedRules, watch})
 
     return <div className="">
         <div className="flex justify-between items-center  px-2 border-t border-b border-gray-300">
-            <Typography.Paragraph className="font-bold mt-3">Typology Details</Typography.Paragraph>
+            <Typography.Paragraph className="font-bold mt-3">{t('typologyCreatePage.typologyDetails')}</Typography.Paragraph>
         </div>
 
         <div className="flex justify-between w-2/3 px-2">
-            <Typography.Paragraph className="text-gray-500">Version</Typography.Paragraph>
+            <Typography.Paragraph className="text-gray-500">{t('typologyCreatePage.version')}</Typography.Paragraph>
             <Typography.Paragraph className="text-gray-500">{`${values.major !== null ? values.major : ''}.${values.minor !== null ? values.minor : ''}.${values.patch !== null ? values.patch : ''}`}</Typography.Paragraph>
         </div>
 
         <div className="flex px-2 justify-between w-2/3">
-            <Typography.Paragraph className="text-gray-500">Rules</Typography.Paragraph>
+            <Typography.Paragraph className="text-gray-500">{t('typologyCreatePage.title')}</Typography.Paragraph>
             <Typography.Paragraph className="text-gray-500">{attachedRules.length || 0}</Typography.Paragraph>
         </div>
 
         <div className="flex px-2 justify-between w-2/3">
-            <Typography.Paragraph className="text-gray-500">Rule Configs</Typography.Paragraph>
+            <Typography.Paragraph className="text-gray-500">{t('typologyCreatePage.ruleConfigs')}</Typography.Paragraph>
             <Typography.Paragraph className="text-gray-500">{configurations.length || 0}</Typography.Paragraph>
         </div>
 

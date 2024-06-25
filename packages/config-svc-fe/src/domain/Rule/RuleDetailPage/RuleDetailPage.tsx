@@ -6,6 +6,7 @@ import { useCommonTranslations } from '~/hooks';
 import { IRule } from './service';
 import { uniqueArray } from '~/utils/uniqueItems';
 import { IUserProfile } from '~/context/auth';
+import Link from 'next/link';
 
 
 const CreateRule = React.lazy(() => import('../CreateRule/index'))
@@ -147,7 +148,9 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 render: (_, record) => (
                     <Space size="middle">
                         {canEdit && <Button type='link'>{commonTranslations('rulesListPage.table.modify')} </Button>}
-                       {canReview && <Button type='link'>{commonTranslations('rulesListPage.table.review')} </Button>}
+                       {canReview && <Button type='link'>
+                        <Link href={`/rule/${record._key}/review`}>{commonTranslations('rulesListPage.table.review')}</Link>
+                         </Button>}
                     </Space>
                 ),
             },

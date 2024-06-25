@@ -5,11 +5,10 @@ import { AppModule } from '../src/app.module';
 import { faker } from '@faker-js/faker';
 import { StateEnum } from '../src/rule/schema/rule.schema';
 import { user } from './mocks/userMocks';
-import { rule } from './mocks/mocks';
+import { createRuleDto } from './mocks/mocks';
 import { assignPrivileges } from './utils';
 import { ArangoDatabaseService } from '../src/arango-database/arango-database.service';
 
-jest.setTimeout(50000);
 describe('AppController (e2e)', () => {
   let app: INestApplication;
   let arangoService: ArangoDatabaseService;
@@ -26,7 +25,6 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
   afterAll(async () => {
-    await arangoService.truncateCollections();
     await app.close();
   });
 
@@ -48,7 +46,7 @@ describe('AppController (e2e)', () => {
       .post('/rule')
       .set('Authorization', `Bearer ${userToken}`)
       .send({
-        ...rule,
+        ...createRuleDto,
       });
     return response.body;
   };
@@ -70,7 +68,7 @@ describe('AppController (e2e)', () => {
         .post('/rule')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          ...rule,
+          ...createRuleDto,
         });
       expect(response.status).toBe(201);
     });
@@ -80,7 +78,7 @@ describe('AppController (e2e)', () => {
         .post('/rule')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          ...rule,
+          ...createRuleDto,
           source: faker.string.sample(),
         });
       expect(response.status).toBe(400);
@@ -110,7 +108,8 @@ describe('AppController (e2e)', () => {
     });
 
     it('/:id (PATCH) should update an existing rule', async () => {
-      const id = (await createRule())._key;
+      const rule = await createRule();
+      const id = rule._key;
       const result = await request(app.getHttpServer())
         .patch(`/rule/${id}`)
         .set('Authorization', `Bearer ${userToken}`)
