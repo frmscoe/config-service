@@ -17,6 +17,7 @@ export class UpdateTypologyDto extends PartialType(CreateTypologyDto) {
     example: 'Identity theft I',
   })
   @IsString()
+  @IsOptional()
   readonly name?: string;
 
   @ApiProperty({
@@ -24,6 +25,7 @@ export class UpdateTypologyDto extends PartialType(CreateTypologyDto) {
     example: '1.0.0',
   })
   @IsString()
+  @IsOptional()
   readonly cfg?: string;
 
   @ApiProperty({
@@ -31,6 +33,7 @@ export class UpdateTypologyDto extends PartialType(CreateTypologyDto) {
     example: 'Identity theft I',
   })
   @IsString()
+  @IsOptional()
   readonly desc?: string;
 
   @ApiProperty({
@@ -43,6 +46,7 @@ export class UpdateTypologyDto extends PartialType(CreateTypologyDto) {
   })
   @IsArray()
   @IsString({ each: true })
+  @IsOptional()
   readonly typologyCategoryUUID?: string[];
 
   @ApiProperty({
@@ -51,6 +55,7 @@ export class UpdateTypologyDto extends PartialType(CreateTypologyDto) {
     type: [RulesRuleConfigsDto],
   })
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => RulesRuleConfigsDto)
   readonly rules_rule_configs?: RulesRuleConfigsDto[];

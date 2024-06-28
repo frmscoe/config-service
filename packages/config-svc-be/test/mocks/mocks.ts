@@ -3,6 +3,7 @@ import { DataTypeEnum } from '../../src/rule/schema/rule.schema';
 import { Typology } from '../../src/typology/entities/typology.entity';
 import { CreateRuleDto } from '../../src/rule/dto/create-rule.dto';
 import { CreateRuleConfigDto } from '../../src/rule-config/dto/create-rule-config.dto';
+import { CreateNetworkMapDto } from '../../src/network-map/dto/create-network-map.dto';
 
 export const createRuleDto: CreateRuleDto = {
   name: faker.string.sample(),
@@ -55,4 +56,45 @@ export const typology: Typology = {
   ownerId: faker.internet.email(),
   state: '01_DRAFT',
   typologyCategoryUUID: [faker.string.uuid()],
+};
+
+export const createNetworkMapDto: CreateNetworkMapDto = {
+  active: true,
+  cfg: '1.0.0',
+  events: [
+    {
+      eventId: `event/${faker.string.uuid()}`,
+      typologies: [
+        {
+          id: 'Typology Processor 1@1.0.0',
+          name: 'Typology Processor 1',
+          cfg: '1.0.0',
+          active: true,
+          rulesWithConfigs: [
+            {
+              rule: {
+                _id: 'rule/rule-test-id-1',
+                _key: 'rule-test-id-1',
+                name: 'rule-name-1',
+                cfg: '1.0.0',
+              },
+              ruleConfigs: [
+                {
+                  _id: 'rule-config/rule-config-test-id-1',
+                  _key: 'rule-config-test-id-1',
+                  cfg: '1.0.0',
+                },
+                {
+                  _id: 'rule-config/rule-config-test-id-2',
+                  _key: 'rule-config-test-id-2',
+                  cfg: '2.0.0',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  source: 'user_created',
 };

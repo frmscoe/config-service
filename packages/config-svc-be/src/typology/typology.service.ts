@@ -161,11 +161,9 @@ export class TypologyService {
 
     // Check for existing typology with the same originatedId
     const cursor = await db.query(
-      `
-      FOR typology IN @@collection
+      `FOR typology IN @@collection
       FILTER typology.originatedId == @id
-      RETURN typology
-    `,
+      RETURN typology`,
       { '@collection': TYPOLOGY_COLLECTION, id: id },
     );
     const childTypology: Typology[] = await cursor.all();

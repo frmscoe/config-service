@@ -115,7 +115,7 @@ class TypologyDto {
   readonly rulesWithConfigs?: RulesWithConfigsDto[];
 }
 
-class CreateEventDto {
+export class CreateEventDto {
   @ApiProperty({
     description: 'Event ID from the events collection.',
     example: 'event/sample-uuid-22',
