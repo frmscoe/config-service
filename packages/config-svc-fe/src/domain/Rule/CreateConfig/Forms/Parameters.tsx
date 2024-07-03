@@ -21,9 +21,9 @@ export const Parameters: FunctionComponent<IProps> = ({ parameterFields, formSta
 
     const handlePrepend = React.useCallback((index: number) => {
         if (index === 0) {
-            parameterFields.append({ ParameterName: '', ParameterType: '', ParameterValue: '' })
+            parameterFields.prepend({ ParameterName: '', ParameterType: '', ParameterValue: '' })
         } else {
-            parameterFields.insert(index - 1, { ParameterName: '', ParameterType: '', ParameterValue: '' });
+            parameterFields.insert(index, { ParameterName: '', ParameterType: '', ParameterValue: '' });
         }
 
     }, [parameterFields.prepend, parameterFields.insert])
@@ -41,7 +41,7 @@ export const Parameters: FunctionComponent<IProps> = ({ parameterFields, formSta
     return (
         <Form layout='horizontal'>
             {parameterFields.fields.map((field, index) => (
-                <>
+                <div key={field.id || index}>
                     <div className="flex gap-2 justify-end">
                         <DeleteFilled data-testid="minus-icon" style={{ fontSize: '1.2rem', color: 'red' }} color='red' onClick={() => parameterFields.remove(index)} />
 
@@ -110,7 +110,7 @@ export const Parameters: FunctionComponent<IProps> = ({ parameterFields, formSta
                             style={{ fontSize: '1.2rem', cursor: 'pointer' }} />
                         <ArrowDownOutlined />
                     </div>
-                </>
+                </div>
             ))}
             <Typography.Text type='danger'>{formState.errors?.parameters?.message}</Typography.Text>
 

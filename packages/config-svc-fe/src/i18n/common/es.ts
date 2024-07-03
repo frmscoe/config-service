@@ -400,7 +400,11 @@ export const esCommon = {
         searchPlaceholder: "Buscar",
         saving: "Guardando.....",
         pleaseWait: "Por favor espera....",
-        typologyCreated: "Tipología ha sido creada"
+        typologyCreated: "Tipología ha sido creada",
+        "typologyDetails": "Detalles Tipología",
+        "version": "Versión",
+        "ruleConfigs": "Configuraciones de Reglas",
+        typologyUpdated: 'La tipología se ha actualizado correctamente',
 
 
     },
@@ -417,8 +421,72 @@ export const esCommon = {
         rulesCount: "Reglas",
         outcomesCount: "Resultados",
         maxScore: "Puntuación Máxima",
-        search: 'Buscar'
+        search: 'Buscar',
+        "openScoringView": "Abrir en Vista de Puntuación",
+        "keepInDrafts": "Guardar en Borradores"
+    },
+    ruleReviewPage: {
+        version: 'Versión',
+        description: 'Descripción',
+        created: 'Creado',
+        updated: 'Actualizado',
+        state: 'Estado',
+        rule: 'Regla',
+        review: 'Revisión',
+        backToList: 'Volver a la lista',
+        approve: 'Aprobar',
+        cancel: 'Cancelar',
+        errorTitle: 'Error',
+        errorMessage: 'Ocurrió un error',
+        retry: 'Reintentar'
+    },
+    ruleConfigReviewPage: {
+        version: 'Versión',
+        description: 'Descripción',
+        created: 'Creado',
+        updated: 'Actualizado',
+        state: 'Estado',
+        rule: 'Regla',
+        review: 'Revisión',
+        backToList: 'Volver a la lista',
+        approve: 'Aprobar',
+        cancel: 'Cancelar',
+        errorTitle: 'Error',
+        errorMessage: 'Ocurrió un error',
+        retry: 'Reintentar'
+    },
+    createEditNetworkMap: {
+        searchRules: "Buscar reglas",
+        noRulesAttached: "No hay reglas adjuntas",
+        searchConfigurations: "Buscar configuraciones",
+        noRuleConfigurations: "No hay configuraciones de reglas",
+        unassignedTypologies: "Tipologías no asignadas",
+        searchTypologies: "Buscar tipologías",
 
+        networkMapCreated: "Mapa de red ha sido creado",
+        successTitle: "Éxito",
+        errorTitle: "Error",
+        errorMessage: "Algo salió mal",
+        pleaseAddTypology: "Por favor, agregue al menos una tipología",
+        typologyListPermissionError: "No tienes permiso para ver la lista de tipologías",
+        typologyDetailsPermissionError: "No tienes permiso para obtener detalles de una tipología",
+        accessDeniedTitle: "403",
+        accessDeniedMessage: "No tienes permiso para crear un mapa de red",
+        backToHomePage: "Volver a la página de inicio",
+
+        save: 'Guardar',
+        cancel: 'Cancelar',
+        lastUpdated: 'Última Actualización',
+        rules: 'Reglas',
+        configurations: 'Configuraciones',
+        allRules: 'Todas las Reglas',
+        rulesConfigurationsAttached: 'Configuraciones de Reglas Adheridas',
+        expandAll: 'Expandir Todo',
+        removeNode: 'Eliminar Nodo',
+        openExpand: 'Abrir Expansión',
+        closeExpand: 'Cerrar Expansión',
+        typology: 'Tipología',
+        version: 'Versión',
     }
 
 }

@@ -85,12 +85,18 @@ export class TypologyController {
   }
 
   @Patch(':id')
-  @ApiExcludeEndpoint()
+  @Roles(TypologyPrivilege.UPDATE_TYPOLOGY)
+  @ApiOperation({ summary: 'Update a typology by ID' })
+  @ApiOkResponse({
+    description: 'The typology has been successfully updated.',
+    type: Typology,
+  })
   update(
     @Param('id') id: string,
     @Body() updateTypologyDto: UpdateTypologyDto,
+    @Request() req,
   ) {
-    return this.typologyService.update(+id, updateTypologyDto);
+    return this.typologyService.duplicateTypology(id, updateTypologyDto, req);
   }
 
   @Delete(':id')

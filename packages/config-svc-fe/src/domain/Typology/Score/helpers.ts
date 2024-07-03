@@ -1,5 +1,5 @@
 import { Position } from "reactflow";
-import { RuleConfig, RuleWithConfig } from "./service";
+import { RuleConfig } from "./service";
 
 const defaultNodeWidth = 172;
 const defaultNodeHeight = 36;
@@ -11,25 +11,8 @@ export const nodeDefaults = {
     width: defaultNodeWidth,
     height: defaultNodeHeight
 };
-export const groupItemsByGroupId = (data: { rules: any[] }) => {
-    const items: any[] = [];
-
-    data.rules.forEach((rule, index) => {
-        items.push({
-            id: rule.id,
-            data: {
-                label: rule.name,
-                ...rule
-            },
-            index
-        });
-    });
-
-    return items;
-};
 
 export const createNodesAndEdges = (rules: any[]) => {
-    // const items  = groupItemsByGroupId(data);
     const newNodes: any[] = [];
     const newEdges: any[] = [];
 
@@ -60,12 +43,12 @@ export const extractOutcomes = (ruleConfigs: RuleConfig[], ruleId: string) => {
   let combinedArray: any[] = [];
 
   // Iterate over each ruleWithConfigs
-//   ruleWithConfigs.forEach(ruleWithConfig => {
-    // Iterate over each ruleConfig within the ruleWithConfig
+// ruleWithConfigs.forEach(ruleWithConfig => {
+  // Iterate over each ruleConfig within the ruleWithConfig
     ruleConfigs.forEach(ruleConfig => {
       const config = ruleConfig.config;
       // Check if exitConditions exist and add them to the combined array with type 'exit-conditions'
-      if (config.exitConditions.length) {
+      if (config?.exitConditions?.length) {
         config.exitConditions.forEach(item => {
           combinedArray.push({
             ...item,
@@ -76,7 +59,7 @@ export const extractOutcomes = (ruleConfigs: RuleConfig[], ruleId: string) => {
       }
 
       // Check if bands exist and add them to the combined array with type 'bands'
-      if (config.bands.length) {
+      if (config?.bands?.length) {
         config.bands.forEach(item => {
           combinedArray.push({
             ...item,
@@ -88,7 +71,7 @@ export const extractOutcomes = (ruleConfigs: RuleConfig[], ruleId: string) => {
       }
 
       // Check if cases exist and add them to the combined array with type 'cases'
-      if (config.cases.length) {
+      if (config?.cases?.length) {
         config.cases.forEach(item => {
           combinedArray.push({
             ...item,
@@ -98,7 +81,6 @@ export const extractOutcomes = (ruleConfigs: RuleConfig[], ruleId: string) => {
         });
       }
     });
-//   });
 
   // Return the combined array
   return combinedArray;

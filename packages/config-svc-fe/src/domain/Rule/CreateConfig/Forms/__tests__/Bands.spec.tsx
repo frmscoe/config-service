@@ -377,7 +377,7 @@ describe('ValueField component', () => {
         fireEvent.change(secondInput, { target: { value: '1' } });
     
         // Check if onChange function is called with the correct value
-        expect(onChange).toHaveBeenCalledWith(1);
+        expect(onChange).toHaveBeenCalledWith(1000);
     
       });
 
@@ -388,7 +388,7 @@ describe('ValueField component', () => {
         const hourInput = getByTestId('hours-input');
         fireEvent.change(hourInput, { target: { value: '1' } });
     
-        expect(onChange).toHaveBeenCalledWith(3600);
+        expect(onChange).toHaveBeenCalledWith(3600000);
     
       });
 
@@ -400,7 +400,7 @@ describe('ValueField component', () => {
         const MinuteInput = getByTestId('minutes-input');
         fireEvent.change(MinuteInput, { target: { value: '1' } });
     
-        expect(onChange).toHaveBeenCalledWith(60);
+        expect(onChange).toHaveBeenCalledWith(60000);
     
       });
 
@@ -409,9 +409,9 @@ describe('ValueField component', () => {
         const setTimeValues = jest.fn();
         const { getByTestId } = render(<ValueField {...defaultProps} dataType="TIME" onChange={onChange} setTimeValues={setTimeValues} />);
         const dayInput = getByTestId('days-input');
-        fireEvent.change(dayInput, { target: { value: '1' } });
+        fireEvent.change(dayInput, { target: { value: '30' } });
     
-        expect(onChange).toHaveBeenCalledWith(86400);
+        expect(onChange).toHaveBeenCalledWith(2592000000);
     
       });
   

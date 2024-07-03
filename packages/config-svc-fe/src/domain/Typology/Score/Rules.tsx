@@ -1,13 +1,12 @@
 import { FileDoneOutlined, PlusOutlined } from "@ant-design/icons"
 import { Empty, Input, Typography } from "antd"
 import { useEffect } from "react"
-import { IRule } from "~/domain/Rule/RuleDetailPage/service"
 import { useCommonTranslations } from "~/hooks";
 import { sortAlphabetically } from "~/utils";
 import { RuleWithConfig } from "./service";
 
 export interface RuleProps {
-    rules: RuleWithConfig[];
+    rules: RuleWithConfig[] | any[];
     ruleOptions: RuleWithConfig[];
     setRuleOptions: (rules: RuleWithConfig[]) => void;
     selectedRule: null | string;

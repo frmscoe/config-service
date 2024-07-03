@@ -77,7 +77,7 @@ describe('Parameters component', () => {
         );
         expect(screen.getAllByTestId('parameter-field').length).toBe(2);
         fireEvent.click(screen.getByTestId('prepend-button-0'));
-        expect(parameterFields.append).toHaveBeenCalled();
+        expect(parameterFields.insert).toHaveBeenCalled();
 
 
     });

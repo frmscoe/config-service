@@ -14,7 +14,6 @@ import { RuleConfig } from './entities/rule-config.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { StateEnum } from '../rule/schema/rule.schema';
 import { RuleService } from '../rule/rule.service';
-import { aql } from 'arangojs';
 import { Rule } from '../rule/entities/rule.entity';
 
 @Injectable()
@@ -111,18 +110,19 @@ export class RuleConfigService {
     // Fetch the existing rule configuration to duplicate
     const existingRuleConfig = await this.findOne(id);
     if (!existingRuleConfig) {
-      throw new BadRequestException(
-        `No rule configuration found with ID ${id}.`,
-      );
+      throw new NotFoundException(`No rule configuration found with ID ${id}.`);
     }
 
-    // Use AQL to check for existing rule configurations with the same originatedID
-    const cursor = await db.query(aql`
-        FOR doc IN ${collection}
-        FILTER doc.originatedID == ${id}
-        RETURN doc
-    `);
-    const childRuleConfigs = await cursor.all();
+    // Check for existing rule configurations with the same originatedID
+    const cursor = await db.query(
+      `
+      FOR ruleConfig IN @@collection
+      FILTER ruleConfig.originatedID == @id
+      RETURN ruleConfig
+    `,
+      { '@collection': RULE_CONFIG_COLLECTION, id: id },
+    );
+    const childRuleConfigs: RuleConfig[] = await cursor.all();
 
     // If a child configuration already exists, throw an exception
     if (childRuleConfigs.length > 0) {
@@ -132,8 +132,9 @@ export class RuleConfigService {
     }
 
     // Prepare the new rule configuration data
-    const { cfg, desc, ruleId, config, ...rest } = existingRuleConfig;
-    const newRuleConfig = {
+    const { cfg, desc, ruleId, config } = existingRuleConfig;
+
+    const newRuleConfig: RuleConfig = {
       cfg,
       desc,
       ruleId,
@@ -146,13 +147,13 @@ export class RuleConfigService {
       updatedBy: req['user'].username,
     };
 
-    // Attempt to save the new rule configuration in the database
+    // Save the new rule configuration in the database
     try {
-      const ruleConfig: RuleConfig = <RuleConfig>(
-        await collection.save(newRuleConfig)
-      );
+      const ruleConfig = await collection.save(newRuleConfig, {
+        returnNew: true,
+      });
       await this.update(id, { edited: true });
-      return this.findOne(ruleConfig._id);
+      return ruleConfig.new;
     } catch (e) {
       throw new BadRequestException(
         `Failed to duplicate rule configuration: ${e.message}`,

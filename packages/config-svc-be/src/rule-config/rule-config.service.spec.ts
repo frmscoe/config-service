@@ -115,7 +115,7 @@ describe('RuleConfigService', () => {
     await expect(service.findOne('123')).rejects.toThrow(NotFoundException);
   });
 
-  it('should update and return the rule configuration', async () => {
+  it('should update the rule configuration', async () => {
     dbMock.getDatabase().collection().documentExists.mockResolvedValue(true);
     dbMock
       .getDatabase()

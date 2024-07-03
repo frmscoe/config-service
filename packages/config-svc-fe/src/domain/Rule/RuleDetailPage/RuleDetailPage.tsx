@@ -1,15 +1,17 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Input, Space, Table } from 'antd';
+import { Alert, Button, Input, Modal, Space, Table } from 'antd';
 import type { TableColumnsType } from 'antd';
 import styles from './RuleDetailPage.module.scss';
 import { useCommonTranslations } from '~/hooks';
 import { IRule } from './service';
 import { uniqueArray } from '~/utils/uniqueItems';
 import { IUserProfile } from '~/context/auth';
+import Link from 'next/link';
 
 
-const CreateRule = React.lazy(() => import('../CreateRule/index'))
-interface Props {
+const CreateRule = React.lazy(() => import('../CreateRule/index'));
+const EditRule = React.lazy(() => import('../EditRule/index'));
+export interface Props {
     loading: boolean;
     error: string;
     retry(page?: number): void;
@@ -19,13 +21,19 @@ interface Props {
     onPageChange(page: number, pageSize: number): void,
     open: boolean;
     setOpen(val: boolean): void;
+    openEdit: boolean;
+    setOpenEdit(val: boolean): void;
     user: IUserProfile;
+    selectedRule: IRule | null;
+    setSelectedRule(rule: IRule | null): void
 }
 
-const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, total, onPageChange, page, open, setOpen, user }) => {
+const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, total, onPageChange, page, open, setOpen, user, openEdit, setOpenEdit,
+    selectedRule, setSelectedRule }) => {
     const { t: commonTranslations } = useCommonTranslations();
     const [searchText, setSearchText] = useState<string>('');
     const [rules, setRules] = useState<IRule[]>([]);
+    const [modal, contextHolder] = Modal.useModal();
 
     const canCreate = useMemo(() => {
         return user?.privileges?.includes('SECURITY_CREATE_RULE')
@@ -146,8 +154,28 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 key: 'action',
                 render: (_, record) => (
                     <Space size="middle">
-                        {canEdit && <Button type='link'>{commonTranslations('rulesListPage.table.modify')} </Button>}
-                       {canReview && <Button type='link'>{commonTranslations('rulesListPage.table.review')} </Button>}
+                        {canEdit && <Button data-testid="modify-button" onClick={() => {
+                            if (!(record.state === '01_DRAFT')) {
+                                modal.confirm({
+                                    title: 'Confirmation',
+                                    content: 'Do you wish to create a new version of this rule',
+                                    okButtonProps: {
+                                        className: 'bg-green-500 text-white' 
+                                    },
+                                    onOk: () => {
+                                        setSelectedRule(record);
+                                        setOpenEdit(true);
+                                    }
+                                })
+                            } else {
+                                setSelectedRule(record);
+                                setOpenEdit(true);
+                            }
+
+                        }} type='link'>{commonTranslations('rulesListPage.table.modify')} </Button>}
+                        {canReview && <Button type='link'>
+                            <Link href={`/rule/${record._key}/review`}>{commonTranslations('rulesListPage.table.review')}</Link>
+                        </Button>}
                     </Space>
                 ),
             },
@@ -155,16 +183,28 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
     }, [commonTranslations, data, searchText, canEdit])
     return (
         <>
-           {canCreate ? <div>
+            {canCreate ? <div>
                 <Button className={styles['create-button']} onClick={() => setOpen(true)}>
                     {commonTranslations('rulesListPage.create')}
                 </Button>
-            </div> : <div/>}
+            </div> : <div />}
 
             <Suspense>
                 <CreateRule
                     open={open}
                     setOpen={setOpen}
+                    afterCreate={() => {
+                        retry(1);
+                    }}
+                />
+            </Suspense>
+
+            <Suspense>
+                <EditRule
+                    rule={selectedRule}
+                    open={openEdit}
+                    setOpen={setOpenEdit}
+                    setSelectedRule={setSelectedRule}
                     afterCreate={() => {
                         retry(1);
                     }}
@@ -193,6 +233,7 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 pagination={{ total: total, pageSize: 10, onChange: onPageChange, current: page }}
                 rowKey="_key"
             />
+            {contextHolder}
         </>
     )
 }

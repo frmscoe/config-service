@@ -140,12 +140,10 @@ class RuleConfigsSummary {
   @IsString()
   cfg: string;
 
-  @ApiProperty(
-    {
-      description: 'Identifier of the rule document from the rule collection.',
-      example: 'rule/sample-uuid-3',
-    }
-  )
+  @ApiProperty({
+    description: 'Identifier of the rule document from the rule collection.',
+    example: 'rule/sample-uuid-3',
+  })
   @IsString()
   ruleId: string;
 

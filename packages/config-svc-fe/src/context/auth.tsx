@@ -76,7 +76,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
           Promise.resolve();
           localStorage.removeItem("token");
           setIsAuthenticated(false);
-          router.push(`/login?next=${currentPath}`).catch(Promise.resolve);
+          router.push(`/login?next=${currentPath}`).catch(Promise.resolve)
+          .then(() => {
+            setIsLoading(false);
+          });
         });
     } else {
       if (unprotectedRoutes.includes(currentPath)) {

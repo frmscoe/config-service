@@ -11,6 +11,10 @@ import {
   TYPOLOGY_COLLECTION,
   typologySchema,
 } from '../typology/schema/typology.schema';
+import {
+  NETWORK_MAP_COLLECTION,
+  networkMapSchema,
+} from '../network-map/schema/network-map.schema';
 
 @Injectable()
 export class ArangoDatabaseService {
@@ -64,6 +68,7 @@ export class ArangoDatabaseService {
       { name: RULE_COLLECTION, options: ruleSchema },
       { name: RULE_CONFIG_COLLECTION, options: ruleConfigSchema },
       { name: TYPOLOGY_COLLECTION, options: typologySchema },
+      { name: NETWORK_MAP_COLLECTION, options: networkMapSchema },
     ];
 
     // Iterate over the collection names and create them if they don't exist

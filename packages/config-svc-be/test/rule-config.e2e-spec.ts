@@ -4,11 +4,11 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { faker } from '@faker-js/faker';
 import { user } from './mocks/userMocks';
-import { rule, ruleConfig } from './mocks/mocks';
+import { createRuleDto, createRuleConfigDto } from './mocks/mocks';
 import { assignPrivileges } from './utils';
 import { ArangoDatabaseService } from '../src/arango-database/arango-database.service';
 
-describe('AppController (e2e)', () => {
+describe('RuleConfig (e2e)', () => {
   let app: INestApplication;
   let arangoService: ArangoDatabaseService;
   let userToken: string;
@@ -23,8 +23,8 @@ describe('AppController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
+
   afterAll(async () => {
-    await arangoService.truncateCollections();
     await app.close();
   });
 
@@ -34,25 +34,28 @@ describe('AppController (e2e)', () => {
       .send(user)
       .expect('Content-Type', /json/);
   };
+
   const createRule = async () => {
     const response = await request(app.getHttpServer())
       .post('/rule')
       .set('Authorization', `Bearer ${userToken}`)
       .send({
-        ...rule,
+        ...createRuleDto,
       });
     return response.body;
   };
 
   const createRuleConfig = async () => {
-    const ruleId = (await createRule())._key;
-    return await request(app.getHttpServer())
+    const rule = await createRule();
+
+    const response = await request(app.getHttpServer())
       .post('/rule-config')
       .set('Authorization', `Bearer ${userToken}`)
       .send({
-        ...ruleConfig,
-        ruleId,
+        ...createRuleConfigDto,
+        ruleId: rule._key,
       });
+    return response.body;
   };
 
   describe('/rule-config e2e tests', () => {
@@ -66,13 +69,13 @@ describe('AppController (e2e)', () => {
     });
 
     it('/ (POST) should create a new rule config', async () => {
-      const ruleId = (await createRule())._key;
+      const ruleId = (await createRule())._id;
       const response = await request(app.getHttpServer())
         .post('/rule-config')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          ...ruleConfig,
-          ruleId: `rule/${ruleId}`,
+          ...createRuleConfigDto,
+          ruleId: ruleId,
         });
 
       expect(response.status).toBe(201);
@@ -84,33 +87,65 @@ describe('AppController (e2e)', () => {
         .post('/rule-config')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          ...ruleConfig,
+          ...createRuleConfigDto,
           ruleId: `rule/${incorrectRuleId}`,
         });
       expect(response.status).toBe(404);
     });
 
+    it('/ (POST) should return 401 for unauthorized access', async () => {
+      const ruleId = (await createRule())._id;
+      const response = await request(app.getHttpServer())
+        .post('/rule-config')
+        .send({
+          ...createRuleConfigDto,
+          ruleId,
+        });
+      expect(response.status).toBe(401);
+    });
+
+    it('/ (POST) should fail with validation error for invalid data', async () => {
+      const ruleId = (await createRule())._key;
+      const response = await request(app.getHttpServer())
+        .post('/rule-config')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          ...createRuleConfigDto,
+          ruleId: `rule/${ruleId}`,
+          cfg: 123, // invalid data type
+        });
+      expect(response.status).toBe(400);
+    });
+
     it('/:id (GET) should get a single rule config', async () => {
       const ruleConfig = await createRuleConfig();
-      const id = ruleConfig.body._key;
+      const key = ruleConfig._key;
 
       const result = await request(app.getHttpServer())
-        .get(`/rule-config/${id}`)
+        .get(`/rule-config/${key}`)
         .set('Authorization', `Bearer ${userToken}`);
       expect(result.status).toBe(200);
     });
 
     it('/:id (GET) should fail on non existing rule config', async () => {
-      const id = faker.string.uuid();
+      const key = 'non-existing-id';
       const result = await request(app.getHttpServer())
-        .get(`/rule-config/${id}`)
+        .get(`/rule-config/${key}`)
         .set('Authorization', `Bearer ${userToken}`);
       expect(result.status).toBe(404);
     });
 
+    it('/ (GET) should retrieve rule configs with pagination', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/rule-config?page=1&limit=2')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(response.status).toBe(200);
+      expect(response.body.data.length).toBeLessThanOrEqual(2);
+    });
+
     it('/:id (PATCH) should update an existing rule config', async () => {
       const ruleConfig = await createRuleConfig();
-      const id = ruleConfig.body._key;
+      const id = ruleConfig._key;
 
       const result = await request(app.getHttpServer())
         .patch(`/rule-config/${id}`)
@@ -122,29 +157,69 @@ describe('AppController (e2e)', () => {
           desc: faker.string.sample(),
         });
 
-      console.log('result.body', result.body);
       expect(result.status).toBe(200);
       expect(result.body.originatedID).toBe(id);
     });
 
-    it('/:id/disable (POST) should disable an existing rule', async () => {
+    it('/:id (PATCH) should fail to update an existing rule config with concurrent update', async () => {
       const ruleConfig = await createRuleConfig();
-      const id = ruleConfig.body._key;
+      const key = ruleConfig._key;
 
-      const response = await request(app.getHttpServer())
-        .post(`/rule-config/${id}/disable`)
-        .set('Authorization', `Bearer ${userToken}`);
-      expect(response.status).toBe(201);
+      await request(app.getHttpServer())
+        .patch(`/rule-config/${key}`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          cfg: '2.0.0',
+          ruleId: `rule/${key}`,
+          updatedBy: user.username,
+          desc: faker.string.sample(),
+        });
+
+      const result = await request(app.getHttpServer())
+        .patch(`/rule-config/${key}`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          cfg: '2.0.1',
+          ruleId: `rule/${key}`,
+          updatedBy: user.username,
+          desc: faker.string.sample(),
+        });
+
+      expect(result.status).toBe(403);
     });
 
-    it('/:id (DELETE) should make a rule for deletion', async () => {
+    it('/:id/disable (PATCH) should disable an existing rule', async () => {
       const ruleConfig = await createRuleConfig();
-      const id = ruleConfig.body._key;
+      const id = ruleConfig._key;
+
+      const response = await request(app.getHttpServer())
+        .patch(`/rule-config/${id}/disable`)
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(response.status).toBe(200);
+    });
+
+    it('/:id (DELETE) should mark a rule for deletion', async () => {
+      const ruleConfig = await createRuleConfig();
+      const id = ruleConfig._key;
 
       const response = await request(app.getHttpServer())
         .delete(`/rule-config/${id}`)
         .set('Authorization', `Bearer ${userToken}`);
       expect(response.status).toBe(200);
+    });
+
+    it('/:id (DELETE) should fail to delete a rule already marked for deletion', async () => {
+      const ruleConfig = await createRuleConfig();
+      const id = ruleConfig._key;
+
+      await request(app.getHttpServer())
+        .delete(`/rule-config/${id}`)
+        .set('Authorization', `Bearer ${userToken}`);
+
+      const response = await request(app.getHttpServer())
+        .delete(`/rule-config/${id}`)
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(response.status).toBe(400);
     });
   });
 });

@@ -109,7 +109,7 @@ export class RuleConfigController {
   }
 
   @ApiExcludeEndpoint()
-  @Post(':id/disable')
+  @Patch(':id/disable')
   @Roles(RuleConfigPrivilege.DISABLE_RULE_CONFIG)
   @ApiOperation({ summary: 'Disable a rule configuration' })
   @ApiOkResponse({

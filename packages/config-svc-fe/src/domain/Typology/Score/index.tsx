@@ -3,12 +3,11 @@ import { Score } from "./Score"
 import {  Modal } from "antd";
 import { useState, useRef, useEffect, DragEventHandler, useCallback } from "react";
 import { IRuleConfig } from "~/domain/Rule/RuleConfig/RuleConfigList/types";
-import { IRule } from "~/domain/Rule/RuleDetailPage/service";
 import usePrivileges from "~/hooks/usePrivileges";
 import { AttachedRules } from "../Create";
 import React from "react";
 import AccessDeniedPage from "~/components/common/AccessDenied";
-import { ITypology, config, getTypology, typologyData } from "./service";
+import { ITypology, RuleWithConfig, getTypology } from "./service";
 import dagre from 'dagre';
 import { nodeDefaults, createNodesAndEdges, extractOutcomes } from "./helpers";
 import { getRandomNumber } from "~/utils/getRandomNumberHelper";
@@ -40,9 +39,8 @@ const initialEdges = [
 const ScorePage = () => {
     const { id } = useParams();
     const [rules, setRules] = useState<any[]>([]);
-    const [ruleOptions, setRuleOptions] = useState<IRule[]>([]);
+    const [ruleOptions, setRuleOptions] = useState<RuleWithConfig[]>([]);
     const [modal, contextHolder] = Modal.useModal();
-    const [page, setPage] = useState(1);
     const [loadingRules, setLoadingRules] = useState(false);
     const [error, setError] = useState('');
     const { canReviewTypology } = usePrivileges();
@@ -52,7 +50,7 @@ const ScorePage = () => {
     const [selectedRule, setSelectedRuleIndex] = useState<null | string>(null);
     const [attachedRules, setAttachedRules] = useState<AttachedRules[]>([]);
     const [ruleDragIndex, setRuleDragIndex] = useState<number | null>(null);
-    const [removedRules, setRemoveRules] = useState<IRule[] | IRuleConfig[]>([]);
+    const [removedRules, setRemoveRules] = useState<RuleWithConfig[] | IRuleConfig[]>([]);
     const [saveLoading, setSaveLoading] = useState(false);
     const [typology, setTypology] = useState<ITypology>({} as ITypology);
     const [outcomes, setOutComes] = useState<IOutcome[]>([]);
@@ -223,7 +221,7 @@ const ScorePage = () => {
                 ...nodeDefaults,
                 id: getRandomNumber(10000).toString(),
                 data: { ...data, label: `${data.type}: ${data.subRuleRef}`, type: 'outcome', score: 0, showDelete: true },
-                position: { x: 250, y: nodes[nodes.length - 1].position.y + 100 },
+                position: { x: 250, y: nodes[nodes.length - 1].position.y },
                 type: 'customNode'
             };
             newNodes.push(outcomeNode);
@@ -246,7 +244,7 @@ const ScorePage = () => {
                     outcomeId: outcomeNode.id,
                     onScoreChange: handleScoreChange
                 },
-                position: { x: 250, y: outcomeNode.position.y + 100 },
+                position: { x: 250, y: outcomeNode.position.y },
                 type: 'scoreNode'
             };
             newNodes.push(scoreNode);

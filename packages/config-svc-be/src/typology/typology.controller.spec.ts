@@ -97,6 +97,7 @@ describe('TypologyController', () => {
       referenceId: 1,
       originatedId: null,
     })),
+    duplicateTypology: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -252,5 +253,41 @@ describe('TypologyController', () => {
     // Assert
     expect(service.findOne).toHaveBeenCalledWith(typologyId);
     expect(result).toEqual(expectedTypology);
+  });
+
+  it('should update a rule configuration and return the updated configuration', async () => {
+    const id = 'typology-id';
+    const updateTypologyDto = {
+      cfg: '1.1.0',
+      desc: 'Updated description',
+      rules_rule_configs: [],
+    };
+    const req = { user: { username: 'test-user' } };
+
+    const expectedUpdatedTypology = {
+      _key: id,
+      desc: updateTypologyDto.desc,
+      cfg: updateTypologyDto.cfg,
+      ownerId: 'test-user',
+      state: '01_DRAFT',
+      createdAt: '2021-08-31T00:00:00.000Z',
+      updatedAt: '2021-08-31T00:00:00.000Z',
+      ruleWithConfigs: [],
+    };
+
+    mockTypologyService.duplicateTypology.mockResolvedValue(
+      expectedUpdatedTypology,
+    );
+
+    // Act
+    const result = await controller.update(id, updateTypologyDto, req as any);
+
+    // Assert
+    expect(mockTypologyService.duplicateTypology).toHaveBeenCalledWith(
+      id,
+      updateTypologyDto,
+      req,
+    );
+    expect(result).toEqual(expectedUpdatedTypology);
   });
 });

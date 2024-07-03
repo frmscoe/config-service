@@ -4,6 +4,7 @@ import { IRuleConfig } from "./types";
 import styles from './RuleConfigList.module.scss';
 import { useMemo } from "react";
 import { useCommonTranslations } from "~/hooks";
+import Link from "next/link";
 
 export interface IProps {
     searchConfigText: string;
@@ -94,7 +95,11 @@ export const ConfigTable: React.FunctionComponent<IProps> = ({
                 render: (_, record) => (
                     <Space size="middle">
                         {canEditConfig && <Button type='link'>{commonTranslations('rulesListPage.table.modify')} </Button>}
-                        {canReviewConfig && <Button type='link'>{commonTranslations('rulesListPage.table.review')} </Button>}
+                        {canReviewConfig && <Button type='link'>
+                            <Link href={`/rule-config/${record._key}/review`}> 
+                            {commonTranslations('rulesListPage.table.review')} 
+                            </Link>
+                        </Button>}
                     </Space>
                 ),
             },

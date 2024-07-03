@@ -445,10 +445,10 @@ export const ValueField: React.FunctionComponent<ValueProps> = ({ dataType = 'nu
         props.setTimeValues((prevState: any) => {
             const updatedTimeValues = [...prevState];
             updatedTimeValues[props.index] = {
-                hours: timeObj.hours,
-                days: timeObj.days,
-                minutes: timeObj.minutes,
-                seconds: timeObj.seconds
+                hours: timeObj.hours <= 0 ? Math.abs(timeObj.hours) : timeObj.hours,
+                days: timeObj.days <= 0 ? Math.abs(timeObj.days) : timeObj.days,
+                minutes: timeObj.minutes <= 0 ? Math.abs(timeObj.minutes) : timeObj.minutes,
+                seconds: timeObj.seconds <= 0 ? Math.abs(timeObj.seconds) : timeObj.seconds
             };
             return updatedTimeValues;
         });

@@ -39,4 +39,5 @@ export interface IRuleConfig {
     ownerId: string;
     createdAt: string;
     updatedAt: string;
+    updatedBy?: string;
 }
