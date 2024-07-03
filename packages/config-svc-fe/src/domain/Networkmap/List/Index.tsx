@@ -1,20 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import RuleView from './RuleDetailPage';
-import { IRule, getRules } from './service';
+import List from './List';
+import { getRules } from './service';
 import { useAuth } from '~/context/auth';
 import usePrivileges from '~/hooks/usePrivileges';
 import AccessDeniedPage from '~/components/common/AccessDenied';
 
-const Rule = () => {
-    const [rules, setRules] = useState<IRule[]>([]);
+const NetworkMapList = () => {
+    const [networkMaps, setNetworkMaps] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [totalItems, setTotalItems] = useState(0)
-    const [open, setOpen] = useState(false);
-    const [openEdit, setOpenEdit] = useState(false);
-    const[selectedRule, setSelectedRule] = useState<IRule | null>(null);
-
     const {profile} = useAuth();
     const {canViewRules} = usePrivileges();
 
@@ -27,7 +23,7 @@ const Rule = () => {
         setLoading(true);
         getRules({ page, limit: 10 })
             .then(({ data }) => {
-                setRules(data?.rules || []);
+                setNetworkMaps(data?.rules || []);
                 setTotalItems(data.count || 0);
             }).finally(() => {
                 setLoading(false)
@@ -54,23 +50,17 @@ const Rule = () => {
         return <AccessDeniedPage/>
     }
 
-    return <RuleView
+    return <List
         loading={loading}
         error={error}
         retry={retry}
-        data={rules}
+        data={networkMaps}
         page={page}
         total={totalItems}
         onPageChange={onPageChange}
-        open={open}
-        setOpen={setOpen}
         user={profile}
-        openEdit={openEdit}
-        setOpenEdit={setOpenEdit}
-        selectedRule={selectedRule}
-        setSelectedRule={setSelectedRule}
 
     />
 }
 
-export default Rule;
+export default NetworkMapList;

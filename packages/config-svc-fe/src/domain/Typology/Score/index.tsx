@@ -3,12 +3,11 @@ import { Score } from "./Score"
 import {  Modal } from "antd";
 import { useState, useRef, useEffect, DragEventHandler, useCallback } from "react";
 import { IRuleConfig } from "~/domain/Rule/RuleConfig/RuleConfigList/types";
-import { IRule } from "~/domain/Rule/RuleDetailPage/service";
 import usePrivileges from "~/hooks/usePrivileges";
 import { AttachedRules } from "../Create";
 import React from "react";
 import AccessDeniedPage from "~/components/common/AccessDenied";
-import { ITypology, RuleWithConfig, config, getTypology, typologyData } from "./service";
+import { ITypology, RuleWithConfig, getTypology } from "./service";
 import dagre from 'dagre';
 import { nodeDefaults, createNodesAndEdges, extractOutcomes } from "./helpers";
 import { getRandomNumber } from "~/utils/getRandomNumberHelper";

@@ -22,7 +22,7 @@ const mockData = {
     "createdAt": "2024-06-07T10:27:10.009Z",
     "desc": "aada",
     "name": "Typology 1",
-    "ownerId": "aggrey256@gmail.com",
+    "ownerId": "test@gmail.com",
     "rules_rule_configs": [
         {
             "ruleId": "rule/32b24092-ede5-4892-9780-19c08b2badbe",

@@ -1,13 +1,14 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { DragEventHandler, useCallback, useMemo } from "react";
 import ReactFlow, {
-    Controls, Edge, MiniMap, Node, Handle, OnConnect, OnEdgesChange, OnNodesChange, Position, NodeMouseHandler, ConnectionLineType, ReactFlowProps
-
+    Edge,  Node, Handle, OnConnect, OnEdgesChange,
+     OnNodesChange, Position, NodeMouseHandler, 
+     ConnectionLineType,
+    ReactFlowProps
 } from "reactflow";
 import styles from './style.module.scss';
 import React from "react";
-import { Form, InputNumber, Popover } from "antd";
-import { Conditions } from "../Score/Conditions";
+import { Form, InputNumber } from "antd";
 
 interface Props {
     nodes: Node[];
@@ -17,7 +18,7 @@ interface Props {
     onEdgesChange: OnEdgesChange;
     onDrop: DragEventHandler,
     flowRef: any;
-    handleDelete: (id: string, type: string) => void;
+    handleDelete?: (id: string, type: string) => void;
     onNodeClick: NodeMouseHandler;
 }
 
@@ -150,8 +151,6 @@ export const Flow: React.FunctionComponent<Props & ReactFlowProps> = ({
             connectionLineType={ConnectionLineType.SmoothStep}
             {...props}
         >
-            <Controls />
-            <MiniMap />
             {children}
         </ReactFlow>
     );

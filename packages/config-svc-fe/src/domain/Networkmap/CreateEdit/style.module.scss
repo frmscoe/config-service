@@ -1,0 +1,45 @@
+.input-border {
+  border-color: #56b453;
+}
+
+.custom-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  min-width: 10rem;
+  width: 100;
+}
+
+.custom-node-content {
+  display: flex;
+  align-items: center;
+}
+
+.minus {
+  position: relative;
+  left: 1.1rem;
+  z-index: 100000;
+  color: #54B352;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.hidden-handle {
+  width: 0;
+  height: 0;
+  background: none;
+  border: none;
+}
+
+.delete-icon {
+  margin-right: 10px;
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 1.3rem;
+
+}

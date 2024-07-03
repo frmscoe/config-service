@@ -96,6 +96,7 @@ export interface ITypology {
   export interface RuleWithConfig {
     rule: Rule
     ruleConfigs: RuleConfig[]
+    typologyId?: string;
   }
   
   export interface Rule {

@@ -1,60 +1,54 @@
-import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Input, Modal, Space, Table } from 'antd';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Button, Input, Space, Table } from 'antd';
 import type { TableColumnsType } from 'antd';
-import styles from './RuleDetailPage.module.scss';
+import styles from './styles.module.scss';
 import { useCommonTranslations } from '~/hooks';
-import { IRule } from './service';
 import { uniqueArray } from '~/utils/uniqueItems';
 import { IUserProfile } from '~/context/auth';
 import Link from 'next/link';
 
 
-const CreateRule = React.lazy(() => import('../CreateRule/index'));
-const EditRule = React.lazy(() => import('../EditRule/index'));
-export interface Props {
+interface Props {
     loading: boolean;
     error: string;
     retry(page?: number): void;
     page: number,
-    data: IRule[],
+    data: any[],
     total: number;
     onPageChange(page: number, pageSize: number): void,
-    open: boolean;
-    setOpen(val: boolean): void;
-    openEdit: boolean;
-    setOpenEdit(val: boolean): void;
     user: IUserProfile;
-    selectedRule: IRule | null;
-    setSelectedRule(rule: IRule | null): void
 }
 
-const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, total, onPageChange, page, open, setOpen, user, openEdit, setOpenEdit,
-    selectedRule, setSelectedRule }) => {
+const NetworkMapList: React.FunctionComponent<Props> = ({ 
+    loading, 
+    error, 
+    retry, 
+    data, 
+    total, 
+    onPageChange, 
+    page, 
+    user 
+}) => {
     const { t: commonTranslations } = useCommonTranslations();
     const [searchText, setSearchText] = useState<string>('');
-    const [rules, setRules] = useState<IRule[]>([]);
-    const [modal, contextHolder] = Modal.useModal();
+    const [networkMaps, setNetworkMaps] = useState<any[]>([]);
 
     const canCreate = useMemo(() => {
         return user?.privileges?.includes('SECURITY_CREATE_RULE')
-    }, [user])
+    }, [user]);
 
     const canEdit = useMemo(() => {
         return user?.privileges?.includes('SECURITY_UPDATE_RULE')
-    }, [user])
-
-    const canReview = useMemo(() => {
-        return user?.privileges?.includes('SECURITY_GET_RULE')
-    }, [user])
+    }, [user]);
 
 
     useEffect(() => {
-        setRules([...data]);
+        setNetworkMaps([...data]);
     }, [data])
 
     const handleSearch = useCallback((confirm: () => void) => {
         if (searchText.trim().length) {
-            setRules(
+            setNetworkMaps(
                 ...[data.filter((rule) =>
                     rule.desc.toLowerCase().includes(searchText.toLowerCase())
                 )]
@@ -65,13 +59,13 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
     }, [searchText]);
 
 
-    const columns: TableColumnsType<IRule> = useMemo(() => {
+    const columns: TableColumnsType<any> = useMemo(() => {
         return [
             {
                 title: commonTranslations('rulesListPage.table.name'),
                 dataIndex: 'name',
                 showSorterTooltip: { target: 'full-header' },
-                sorter: (a: IRule, b: IRule) => a.state.localeCompare(b.name),
+                sorter: (a: any, b: any) => a.state.localeCompare(b.name),
                 filters: uniqueArray(data, 'cfg').map((obj) => ({ text: obj.name, value: obj.name.toLowerCase() })),
                 onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
 
@@ -80,7 +74,7 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 title: commonTranslations('rulesListPage.table.version'),
                 dataIndex: 'cfg',
                 showSorterTooltip: { target: 'full-header' },
-                sorter: (a: IRule, b: IRule) => a.state.localeCompare(b.cfg),
+                sorter: (a: any, b: any) => a.state.localeCompare(b.cfg),
                 filters: uniqueArray(data, 'cfg').map((obj) => ({ text: obj.cfg, value: obj.cfg.toLowerCase() })),
                 onFilter: (value, record) => record.cfg.toLowerCase().includes(value as string),
 
@@ -89,7 +83,7 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 title: commonTranslations('rulesListPage.table.description'),
                 dataIndex: 'desc',
                 defaultSortOrder: 'descend',
-                sorter: (a: IRule, b: IRule) => a.state.localeCompare(b.desc),
+                sorter: (a: any, b: any) => a.state.localeCompare(b.desc),
                 onFilter: (value, record) => record.desc.toLowerCase().includes(value as string),
                 filterDropdown: ({ confirm, clearFilters }: any) => (
                     <div style={{ padding: 8 }}>
@@ -116,7 +110,7 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                                     setSearchText('');
                                     clearFilters();
                                     confirm();
-                                    setRules(data);
+                                    setNetworkMaps(data);
                                 }}
                                 size="small" style={{ width: 90 }}>
                                 {commonTranslations('rulesListPage.reset')}
@@ -129,7 +123,7 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 title: commonTranslations('rulesListPage.table.state'),
                 dataIndex: 'state',
                 defaultSortOrder: 'descend',
-                sorter: (a: IRule, b: IRule) => a.state.localeCompare(b.state),
+                sorter: (a: any, b: any) => a.state.localeCompare(b.state),
                 onFilter: (value, record) => record.state.toLowerCase().includes(value as string),
                 filters: uniqueArray(data, 'state').map((obj) => ({ text: obj.state, value: obj.state.toLowerCase() })),
 
@@ -138,7 +132,7 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 title: commonTranslations('rulesListPage.table.owner'),
                 dataIndex: 'ownerId',
                 defaultSortOrder: 'descend',
-                sorter: (a: IRule, b: IRule) => a.state.localeCompare(b.ownerId),
+                sorter: (a: any, b: any) => a.state.localeCompare(b.ownerId),
                 onFilter: (value, record) => record.ownerId.toLowerCase().includes(value as string),
                 filters: uniqueArray(data, 'ownerId').map((obj) => ({ text: obj.ownerId, value: obj.ownerId.toLowerCase() })),
 
@@ -147,35 +141,14 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 title: commonTranslations('rulesListPage.table.updatedAt'),
                 dataIndex: 'updatedAt',
                 render: (text: string) => new Date(text).toDateString(),
-                sorter: (a: IRule, b: IRule) => a.createdAt.localeCompare(b.updatedAt)
+                sorter: (a: any, b: any) => a.createdAt.localeCompare(b.updatedAt)
             },
             {
                 title: commonTranslations('rulesListPage.table.action'),
                 key: 'action',
                 render: (_, record) => (
                     <Space size="middle">
-                        {canEdit && <Button data-testid="modify-button" onClick={() => {
-                            if (!(record.state === '01_DRAFT')) {
-                                modal.confirm({
-                                    title: 'Confirmation',
-                                    content: 'Do you wish to create a new version of this rule',
-                                    okButtonProps: {
-                                        className: 'bg-green-500 text-white' 
-                                    },
-                                    onOk: () => {
-                                        setSelectedRule(record);
-                                        setOpenEdit(true);
-                                    }
-                                })
-                            } else {
-                                setSelectedRule(record);
-                                setOpenEdit(true);
-                            }
-
-                        }} type='link'>{commonTranslations('rulesListPage.table.modify')} </Button>}
-                        {canReview && <Button type='link'>
-                            <Link href={`/rule/${record._key}/review`}>{commonTranslations('rulesListPage.table.review')}</Link>
-                        </Button>}
+                        {canEdit && <Link className='text-blue-500' href={`/network-map/${record._key}/edit`} type='link'>{commonTranslations('rulesListPage.table.modify')} </Link>}
                     </Space>
                 ),
             },
@@ -184,32 +157,12 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
     return (
         <>
             {canCreate ? <div>
-                <Button className={styles['create-button']} onClick={() => setOpen(true)}>
+                <Link href="/network-map/create" >
+                    <Button type="default" className={styles['create-button']}>
                     {commonTranslations('rulesListPage.create')}
-                </Button>
+                    </Button>
+                </Link>
             </div> : <div />}
-
-            <Suspense>
-                <CreateRule
-                    open={open}
-                    setOpen={setOpen}
-                    afterCreate={() => {
-                        retry(1);
-                    }}
-                />
-            </Suspense>
-
-            <Suspense>
-                <EditRule
-                    rule={selectedRule}
-                    open={openEdit}
-                    setOpen={setOpenEdit}
-                    setSelectedRule={setSelectedRule}
-                    afterCreate={() => {
-                        retry(1);
-                    }}
-                />
-            </Suspense>
 
             {error && <Alert
                 message="Error"
@@ -225,17 +178,16 @@ const Rule: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
             />}
 
             <Table
-                data-testid="rule-view"
+                data-testid="network-map-view"
                 columns={columns}
-                dataSource={rules}
+                dataSource={networkMaps}
                 showSorterTooltip={{ target: 'sorter-icon' }}
                 loading={loading}
                 pagination={{ total: total, pageSize: 10, onChange: onPageChange, current: page }}
                 rowKey="_key"
             />
-            {contextHolder}
         </>
     )
 }
 
-export default Rule;
+export default NetworkMapList;

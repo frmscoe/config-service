@@ -94,38 +94,33 @@ const data: ITypology = {
                         "reason": "Band Reason 2",
                         "subRuleRef": "0.1",
                         "value": 1,
-                        outcome: false
+                   
                     },
                     {
                         "reason": "Reason 2",
                         "subRuleRef": "0.2",
                         "value": 2,
-                        outcome: false
+                   
                     }
                 ],
                 "exitConditions": [
                     {
-                        "outcome": true,
                         "reason": "Insufficient transaction history. At least 50 historical transactions are required",
                         "subRuleRef": ".x01",
                     },
                     {
-                        "outcome": true,
                         "reason": "Insufficient transaction history. At least 50 historical transactions are required",
                         "subRuleRef": ".x02",
                     },
                     {
-                        "outcome": true,
                         "reason": "Insufficient transaction history. At least 50 historical transactions are required",
                         "subRuleRef": ".x03",
                     },
                     {
-                        "outcome": true,
                         "reason": "No variance in transaction history and the volume of recent incoming transactions shows an increase",
                         "subRuleRef": ".x04",
                     },
                     {
-                        "outcome": true,
                         "reason": "No variance in transaction history and the volume of recent incoming transactions is less than or equal to the historical average",
                         "subRuleRef": ".x05",
                     }

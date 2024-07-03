@@ -52,7 +52,7 @@ const CreateRuleConfigPage = () => {
                 desc: data.description,
                 cfg: `${data.major}.${data.minor || 0}.${data.patch || 0}`,
                 config: {
-                    exitConditions: conditions?.map((con: any) => ({ reason: con.reason, subRuleRef: con.subRefRule })),
+                    exitConditions: conditions ? conditions?.map((con: any) => ({ reason: con.reason, subRuleRef: con.subRefRule })) : [],
                     bands: data.category === 'isBand' ? [...data.bands.map((band: any, index: number) => {
                         if(index === 0) {
                             return {

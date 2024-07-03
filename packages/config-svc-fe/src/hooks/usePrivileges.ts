@@ -54,6 +54,9 @@ const usePrivileges = () => {
         return user?.privileges?.includes('SECURITY_GET_TYPOLOGY');
     }, [user]);
 
+    const canCreateNetworkMap = useMemo(() => {
+        return user?.privileges?.includes('SECURITY_CREATE_NETWORK_MAP');
+    }, [user]);
     return {
         canCreateRuleConfig,
         canEditRule,
@@ -68,6 +71,7 @@ const usePrivileges = () => {
         canEditTypology,
         canReviewTypology,
         canCreateTypology,
+        canCreateNetworkMap,
     };
 };
 

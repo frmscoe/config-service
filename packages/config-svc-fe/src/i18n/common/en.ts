@@ -454,6 +454,38 @@ export const enCommon = {
     errorTitle: 'Error',
     errorMessage: 'An error occurred',
     retry: 'Retry'
+},
+createEditNetworkMap: {
+  searchRules: "Search rules",
+  noRulesAttached: "No rules attached",
+  searchConfigurations: "Search configurations",
+  noRuleConfigurations: "No rule configurations",
+   unassignedTypologies: "Unassigned Typologies",
+  searchTypologies: "Search Typologies",
+
+  networkMapCreated: "Network Map has been created",
+  successTitle: "Success",
+  errorTitle: "Error",
+  errorMessage: "Something went wrong",
+  pleaseAddTypology: "Please add at least one typology",
+  typologyListPermissionError: "You don't have permission to view typology list",
+  typologyDetailsPermissionError: "You don't have permission to get details for a single typology",
+  accessDeniedTitle: "403",
+  accessDeniedMessage: "You don't have permission to create a network map",
+  backToHomePage: "Back to Home",
+  save: 'Save',
+  cancel: 'Cancel',
+  lastUpdated: 'Last Updated',
+  rules: 'Rules',
+  configurations: 'Configurations',
+  allRules: 'All Rules',
+  rulesConfigurationsAttached: 'Rules Configurations Attached',
+  expandAll: 'Expand All',
+  removeNode: 'Remove Node',
+  openExpand: 'Open Expand',
+  closeExpand: 'Close Expand',
+  typology: 'Typology',
+   version: 'Version',
 }
 
 };

@@ -9,7 +9,7 @@ import { Structure } from './Structure';
 import TypologyDetails from './Typology-Details';
 import { IRuleConfig } from '~/domain/Rule/RuleConfig/RuleConfigList/types';
 import { AttachedRules } from '.';
-import { NodeMouseHandler } from 'reactflow';
+import { Connection, Controls, EdgeChange, MiniMap, Node, NodeChange, NodeMouseHandler } from 'reactflow';
 import { FormState, Control, UseFormHandleSubmit, UseFormWatch } from 'react-hook-form';
 import { useCommonTranslations } from '~/hooks';
 
@@ -80,7 +80,11 @@ export const Create: React.FunctionComponent<Props> = ({ rules, loadingRules, ..
               flowRef={props.flowRef}
               handleDelete={props.handleDelete}
               onNodeClick={props.onNodeClick}
-            />
+            >
+
+              <MiniMap/>
+              <Controls/>
+            </Flow>
 
           </div>
         </Col>

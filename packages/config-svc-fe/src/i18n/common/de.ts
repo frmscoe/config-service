@@ -454,5 +454,37 @@ export const deCommon = {
     errorTitle: 'Fehler',
     errorMessage: 'Ein Fehler ist aufgetreten',
     retry: 'Wiederholen'
-}
+},
+  createEditNetworkMap: {
+    searchRules: "Regeln suchen",
+    noRulesAttached: "Keine Regeln angehängt",
+    searchConfigurations: "Konfigurationen suchen",
+    noRuleConfigurations: "Keine Regelkonfigurationen",
+    unassignedTypologies: "Nicht zugewiesene Typologien",
+    searchTypologies: "Typologien suchen",
+
+    networkMapCreated: "Netzwerkkarte wurde erstellt",
+    successTitle: "Erfolg",
+    errorTitle: "Fehler",
+    errorMessage: "Etwas ist schief gelaufen",
+    pleaseAddTypology: "Bitte fügen Sie mindestens eine Typologie hinzu",
+    typologyListPermissionError: "Sie haben keine Berechtigung, die Typologie-Liste anzuzeigen",
+    typologyDetailsPermissionError: "Sie haben keine Berechtigung, Details für eine einzelne Typologie abzurufen",
+    accessDeniedTitle: "403",
+    accessDeniedMessage: "Sie haben keine Berechtigung, eine Netzwerkkarte zu erstellen",
+    backToHomePage: "Zurück zur Startseite",
+    save: 'Speichern',
+    cancel: 'Abbrechen',
+    lastUpdated: 'Zuletzt aktualisiert',
+    rules: 'Regeln',
+    configurations: 'Konfigurationen',
+    allRules: 'Alle Regeln',
+    rulesConfigurationsAttached: 'Angefügte Regelkonfigurationen',
+    expandAll: 'Alles Erweitern',
+    removeNode: 'Knoten Entfernen',
+    openExpand: 'Erweiterung Öffnen',
+    closeExpand: 'Erweiterung Schließen',
+    typology: 'Typologie',
+    version: 'Version',
+  }
 };

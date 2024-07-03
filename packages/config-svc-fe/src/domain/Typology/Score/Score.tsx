@@ -4,7 +4,7 @@ import { IRule } from '~/domain/Rule/RuleDetailPage/service';
 import { Flow } from '../Create/Flow';
 import { IRuleConfig } from '~/domain/Rule/RuleConfig/RuleConfigList/types';
 import { AttachedRules } from '../Create/index';
-import { NodeMouseHandler, ReactFlowProps } from 'reactflow';
+import { Controls, MiniMap, NodeMouseHandler, ReactFlowProps } from 'reactflow';
 import { Conditions } from './Conditions';
 import { Rules } from './Rules';
 import styles from './style.module.scss';
@@ -122,7 +122,10 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
               flowRef={props.flowRef}
               handleDelete={props.handleDelete}
               onNodeClick={props.onNodeClick}
-            />
+            >
+              <MiniMap/>
+              <Controls/>
+            </Flow>
           </div>
         </Col>
         <Col span={5}>

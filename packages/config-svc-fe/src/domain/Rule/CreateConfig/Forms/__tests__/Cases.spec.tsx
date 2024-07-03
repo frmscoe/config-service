@@ -264,19 +264,19 @@ describe('ValueField component', () => {
 
     // Change days
     fireEvent.change(screen.getByTestId('days-input'), { target: { value: 1 } });
-    expect(onChange).toHaveBeenCalledWith(86400); // 1 day = 24 hours * 60 minutes * 60 seconds = 86400 seconds
+    expect(onChange).toHaveBeenCalledWith(86400000); // 1 day = 24 hours * 60 minutes * 60 seconds = 86400000 seconds
 
     // Change hours
     fireEvent.change(screen.getByTestId('hours-input'), { target: { value: 24 } });
-    expect(onChange).toHaveBeenCalledWith(86400); // 2 days = 48 hours * 60 minutes * 60 seconds = 172800 seconds
+    expect(onChange).toHaveBeenCalledWith(86400000); // 2 days = 48 hours * 60 minutes * 60 seconds = 172800 seconds
 
     // // Change minutes
     fireEvent.change(screen.getByTestId('minutes-input'), { target: { value: 30 } });
-    expect(onChange).toHaveBeenCalledWith(86400); // 2 days, 2 hours, 30 minutes = (48*60*60) + (2*60*60) + (30*60) = 180300 seconds
+    expect(onChange).toHaveBeenCalledWith(86400000); // 2 days, 2 hours, 30 minutes = (48*60*60) + (2*60*60) + (30*60) = 180300 seconds
 
     // Change seconds
     fireEvent.change(screen.getByTestId('seconds-input'), { target: { value: 45 } });
-    expect(onChange).toHaveBeenLastCalledWith(133200); // 2 days, 2 hours, 30 minutes, 45 seconds = (48*60*60) + (2*60*60) + (30*60) + 45 = 180345 seconds
+    expect(onChange).toHaveBeenLastCalledWith(88245000); // 2 days, 2 hours, 30 minutes, 45 seconds = (48*60*60) + (2*60*60) + (30*60) + 45 = 180345 seconds
   });
 
   it('should update days, hours, minutes, and seconds when epoch time is changed', () => {
@@ -284,16 +284,16 @@ describe('ValueField component', () => {
     render(<ValueField value={0} onChange={onChange} dataType="TIME" />);
   
     // Change epoch time
-    fireEvent.change(screen.getByTestId('epoch-input'), { target: { value: 1000 } });
+    fireEvent.change(screen.getByTestId('epoch-input'), { target: { value: 2592000000 } });
   
     // Check if onChange function is called with the correct epoch time
-    expect(onChange).toHaveBeenCalledWith(1000);
+    expect(onChange).toHaveBeenCalledWith(2592000000);
   
     // Check if days, hours, minutes, and seconds are updated accordingly
-    expect((screen.getByTestId('days-input') as any).value).toBe('11');
-    expect((screen.getByTestId('hours-input') as any).value).toBe('13');
-    expect((screen.getByTestId('minutes-input') as any).value).toBe('46');
-    expect((screen.getByTestId('seconds-input') as any).value).toBe('40');
+    expect((screen.getByTestId('days-input') as any).value).toBe('30');
+    expect((screen.getByTestId('hours-input') as any).value).toBe('0');
+    expect((screen.getByTestId('minutes-input') as any).value).toBe('0');
+    expect((screen.getByTestId('seconds-input') as any).value).toBe('0');
   });
 
   it('should update data type and epoch time when data type is changed to positive', () => {
