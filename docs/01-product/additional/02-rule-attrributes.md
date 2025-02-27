@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Rule Attributes
 
 This section will grow as we build out the service, but for now

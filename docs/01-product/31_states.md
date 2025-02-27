@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # States of artefacts in the Configuration services
 
 ## Introduction

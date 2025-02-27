@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Login with Security BC
 
 ## Authentication with Mojaloop Security BC

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Rule Configuration Attributes
 
 A rule configuration is a config object, that

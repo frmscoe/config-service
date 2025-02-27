@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Stages and Artefact will follow during its lifecycle
 
 ## Introduction

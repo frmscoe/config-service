@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Typology Configuration
 
 taken from [eKuta documentation](https://frmscoe.atlassian.net/wiki/spaces/FRMS/pages/76906497/Configuration+management#2.2.-Typology-Configuration)

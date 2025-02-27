@@ -1,11 +1,5 @@
----  
-sidebar_position: 2  
-sidebar_label: import rule config
-title: Import an existing rule configuration
-date: 2023-11-17 08:41:28
-author: Rob Reeve
----  
-
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+# Import an existing rule configuration
 
 ## Introduction
 

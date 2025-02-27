@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Rule Config Collection
 
 ## Rule Config Collection

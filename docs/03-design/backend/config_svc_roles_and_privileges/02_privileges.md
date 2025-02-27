@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Config Service Privileges
 
 ## Privileges for Config Service

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Config Service Roles
 
 ## Role-Based Access Control (RBAC) Levels and Privileges for Config Service

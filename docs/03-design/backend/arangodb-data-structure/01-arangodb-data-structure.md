@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # Configuration Service Database Structure
 
 ## Configuration Service Database Structure in ArangoDB
