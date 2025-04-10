@@ -1,4 +1,5 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # Typologies, Rules and Rule configs
 
 ## Introduction  

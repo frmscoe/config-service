@@ -1,0 +1,16 @@
+// <!-- SPDX-License-Identifier: Apache-2.0 -->
+import Head from "next/head";
+import React from "react";
+
+const _Template = () => {
+  return (
+    <>
+      <Head>
+        <title>Tazama - Configuration Service</title>
+      </Head>
+      <h1>Template</h1>
+    </>
+  );
+};
+
+export default _Template;

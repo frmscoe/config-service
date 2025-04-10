@@ -1,0 +1,20 @@
+// <!-- SPDX-License-Identifier: Apache-2.0 -->
+import React from 'react';
+import { Button, Result } from 'antd';
+import Link from 'next/link';
+import { useCommonTranslations } from '~/hooks';
+
+const AccessDeniedPage = () => {
+    const {t} = useCommonTranslations();
+    return (
+        <Result
+            data-testid="access-denied"
+            status="403"
+            title="403"
+            subTitle={t('accessPage.message')}
+            extra={<Button type="default" ><Link href={'/'}>{t('accessPage.back')}</Link></Button>}
+        />
+    );
+};
+
+export default AccessDeniedPage;

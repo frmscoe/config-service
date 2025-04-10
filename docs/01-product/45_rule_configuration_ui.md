@@ -1,5 +1,4 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-# Rule Configuration
 
 ## Introduction
 
@@ -229,4 +228,7 @@ sequenceDiagram
         end
     end
     FE ->> User: Updates UI with new bands list
+
+
+
 ```
