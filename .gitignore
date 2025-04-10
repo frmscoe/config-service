@@ -1,0 +1,16 @@
+# IDE & OS config
+.idea/
+.vscode/
+.DS_Store
+packages/.DS_Store
+
+# Backend (config-svc-be)
+packages/config-svc-be/node_modules/
+packages/config-svc-be/dist/
+
+# Frontend (config-svc-fe)
+packages/config-svc-fe/node_modules/
+packages/config-svc-fe/.next/
+
+# Auth lib (auth-lib)
+packages/auth-lib

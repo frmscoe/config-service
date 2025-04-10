@@ -1,0 +1,14 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .:/app
+    environment:
+      PORT: ${PORT}
+      NEXT_PUBLIC_CONFIG_SVC_BE_URL: ${NEXT_PUBLIC_CONFIG_SVC_BE_URL}
+      NEXT_PUBLIC_SECURITY_BC_URL: ${NEXT_PUBLIC_SECURITY_BC_URL}
+    env_file:
+      - .env

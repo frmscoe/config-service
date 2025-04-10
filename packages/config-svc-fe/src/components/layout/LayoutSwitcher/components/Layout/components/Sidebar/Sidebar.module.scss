@@ -1,0 +1,115 @@
+@mixin container-closed {
+  text-align: center;
+  width: 70px;
+
+  @apply p-2 pt-14;
+}
+
+@mixin item-closed {
+  @apply flex justify-center;
+}
+
+@mixin container-closed-mobile {
+  @media (width <= 800px) {
+    display: none;
+  }
+}
+
+.sidebar-container {
+  @apply w-1/4 h-screen text-white flex flex-col items-start relative;
+
+  background-color: #202020;
+  transition: width 0.3s;
+
+  &.closed {
+    @include container-closed;
+    @include container-closed-mobile;
+  }
+
+  &.open {
+    @apply p-8 pt-14;
+
+    @media (width <= 800px) {
+      width: 100%;
+    }
+  }
+}
+
+.sidebar-toggle {
+  @apply p-1 rounded-full absolute top-5 right-[-10px];
+
+  background: #d9d9d9;
+  cursor: pointer;
+
+  @media (width <= 800px) {
+    @apply right-10;
+
+    background: none;
+  }
+}
+
+.sidebar-logo {
+  @apply w-full flex justify-center mb-14;
+}
+
+.parent {
+  @apply my-3  w-full;
+}
+
+.sidebar-item {
+  position: relative;
+
+  @apply flex w-full items-center gap-4  py-2 text-lg px-3 cursor-pointer;
+
+  &.closed {
+    @include item-closed;
+  }
+
+  &.selected {
+    @apply bg-gray-700 rounded;
+
+    color: #d1d1d1;
+  }
+
+  &.child {
+    @apply pl-6;
+  }
+
+  :hover {
+    @apply bg-gray-700 rounded;
+  }
+}
+
+.sidebar-subitems {
+  @apply flex flex-col w-full;
+}
+
+.sidebar-text {
+  &:hover {
+    color: #d1d1d1;
+  }
+}
+
+.sidebar-logout {
+  color: #a65959;
+}
+
+.language-selector-container {
+  @apply absolute bottom-10;
+}
+
+.sidebar-children-popup {
+  position: absolute;
+  left: 100%; // Aligns the popup to the right edge of the parent item
+  top: 0; // Aligns the popup to the top of the parent item
+  background-color: #303030; // Adjust the background color as needed
+  white-space: nowrap; // Ensures the content doesn't wrap
+  padding: 5px; // Add some padding around the content
+  box-shadow: 0 0 10px rgb(0 0 0 / 50%); // Optional: Adds a shadow for better visibility
+  z-index: 1000; // Ensures it's above other elements
+  display: none; // Initially hidden
+}
+
+.sidebar-item:hover .sidebar-children-popup {
+  display: block; // Show the popup when parent is hovered
+}

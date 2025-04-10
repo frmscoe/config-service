@@ -80,4 +80,3 @@ A rule will be deployed, then retired - either because it is no longer needed, o
 How do I get to a rule configuration?
 I need to edit an existing rule, and select its configuration
 Or create a new rule
-

@@ -1,0 +1,54 @@
+version: '3.9'
+services:
+  config-svc-be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3007:3007'
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - AUTH_N_SVC_BASEURL=http://localhost:3201
+      - AUTHORIZATION_BASEURL=http://localhost:3202
+      - AUTH_N_TOKEN_ISSUER_NAME=mojaloop.vnext.dev.default_issuer
+      - AUTH_N_TOKEN_AUDIENCE=mojaloop.vnext.dev.default_audience
+      - KAFKA_URL=localhost:9092
+      - BC_NAME=config-svc-bc
+      - APP_NAME=Configuration_Service
+      - APP_VERSION=0.5.5
+      - SVC_CLIENT_ID=config-svc-client-id
+      - SVC_CLIENT_SECRET=config-svc-client-secret
+      - DATABASE_HOST=http://arangodb:8529
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=password
+      - DATABASE_NAME=config-svc-db # Specify the database name here
+      - SYSTEM_DATABASE_NAME=_system
+      - DATABASE_NAME_TEST=config-svc-db-test # Specify the test database name here
+    depends_on:
+      - 'arangodb'
+    networks:
+      - config-svc-be-network
+
+  arangodb:
+    image: arangodb/arangodb
+    restart: unless-stopped
+    ports:
+      - '8529:8529'
+    environment:
+      - DATABASE_PASSWORD=password
+    volumes:
+      - ./arangodb-data:/var/lib/arangodb3 # Mounts a local directory as a volume
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://arangodb:8529']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - config-svc-be-network
+
+networks:
+  config-svc-be-network:
+    external:
+      name: config-svc-be-network

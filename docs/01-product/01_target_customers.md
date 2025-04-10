@@ -1,5 +1,8 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # Rules Builder Target Customers
+
+## Target Customer
 
 One of the major challenges for the users of the Tazama FRMS solution is that invariably they are in a department that is ordinarily a cost centre. Any investment in technology has to minimise the further operational costs of the solution.
 

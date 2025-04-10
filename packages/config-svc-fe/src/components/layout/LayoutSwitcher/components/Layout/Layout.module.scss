@@ -1,0 +1,55 @@
+.layout {
+  &-container {
+    @apply w-full h-full bg-white flex justify-start items-start;
+  }
+
+  &-right {
+    @apply flex flex-col w-full h-screen overflow-y-auto;
+  }
+
+  &-header {
+    @apply w-full py-2 bg-white px-2;
+    &-title {
+      @apply text-2xl font-bold text-black pl-7;
+    }
+
+    &-buttons {
+      @apply flex flex-row justify-end items-center;
+
+      &-line {
+        @apply hidden md:block w-px h-8 bg-black;
+      }
+
+      a {
+        @apply bg-white flex flex-col justify-center items-center;
+        @apply mx-2 text-center;
+
+        &:hover {
+          @apply bg-black text-white;
+        }
+
+        span {
+          @apply text-xs underline;
+        }
+      }
+    }
+  }
+
+  &-content {
+    @apply w-full flex flex-col h-screen justify-start items-start pt-2 gap-4;
+
+    &-left {
+      @apply w-1/4 h-full hidden md:block;
+    }
+
+    &-right {
+      @apply flex flex-col w-3/4;
+
+      height: 100%;
+    }
+  }
+}
+
+.center-content {
+  @apply w-full flex flex-col justify-center items-center gap-4;
+}
