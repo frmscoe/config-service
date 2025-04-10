@@ -353,7 +353,7 @@ or `git clone --branch dev git@github.com:frmscoe/config-service.git` if you hav
 
 ## Config Service Backend Deployment
 
-Navigate to `config-svc/packages/config-svc-be`
+Navigate to `config-service/packages/config-svc-be`
 
 ### Install All The Required Dependencies
 
@@ -411,19 +411,19 @@ CERT_PATH_PUBLIC=/absolute/path/to/test-public-key.pem
 
 #### Private Key (private-key.pem) - CERT_PATH_PRIVATE:
 
-A test-private-key.pem has been provided for you. You should find it in `config-svc/packages/test-private-key.pem`
+A test-private-key.pem has been provided for you. You should find it in `config-service/packages/test-private-key.pem`
 
 #### Public Key (public-key.pem) - CERT_PATH_PUBLIC:
 
-A test-public-key.pem has been provided for you. You should find it in `config-svc/packages/test-private-key.pem`
+A test-public-key.pem has been provided for you. You should find it in `config-service/packages/test-private-key.pem`
 
 #### Store Paths in the `.env` File
 
 Now that you have your keys, store the file paths in `config-svc-be/.env`:
 
 ```t
-CERT_PATH_PRIVATE=/absolute/path/to/config-svc/packages/test-private-key.pem
-CERT_PATH_PUBLIC=/absolute/path/to/config-svc/packages/test-private-key.pem
+CERT_PATH_PRIVATE=/absolute/path/to/config-service/packages/test-private-key.pem
+CERT_PATH_PUBLIC=/absolute/path/to/config-service/packages/test-private-key.pem
 ```
 
 - Replace `/absolute/path/to/` with the actual location where you saved the files.
@@ -452,7 +452,7 @@ NB: for the environment variables, you can copy the contents in `.env.sample` fi
 
 ## Config Service Frontend Deployment
 
-Navigate to `config-svc/packages/config-svc-fe`
+Navigate to `config-service/packages/config-svc-fe`
 
 ### NPM Package Installation
 
