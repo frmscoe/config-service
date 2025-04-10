@@ -347,9 +347,9 @@ You can assign groups or change the groups of an exitsing user
 
 ## Config Service Packages
 
-Clone the config service frontend and backend using this command `git clone --branch dev https://github.com/tazama-lf/config-svc.git`
+Clone the config service frontend and backend using this command `git clone --branch dev https://github.com/frmscoe/config-service.git`
 
-or `git clone --branch dev git@github.com:tazama-lf/config-svc.git` if you have setup SSH
+or `git clone --branch dev git@github.com:frmscoe/config-service.git` if you have setup SSH
 
 ## Config Service Backend Deployment
 
