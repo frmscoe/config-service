@@ -78,7 +78,7 @@
     "stylelint-order": "^6.0.4",
     "stylelint-prettier": "^5.0.0",
     "stylelint-scss": "^6.2.1",
-    "supertest": "^6.3.4",
+    "supertest": "^7.1.0",
     "tailwindcss": "^3.4.1",
     "ts-jest": "^29.1.2",
     "tslib": "~2.5.3",
