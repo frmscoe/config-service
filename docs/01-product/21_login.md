@@ -22,7 +22,7 @@ title Sequence Diagram: User Login and Authentication
 
   actor User
   participant FE as Front End
-  participant config-svc as Configuration Service
+  participant config-service as Configuration Service
 
   User ->> FE: Access login form
   FE ->> User: Displays login form
@@ -41,12 +41,12 @@ title Sequence Diagram: User Login and Authentication
     User ->> FE: Submits login credentials
   end
 
-  FE ->> config-svc: Send login credentials
+  FE ->> config-service: Send login credentials
   alt Login Error
-    config-svc ->> FE: Error response (invalid credentials, etc.)
+    config-service ->> FE: Error response (invalid credentials, etc.)
     FE ->> User: Display error message
   else Successful Login
-    config-svc ->> FE: Return authentication token
+    config-service ->> FE: Return authentication token
     FE ->> User: Redirect to homepage
   end
 ```

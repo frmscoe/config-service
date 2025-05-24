@@ -332,6 +332,7 @@ export const esCommon = {
         "cases": "Casos",
         "save": "Guardar",
         "exit": "Salir",
+        "ruleDetails": "Detalles de la regla",
         errors: {
             minorRequired: 'El menor es obligatorio',
             patchRequired: 'El parche es obligatorio',
@@ -406,6 +407,20 @@ export const esCommon = {
             selectParameterType: 'Seleccionar Tipo de Parámetro',
             parameterValue: 'Valor del Parámetro',
             add: 'Añadir'
+        },
+        ruleDetailsForm: {
+          name: "Nombre de la regla",
+          description: "Descripción",
+          createdBy: "Creado por",
+          modifiedBy: "Modificado por",
+          updatedAt: "Última actualización",
+          dependencies: "Dependencias",
+          cfg: "Versión",
+          dataType: "Tipo de dato",
+          approvedBy: "Aprobado por",
+          dependencies: "Dependencias",
+          status: "Estado actual",
+          createdAt: "Creado"
         }
     },
     typologyListPage: {
@@ -484,7 +499,10 @@ export const esCommon = {
         cancel: 'Cancelar',
         errorTitle: 'Error',
         errorMessage: 'Ocurrió un error',
-        retry: 'Reintentar'
+        retry: 'Reintentar',
+        parameters: 'Parámetros',
+        bands: 'Bandas',
+        cases: 'Casos'
     },
     ruleConfigReviewPage: {
         version: 'Versión',
@@ -533,6 +551,17 @@ export const esCommon = {
         closeExpand: 'Cerrar Expansión',
         typology: 'Tipología',
         version: 'Versión',
+    },
+    stateMachine: {
+      submitForReview: "Enviar para revisión",
+      approve: "Aprobar",
+      reject: "Rechazar",
+      withdraw: "Retirar",
+      abandon: "Abandonar",
+      deploy: "Desplegar",
+      retire: "Retirar",
+      archive: "Archivar"
     }
+
 
 }

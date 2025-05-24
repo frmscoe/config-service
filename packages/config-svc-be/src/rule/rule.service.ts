@@ -75,43 +75,104 @@ export class RuleService {
     } catch (e) {
       throw new BadRequestException(e.message);
     }
-  }  
+  }
+
+  // async findAll(options: {
+  //   page: number;
+  //   limit: number;
+  // }): Promise<{ count: number; rules: Rule[] }> {
+  //   const { limit, page } = options;
+  //   const db = this.arangoDatabaseService.getDatabase();
+  //   const skip = (page - 1) * limit;
+
+  //   const query = `
+  //   LET count = LENGTH(FOR doc IN @@collection FILTER doc.edited != @edited RETURN doc)
+  //   LET rules = (
+  //       FOR rule IN @@collection
+  //       FILTER rule.edited != @edited
+  //       SORT rule.createdAt ASC
+  //       LIMIT @skip, @limit
+  //       RETURN rule
+  //   )
+  //   RETURN { count, rules }
+  // `;
+
+  //   const bindVars = {
+  //     '@collection': RULE_COLLECTION,
+  //     edited: true,
+  //     skip: skip,
+  //     limit: limit,
+  //   };
+
+  //   try {
+  //     const cursor = await db.query(query, bindVars);
+  //     return await cursor.next();
+  //   } catch (e) {
+  //     throw new InternalServerErrorException(
+  //       `Failed to retrieve rules: ${e.message}`,
+  //     );
+  //   }
+  // }
+
   async findAll(options: {
     page: number;
     limit: number;
+    desc?: string;
+    name?: string;
+    cfg?: string;
+    state?: string;
+    ownerId?: string;
   }): Promise<{ count: number; rules: Rule[] }> {
-    const { limit, page } = options;
+    const { limit, page, desc, name, cfg, state, ownerId } = options;
     const db = this.arangoDatabaseService.getDatabase();
     const skip = (page - 1) * limit;
 
-    const query = `
-    LET count = LENGTH(FOR doc IN @@collection FILTER doc.edited != @edited RETURN doc)
-    LET rules = (
-        FOR rule IN @@collection
-        FILTER rule.edited != @edited
-        SORT rule.createdAt ASC
-        LIMIT @skip, @limit
-        RETURN rule
-    )
-    RETURN { count, rules }
-  `;
+    const filters = [`rule.edited != true`];
 
-    const bindVars = {
+    // if (desc) filters.push(`CONTAINS(LOWER(rule.desc), LOWER(@desc))`);
+    if (desc) filters.push(`CONTAINS(LOWER(rule.\`desc\`), LOWER(@desc))`);
+    if (name) filters.push(`CONTAINS(LOWER(rule.name), LOWER(@name))`);
+    if (cfg) filters.push(`CONTAINS(LOWER(rule.cfg), LOWER(@cfg))`);
+    if (state) filters.push(`rule.state == @state`);
+    if (ownerId) filters.push(`rule.ownerId == @ownerId`);
+
+    const filterClause = filters.length ? `FILTER ${filters.join(' AND ')}` : '';
+
+    const query = `
+      LET count = LENGTH(
+        FOR rule IN @@collection
+          ${filterClause}
+          RETURN rule
+      )
+      LET rules = (
+        FOR rule IN @@collection
+          ${filterClause}
+          SORT rule.createdAt ASC
+          LIMIT @skip, @limit
+          RETURN rule
+      )
+      RETURN { count, rules }
+    `;
+
+    const bindVars: Record<string, any> = {
       '@collection': RULE_COLLECTION,
-      edited: true,
-      skip: skip,
-      limit: limit,
+      skip,
+      limit,
     };
+    if (desc) bindVars['desc'] = desc;
+    if (name) bindVars['name'] = name;
+    if (cfg) bindVars['cfg'] = cfg;
+    if (state) bindVars['state'] = state;
+    if (ownerId) bindVars['ownerId'] = ownerId;
 
     try {
       const cursor = await db.query(query, bindVars);
       return await cursor.next();
     } catch (e) {
-      throw new InternalServerErrorException(
-        `Failed to retrieve rules: ${e.message}`,
-      );
+      throw new InternalServerErrorException(`Failed to retrieve rules: ${e.message}`);
     }
   }
+
 
   async findRuleConfigs(options: {
     page: number;

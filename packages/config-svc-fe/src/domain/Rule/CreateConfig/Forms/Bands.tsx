@@ -1,4 +1,9 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
+// Changing Time in config
+// Sider bug
+// bug number in line
+// Bug: Upper Limit and Reason Incorrectly Shift to Band 0.2 When Adding Above Band 0.1
+// Bug: New Band Added Below Instead of Above
 import { ArrowDownOutlined, ArrowUpOutlined, DeleteFilled, PlusCircleFilled } from "@ant-design/icons";
 import { Input, Typography, Form, Slider, InputNumber, Select, DatePicker } from "antd";
 import React from "react";
@@ -30,6 +35,26 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
 
     const [timeValues, setTimeValues] = useState<{ hours: number; minutes: number; seconds: number, days: number }[]>([]);
 
+
+    // Sync timeValues state with band values if dataType is TIME
+    React.useEffect(() => {
+      if (getValue('dataType') === 'TIME') {
+        const bands = getValue('bands') || [];
+        const updated = bands.map((band: any) => {
+          const time = convertMillisecondsToDHMS(band.value || 0);
+          return {
+            days: time.days,
+            hours: time.hours,
+            minutes: time.minutes,
+            seconds: time.seconds,
+            sign: band.value < 0 ? '-' : '+',
+          };
+        });
+        setTimeValues(updated);
+      }
+    }, [getValue, getValue('bands'), getValue('dataType')]);
+
+
     const handleChangeValueField = React.useCallback((val: any, field: any, index: number) => {
             setError(`bands[${index}].value`, undefined);
             if(getValue('dataType') === 'CALENDER_DATE_TIME') {
@@ -40,14 +65,18 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
                     if(value > max) {
                         setError(`bands[${index}].value`, {message: t('createRuleConfigPage.bandForm.maxConditionRangeError') + ` ${new Date(max).toUTCString()}` });
                     } else {
-                        field.onChange(value);
+                        // field.onChange(value);
+                        field.onChange(Math.floor(val)); // ensure consistency even if value comes from input or other code
+
                     }
                 } else {
                     const nextCondition = bands[index+1];
                     if(val > nextCondition?.value) {
                         setError(`bands[${index}].value`, {message: t('createRuleConfigPage.bandForm.maxConditionRangeError') + ` ${new Date(nextCondition.value).toISOString()}`});
                     } else {
-                        field.onChange(value);
+                        // field.onChange(value);
+                        field.onChange(Math.floor(val)); // ensure consistency even if value comes from input or other code
+
                     }
                 }
                
@@ -86,34 +115,41 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
 
     }
 
+    
     const handleSlide = React.useCallback((index: number, value: number) => {
-        const bands = getValue('bands');
-        setValue(`bands[${index}].value`, value);
-        if(getValue('dataType') === 'TIME') {
-            const timeObj = convertMillisecondsToDHMS(value);
-            setTimeValues((prevState: any) => {
-                const updatedTimeValues = [...prevState];
-                updatedTimeValues[index] = {
-                    hours: timeObj.hours >= 24 ? 0 : Math.abs(timeObj.hours),
-                    days: Math.abs(timeObj.days),
-                    minutes: timeObj.minutes >= 60 ? 0 : Math.abs(timeObj.minutes),
-                    seconds: timeObj.seconds >= 60 ? 0 : Math.abs(timeObj.seconds),
-                };
-                return updatedTimeValues;
-            });
+      const bands = getValue('bands');
+
+      const floored = Math.floor(value);
+      setValue(`bands[${index}].value`, floored); // Save clean
+
+      if (getValue('dataType') === 'TIME') {
+        const timeObj = convertMillisecondsToDHMS(floored); // Convert clean
+
+        setTimeValues((prevState: any) => {
+          const updatedTimeValues = [...prevState];
+          updatedTimeValues[index] = {
+            hours: Math.abs(timeObj.hours),
+            days: Math.abs(timeObj.days),
+            minutes: Math.abs(timeObj.minutes),
+            seconds: Math.abs(timeObj.seconds),
+            sign: floored < 0 ? '-' : '+', // Sign matches floored
+          };
+          return updatedTimeValues;
+        });
+      }
+
+      if (bands?.length >= 1) {
+        const bandsToUpdate = bands.slice(0, index);
+        let currentUpperLimit = floored - 1;
+        const lastIndex = bandsToUpdate.length - 1;
+        for (let i = lastIndex; i >= 0; i--) {
+          bandsFields.update(i, { ...bandsToUpdate[i], upperLimit: currentUpperLimit });
+          currentUpperLimit = currentUpperLimit - 1;
         }
-      
-        //handle set epoch time on slide
-        if (bands?.length >= 1) {
-            const bandsToUpdate = bands.slice(0, index);
-            let currentUpperLimit = value - 1;
-            const lastIndex = bandsToUpdate.length - 1;
-            for (let i = lastIndex; i >= 0; i--) {
-                bandsFields.update(i, { ...bandsToUpdate[i], upperLimit: currentUpperLimit });
-                currentUpperLimit = currentUpperLimit - 1;
-            }
-        }
+      }
     }, [bandsFields.update, setValue, getValue]);
+
+
 
     const handleTimeChange = (field: string, value: number | null, fieldIndex: number) => {
         let finalValue = value;
@@ -141,36 +177,64 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
         });
     };
 
+    // const handleRemoveField = (index: number) => {
+    //     const bands = getValue('bands');
+    //     if (!bands.length || index === 0) {
+    //         bandsFields.remove(index);
+    //     } else {
+    //         const bandsToUpdate = bands.slice(0, index);
+    //         let currentLimit = bands[index || 0]?.upperLimit || 0;
+    //         for (let i = index; i >= 0; i--) {
+    //             bandsFields.update(i, { ...bandsToUpdate[i], upperLimit: currentLimit + 1 });
+    //             currentLimit = currentLimit - 1;
+    //         }
+    //         bandsFields.remove(index);
+    //     }
+        
+    //     if(getValue('dataType') === 'TIME') {
+           
+    //         setTimeValues((prevState: any) => {
+    //             const updatedTimeValues = [...prevState];
+    //             updatedTimeValues[index] = {
+    //                 hours: null,
+    //                 days: null,
+    //                 minutes: null,
+    //                 seconds: null
+    //             };
+    //             return updatedTimeValues;
+    //         });
+    //     }
+    //     bandsFields.remove(index);
+
+    // }
     const handleRemoveField = (index: number) => {
         const bands = getValue('bands');
-        if (!bands.length || index === 0) {
-            bandsFields.remove(index);
-        } else {
+
+        if (!bands.length) return;
+
+        // Optional: Update upperLimit of previous bands if needed
+        if (index > 0) {
             const bandsToUpdate = bands.slice(0, index);
-            let currentLimit = bands[index || 0]?.upperLimit || 0;
-            for (let i = index; i >= 0; i--) {
+            let currentLimit = bands[index]?.upperLimit || 0;
+            for (let i = index - 1; i >= 0; i--) {
                 bandsFields.update(i, { ...bandsToUpdate[i], upperLimit: currentLimit + 1 });
                 currentLimit = currentLimit - 1;
             }
-            bandsFields.remove(index);
         }
-        
-        if(getValue('dataType') === 'TIME') {
-           
+
+        // Remove time value at index if dataType is TIME
+        if (getValue('dataType') === 'TIME') {
             setTimeValues((prevState: any) => {
                 const updatedTimeValues = [...prevState];
-                updatedTimeValues[index] = {
-                    hours: null,
-                    days: null,
-                    minutes: null,
-                    seconds: null
-                };
+                updatedTimeValues.splice(index, 1); // Properly remove the time entry
                 return updatedTimeValues;
             });
         }
-        bandsFields.remove(index);
 
-    }
+        // Remove the band (only once)
+        bandsFields.remove(index);
+    };
+
 
     const handleAppend = React.useCallback((index?: number) => {
         const bands = getValue('bands');
@@ -201,24 +265,37 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
         }
     }, [getValue, bandsFields.append, bandsFields.update])
 
+
     const handlePrepend = (index: number) => {
-        if (index === 0) {
-            //if u add the item at the top of the list
-            const upperLimit = getValue(`bands[0].upperLimit`) - 1;
-            bandsFields.prepend({ reason: '', value: null, dataType: getValue('dataType'), upperLimit });
-        } else {
-            const bands = getValue('bands');
-            bandsFields.insert(index, { reason: '', value: null, dataType: getValue('dataType'), upperLimit: bands[index || 0]?.upperLimit || 0 });
-            const bandsToUpdate = bands.slice(0, index);
-            let currentLimit = bands[index || 0]?.upperLimit || 0;
-            for (let i = index; i >= 0; i--) {
-                bandsFields.update(i, { ...bandsToUpdate[i], upperLimit: currentLimit - 1 });
-                currentLimit = currentLimit - 1;
-            }
+      const bands = getValue('bands');
 
-        }
+      // Step 1: Get the band currently at this index (usually 0)
+      const currentBand = bands[index];
 
+      // Step 2: Overwrite this band with an empty band (preserves its visual spot)
+      bandsFields.update(index, {
+        reason: '',
+        value: null,
+        dataType: getValue('dataType'),
+        upperLimit: currentBand.upperLimit - 1,
+      });
+
+      // Step 3: Insert the original band back right after it
+      bandsFields.insert(index + 1, { ...currentBand });
+
+      // Step 4: Recalculate upperLimits from index + 1 downwards
+      const updatedBands = getValue('bands');
+      let currentLimit = updatedBands[index].upperLimit - 1;
+
+      for (let i = index + 1; i < updatedBands.length; i++) {
+        bandsFields.update(i, {
+          ...updatedBands[i],
+          upperLimit: currentLimit--,
+        });
+      }
     };
+
+
 
 
     return (
@@ -268,6 +345,9 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
                     <div key={field.id} data-testid="band-field" className="col-span-11">
                        
                         <Typography.Title level={4}>{t('createRuleConfigPage.bandForm.band')} .0{index + 1}</Typography.Title>
+                        {/*<Typography.Title level={4}>
+                          {t('createRuleConfigPage.bandForm.band')} .0{bandsFields.fields.length - index}
+                        </Typography.Title>*/}
 
                         <Form.Item label={'UpperLimit'}
                             validateStatus={(formState?.errors?.bands && formState?.errors?.bands[index]?.value?.message) ? 'error' : ''}
@@ -337,7 +417,8 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
                                         <Slider
                                         reverse
                                         vertical
-                                        value={limit.value || 0}
+                                        // value={limit.value || 0}
+                                        value={Math.floor(limit.value || 0)}
                                         min={min.value}
                                         max={maxLimit}
                                         onChange={(val) => handleSlide(index, val)} />
@@ -350,13 +431,17 @@ const Bands: React.FunctionComponent<IProps> = ({ control, bandsFields, formStat
 
                   
                 </div>
-                <div className='flex justify-end mb-3'>
+                
+                    {index === bandsFields.fields.length - 1 && (
+                      <div className='flex justify-end mb-3'>
                         <PlusCircleFilled 
                             data-testid="append-button"
                             onClick={() => handleAppend(index)}
                             style={{ fontSize: '1.2rem', cursor: 'pointer' }} />
-                            <ArrowDownOutlined/>
-                    </div>
+                        <ArrowDownOutlined/>
+                      </div>
+                    )}
+
                 </>
             ))}
             <Typography.Text type='danger'>{formState?.errors?.bands?.message}</Typography.Text>
@@ -440,60 +525,83 @@ export const ValueField: React.FunctionComponent<ValueProps> = ({ dataType = 'nu
         }
 
     }
+    
     const handleEpochTimeChange = (time: number) => {
-        props.onChange(time);
-        const timeObj = convertMillisecondsToDHMS(time);
-        props.setTimeValues((prevState: any) => {
-            const updatedTimeValues = [...prevState];
-            updatedTimeValues[props.index] = {
-                hours: timeObj.hours <= 0 ? Math.abs(timeObj.hours) : timeObj.hours,
-                days: timeObj.days <= 0 ? Math.abs(timeObj.days) : timeObj.days,
-                minutes: timeObj.minutes <= 0 ? Math.abs(timeObj.minutes) : timeObj.minutes,
-                seconds: timeObj.seconds <= 0 ? Math.abs(timeObj.seconds) : timeObj.seconds
-            };
-            return updatedTimeValues;
-        });
+      // props.onChange(time);
+        props.onChange(Math.floor(time * 1000));
 
-    }
+      // Detect sign and update dropdown automatically
+      const isNegative = time < 0;
+      const newSign = isNegative ? '-' : '+';
+
+    };
+
 
     if (dataType === 'TIME') {
         const formatter = (value: any) => `${value}`.replace(/^(-?)(\d+)((\.\d{0,3})?).*$/, '$1$2$3');
         // To parse the input to number
         const parser = (value: any) => value.replace(/\$\s?|(,*)/g, '');
         return <>
-            <InputNumber className="w-full" data-testid="epoch-input" value={props.value} onChange={handleEpochTimeChange as any} />
+            {/*<InputNumber className="w-full" data-testid="epoch-input" value={props.value} onChange={handleEpochTimeChange as any} />*/}
+            <InputNumber
+              className="w-full"
+              data-testid="epoch-input"
+              value={Math.floor(props.value / 1000)}  // ← display clean seconds
+              onChange={handleEpochTimeChange as any}
+            />
 
-            <Form layout="vertical" className="flex flex-wrap mt-3 mb-2 w-full"
-           
+
+            <Form
+              layout="vertical"
+              className="flex flex-row gap-2 mt-3 mb-10 items-end flex-nowrap w-full"
             >
-                <Form.Item label="   ">
-                    <Select data-testid="data-type" className="w-12" onChange={handleDataTypeChange}>
-                        {[{ label: '+ve', value: '+' }, { label: '-ve', value: '-' }].map((sign) => (
-                            <Select.Option value={sign.value} >
-                                {sign.value}ve
-                            </Select.Option>
-                        ))}
-                    </Select>
-                </Form.Item>
+              <Form.Item label="Sign" className="!mb-0" style={{ width: 60 }}>
+                <Input
+                  className="text-center"
+                  readOnly
+                  value={props.value < 0 ? '-ve' : '+ve'}
+                />
+              </Form.Item>
 
-                <Form.Item label={t('createRuleConfigPage.bandForm.days')} className="mx-1">
-                    <InputNumber data-testid="days-input"  value={days} onChange={(val) => handleChangeTime('days', val as number)} />
-                </Form.Item>
-                <Form.Item label={t('createRuleConfigPage.bandForm.hours')}className="mx-1">
-                    <InputNumber data-testid="hours-input"  max={24} min={0} value={hours} onChange={(val) => handleChangeTime('hours', val as number)} />
-                </Form.Item>
-                <Form.Item label={t('createRuleConfigPage.bandForm.minutes')} className="mx-1">
-                    <InputNumber data-testid="minutes-input"  max={60} min={0} value={minutes} onChange={(val) => handleChangeTime('minutes', val as number)} />
-                </Form.Item>
-                <Form.Item label={t('createRuleConfigPage.bandForm.seconds')} className="mx-1">
-                    <InputNumber   
-                        formatter={formatter}
-                        parser={parser} max={60} 
-                        data-testid="seconds-input"  
-                        min={0} value={seconds} 
-                        onChange={(val) => handleChangeTime('seconds', val as number)} />
-                </Form.Item>
+              <Form.Item label="Days" className="!mb-0" style={{ width: 70 }}>
+                <InputNumber
+                  value={days}
+                  onChange={(val) => handleChangeTime('days', val as number)}
+                  className="w-full"
+                />
+              </Form.Item>
+
+              <Form.Item label="Hours" className="!mb-0" style={{ width: 70 }}>
+                <InputNumber
+                  value={hours}
+                  onChange={(val) => handleChangeTime('hours', val as number)}
+                  className="w-full"
+                  min={0}
+                  max={24}
+                />
+              </Form.Item>
+
+              <Form.Item label="Minutes" className="!mb-0" style={{ width: 85 }}>
+                <InputNumber
+                  value={minutes}
+                  onChange={(val) => handleChangeTime('minutes', val as number)}
+                  className="w-full"
+                  min={0}
+                  max={59}
+                />
+              </Form.Item>
+
+              <Form.Item label="Seconds" className="!mb-0" style={{ width: 85 }}>
+                <InputNumber
+                  value={seconds}
+                  onChange={(val) => handleChangeTime('seconds', val as number)}
+                  className="w-full"
+                  min={0}
+                  max={59}
+                />
+              </Form.Item>
             </Form>
+
         </>
     }
     if (dataType === 'NUMERIC' || dataType === 'CURRENCY') {

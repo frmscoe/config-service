@@ -4,6 +4,8 @@ import { Drawer, Collapse, Typography, Button, Alert, CollapseProps } from "antd
 import { useState, useMemo, Suspense, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as yup from 'yup';
+import dayjs from 'dayjs';
+
 
 import { useCommonTranslations } from "~/hooks";
 
@@ -12,6 +14,7 @@ import Cases from "./Cases";
 import ExitConditions from "./ExitConditions";
 import Information from "./Information";
 import Parameters from "./Parameters";
+import RuleDetails from "./RuleDetails";
 
 interface FormProps {
     open: boolean;
@@ -26,7 +29,17 @@ interface FormProps {
     conditions: any[];
     setConditions: (conditions: any[]) => void;
     handleClose?: () => void,
+    rule: {
+    name: string;
+    desc: string;
+    ownerId: string;
+    updatedBy: string;
+    updatedAt: string;
+    state: string;
+    dependencies?: string[];
+  } | null;
 }
+
 
 export const ConfigForm: React.FunctionComponent<FormProps> = ({
     open,
@@ -43,6 +56,7 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
     ...props
 
 }) => {
+    const { rule } = props;
     const { t } = useCommonTranslations();
     const [selectedCategory, setSelectedCategory] = useState<string | undefined>('');
 
@@ -130,7 +144,8 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
                                 default:
                                     return yup.string().required('Value should be a string');
                             }
-                        })
+                        }),
+                    subRuleRef: yup.string().required('Sub Rule Ref is required')
 
                 })
             ).when('isCase', (isCase, schema) => {
@@ -242,18 +257,74 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
     }, [success]);
 
     const onSubmit = async (data: any) => {
-        props.onSubmit(data);
-    }
-    const onClose = () => {
-        setOpen(false);
-        handleClose();        
+      // console.log(" [ConfigForm] Submitting Data:", data);
+      props.onSubmit(data);
     };
+
+    
+    const onClose = () => {
+        if (formState.isDirty) {
+            const confirmExit = window.confirm("You have unsaved changes. Are you sure you want to exit?");
+            if (!confirmExit) return;
+        }
+
+        // Close open dropdowns or inputs
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
+        // Hide any lingering dropdowns
+        document.querySelectorAll('.ant-select-dropdown, .ant-picker-dropdown').forEach((el) => {
+            (el as HTMLElement).style.display = 'none';
+        });
+
+        reset(); // Clear all values
+
+        // Clear dynamic arrays from the UI too
+        parameterFields.replace([]);
+        bandsFields.replace([]);
+        caseFields.replace([]);
+
+        setOpen(false);
+        handleClose();
+    };
+
+
+
     const onChange = (vals: any) => {
         setActiveKey(vals);
 
     }
 
     const items = [
+        {
+          key: '0',
+          label: <Typography.Title level={5}>{t('createRuleConfigPage.ruleDetails')}</Typography.Title>,
+          children: (
+            <Suspense fallback={null}>
+              {rule && (
+                <RuleDetails
+                  rule={{
+                    name: rule.name,
+                    description: rule.desc,
+                    cfg: rule.cfg,
+                    dataType: rule.dataType,
+                    createdBy: rule.ownerId,
+                    modifiedBy: rule.updatedBy,
+                    approvedBy: rule.approverId,
+                    createdAt: dayjs(rule.createdAt).format('YYYY-MM-DD HH:mm'),
+                    updatedAt: dayjs(rule.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    dependencies: [], // you can enhance later
+                    status: rule.state.replace('01_', '').toLowerCase(),
+                    dependencies: rule.dependencies,
+                  }}
+                />
+              )}
+            </Suspense>
+          )
+        },
+
+
         {
             key: '1',
             label: <Typography.Title type={formState?.errors?.dataType ? 'danger' : 'secondary'} level={5}>{t('createRuleConfigPage.information')}</Typography.Title>,

@@ -1,51 +1,66 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
+'use client';
+
 import { useCallback, useEffect, useState } from "react";
-import { Review } from "./Review"
+import { Review } from "./Review";
 import usePrivileges from "~/hooks/usePrivileges";
 import AccessDeniedPage from "~/components/common/AccessDenied";
-import { getRule } from "./service";
+import { getFullRuleConfig } from "./service";
 import { useParams } from "next/navigation";
-import { IRule } from "../RuleDetailPage/service";
+import { IFullRule } from "./types";
 import { useAuth } from "~/context/auth";
+import { canTransition } from '../../../../machine/guards';
 
 const ReviewPage = () => {
-    const [loading, setLoading] = useState(false);
-    const { canReviewRule } = usePrivileges();
-    const [error, setError] = useState('');
-    const [rule, setRule] = useState<IRule | null>(null);
-    const { id } = useParams();
-    const {profile} = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [rule, setRule] = useState<IFullRule | null>(null);
+  // const { id } = useParams();
+  const id = (useParams()?.id || '') as string;
+  const { privileges } = usePrivileges();
+  const { profile } = useAuth();
 
-    const fetchRule = useCallback(() => {
-        setLoading(true);
-        setError('');
-        getRule(id as string)
-            .then(({ data }) => {
-                setRule(data);
-            }).catch((e) => {
-                setError(e?.response?.data?.message || e?.message || 'Something went wrong');
-            }).finally(() => {
-                setLoading(false);
-            });
+  const fetchRule = useCallback(() => {
+    setLoading(true);
+    setError('');
+    getFullRuleConfig(id as string)
+      .then(({ data }) => {
+        setRule({
+          ...data.rule,
+          ruleConfigs: data.ruleConfigs,
+        });
+      })
+      .catch((e) => {
+        setError(e?.response?.data?.message || e?.message || 'Something went wrong');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id]);
 
-    }, []);
+  useEffect(() => {
+    fetchRule();
+  }, [fetchRule]);
 
-    useEffect(() => {
-        if (canReviewRule) {
-            fetchRule();
-        }
-    }, [canReviewRule, id]);
+  // const canReview = rule &&
+  //   canTransition(privileges, 'RULE', rule.state, 'REVIEW') &&
+  //   profile?.username !== rule.ownerId;
+  const canReview = rule && canTransition(privileges, 'RULE', rule.state, 'REVIEW');
 
-    if (!canReviewRule) {
-        return <AccessDeniedPage />
-    }
-    return <Review
-        loading={loading}
-        error={error}
-        fetchRule={fetchRule}
-        rule={rule}
-        user={profile}
+
+  if (rule && !canReview) {
+    return <AccessDeniedPage />;
+  }
+
+  return (
+    <Review
+      loading={loading}
+      error={error}
+      fetchRule={fetchRule}
+      rule={rule}
+      user={profile}
     />
-}
+  );
+};
 
 export default ReviewPage;

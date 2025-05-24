@@ -130,6 +130,21 @@ const Cases: React.FunctionComponent<IProps> = ({ control, caseFields, formState
                             render={({ field }) => <Input {...field} data-testid="reason-input" placeholder={t('createRuleConfigPage.caseForm.reason')} />}
                         />
                     </Form.Item>
+
+                    <Form.Item label="Sub Rule Ref"
+                        validateStatus={(formState?.errors?.cases && formState?.errors?.cases[index]?.subRuleRef?.message) ? 'error' : ''}
+                        help={(formState?.errors?.cases && formState?.errors?.cases[index]?.subRuleRef?.message)}
+                        className="py-0 mb-2"
+                        labelAlign="left"
+                    >
+                        <Controller
+                            name={`cases[${index}].subRuleRef`}
+                            control={control}
+                            defaultValue=""
+                            render={({ field }) => <Input {...field} data-testid="sub-rule-ref-input" placeholder="Enter subRuleRef" />}
+                        />
+                    </Form.Item>
+
                    
                 </div>
                 

@@ -1,7 +1,7 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TableColumnsType } from 'antd';
-import { Alert, Button, Input, Space, Table } from 'antd';
+import { Alert, Button, Input, Space, Table, Modal } from 'antd';
 import { IUserProfile } from '~/context/auth';
 import { IRuleConfig } from './types';
 import { IRule } from '../../RuleDetailPage/service';
@@ -12,6 +12,8 @@ import { ConfigTable } from './ConfigTable';
 import usePrivileges from '~/hooks/usePrivileges';
 import Link from 'next/link';
 import { ConfigForm } from '../../CreateConfig/Forms';
+import { postRuleConfig, getRuleAndConfigs } from '~/domain/Rule/CreateConfig/service';
+
 
 
 interface Props {
@@ -235,24 +237,106 @@ const RuleConfig: React.FunctionComponent<Props> = ({
                 }}
             />
 
+
+            
             <ConfigForm
               open={drawerOpen}
               setOpen={setDrawerOpen}
               loading={loading}
-              setLoading={() => {}}
+              setLoading={() => {}} // optionally connect to real loader
               success=""
               serverError=""
               activeKeys={activeKeys}
               setActiveKey={setActiveKeys}
-              onSubmit={(data) => {
-                console.log('Submitted Data:', data);
-                setDrawerOpen(false);
-              }}
-              conditions={[]}
+              conditions={[]} // optionally connect to actual conditions if required
               setConditions={() => {}}
               handleClose={() => setDrawerOpen(false)}
-            />
+              rule={activeRuleData}
+              onSubmit={async (data) => {
+                  const version = `${data.major}.${data.minor || 0}.${data.patch || 0}`;
+                  const ruleName = activeRuleData?.name;
 
+                  try {
+                    // Step 1: Check for duplicate version
+                    const response = await getRuleAndConfigs(ruleName);
+                    const existingVersions = response.ruleConfigs.map((cfg: any) => cfg.cfg);
+
+                    if (existingVersions.includes(version)) {
+                      Modal.warning({
+                          title: "Duplicate Version Detected",
+                          content: `A rule config with version ${version} already exists for rule "${ruleName}". Please choose a different version.`,
+                          okText: "OK",
+                          okButtonProps: {
+                            style: {
+                              backgroundColor: "#2358BE",
+                              color: "#fff",
+                              border: "none",
+                            },
+                          },
+                        });
+                      return;
+                    }
+
+                    // Step 2: Submit rule config
+                    await postRuleConfig({
+                      ruleId: `rule/${activeRuleData?._key || activeRuleData?._id}`,
+                      desc: data.description,
+                      cfg: version,
+                      config: {
+                        parameters: data.parameters || [],
+                        exitConditions: [],
+                        bands: data.category === 'isBand' ? [
+                          ...data.bands.map((band: any, index: number) => ({
+                            ...(index !== 0 && { lowerLimit: band.value }),
+                            upperLimit: band.value,
+                            subRuleRef: `0.${index + 1}`,
+                            reason: band.reason,
+                          })),
+                          {
+                            lowerLimit: data.bandMaximumCondition,
+                            subRuleRef: `0.${data?.bands?.length + 1}`,
+                            reason: data.bandMaxReason,
+                          },
+                        ] : [],
+                        cases: data.category === 'isCase' ? data.cases : [],
+                      }
+                    });
+
+                    Modal.success({
+                      title: "Rule Config Created",
+                      content: "The rule configuration was successfully created.",
+                      okText: "OK",
+                      okButtonProps: {
+                        style: {
+                          backgroundColor: "#2358BE",
+                          color: "#fff",
+                          border: "none",
+                        },
+                      },
+                      onOk: () => {
+                        setDrawerOpen(false);
+                        // Optionally: refresh the ruleConfigs table here
+                      },
+                    });
+
+                  } catch (error: any) {
+                    console.error("Error submitting config:", error);
+                    Modal.error({
+                      title: "Submission Failed",
+                      content: error?.response?.data?.message || error.message || "Unknown error occurred.",
+                      okText: "OK",
+                      okButtonProps: {
+                        style: {
+                          backgroundColor: "#f5222d",
+                          color: "#fff",
+                          border: "none",
+                        },
+                      },
+                    });
+                  }
+                }}
+
+            />
 
 
         </>
@@ -260,3 +344,7 @@ const RuleConfig: React.FunctionComponent<Props> = ({
 };
 
 export default RuleConfig;
+
+
+
+

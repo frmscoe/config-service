@@ -12,7 +12,7 @@ export interface Props {
   onSubmit: (data: any) => void;
 }
 const TypologyForm: React.FunctionComponent<Props> = ({ formState, control, handleSubmit, onSubmit }) => {
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
   const {t} = useCommonTranslations();
 
   useEffect(() => {

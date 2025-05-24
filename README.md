@@ -119,11 +119,17 @@ remove `- arango`
 
 add ports `18529:8529`
 
+> WARNING :exclamation: Currently the Tazama Lumberjack has a dependency on NATS, it might not deploy if you do not remove the dependence. Inside docker-compose.dev.logs-elastic.yaml file, look for `- nats` and remove it.
+
+> WARNING :exclamation: Currently `docker-compose.dev.logs-elastic.yaml` has a dependency on `- nats` It will not deploy if you don't remove the dependency. Inside `docker-compose.dev.logs-elastic.yaml` look for `- nats` and remove it
+
 then run this command in the terminal to deploy auth service and keycloak, and the necessary infrastructure
 
 ```sh
 docker compose -f docker-compose.infrastructure.yaml -p tazama up -d
 docker compose -f docker-compose.auth.yaml -p tazama up -d
+docker compose -f docker-compose.dev.logs-elastic.yaml -p tazama up -d
+docker compose -f docker-compose.dev.elastic.yaml -p tazama up -d
 ```
 
 ### Access Keycloak Admin Console
@@ -164,10 +170,10 @@ You should see **tazama_admin** and **tazama_tms**
 
 - Go to Groups. Click on ***create group***
 - Enter the following one at a time:
-  - `config_svc_admin`
-  - `config_svc_editor`
-  - `config_svc_approver`
-  - `config_svc_viewer`
+  - `config_service_admin`
+  - `config_service_editor`
+  - `config_service_approver`
+  - `config_service_viewer`
 
 ### Create Realm Roles
 
@@ -208,14 +214,47 @@ You should see GET_V1_EVENT_FLOW_CONTROL_ACCOUNT and more
   - SECURITY_UPDATE_TYPOLOGY
   - SECURITY_UPDATE_TYPOLOGY_RULE_CONFIG
 
+  - SECURITY_APPROVE_RULE
+  - SECURITY_REJECT_RULE
+  - SECURITY_WITHDRAW_RULE
+  - SECURITY_DEPLOY_RULE
+  - SECURITY_RETIRE_RULE
+  - SECURITY_ARCHIVE_RULE
+  - SECURITY_ABANDON_RULE
+
+
+  - SECURITY_APPROVE_RULE_CONFIG
+  - SECURITY_REJECT_RULE_CONFIG
+  - SECURITY_WITHDRAW_RULE_CONFIG
+  - SECURITY_DEPLOY_RULE_CONFIG
+  - SECURITY_RETIRE_RULE_CONFIG
+  - SECURITY_ARCHIVE_RULE_CONFIG
+  - SECURITY_ABANDON_RULE_CONFIG
+
+
+  - SECURITY_APPROVE_TYPOLOGY
+  - SECURITY_REJECT_TYPOLOGY
+  - SECURITY_WITHDRAW_TYPOLOGY
+  - SECURITY_DEPLOY_TYPOLOGY
+  - SECURITY_RETIRE_TYPOLOGY
+  - SECURITY_ARCHIVE_TYPOLOGY
+  - SECURITY_ABANDON_TYPOLOGY
+
+  - SECURITY_REJECT_NETWORK_MAP
+  - SECURITY_WITHDRAW_NETWORK_MAP
+  - SECURITY_DEPLOY_NETWORK_MAP
+  - SECURITY_RETIRE_NETWORK_MAP
+  - SECURITY_ARCHIVE_NETWORK_MAP
+  - SECURITY_ABANDON_NETWORK_MAP
+
 ### Assign Realm Roles to Groups  
 
-We have created 31 realm roles.
+We have created 58 realm roles.
 
-#### config_svc_admin
+#### config_service_admin
 
 - Go to `Groups`
-- Click on `config_svc_admin`
+- Click on `config_service_admin`
 - Click on `Role mapping`
 - Click on `Assign role`
 - Select the following roles. all 31 of them (expand the modal so you can see all of the roles in needed):
@@ -251,40 +290,125 @@ We have created 31 realm roles.
   - SECURITY_UPDATE_TYPOLOGY
   - SECURITY_UPDATE_TYPOLOGY_RULE_CONFIG
 
-#### config_svc_approver
+  - SECURITY_APPROVE_RULE
+  - SECURITY_REJECT_RULE
+  - SECURITY_WITHDRAW_RULE
+  - SECURITY_DEPLOY_RULE
+  - SECURITY_RETIRE_RULE
+  - SECURITY_ARCHIVE_RULE
+  - SECURITY_ABANDON_RULE
 
-- Click on `config_svc_approver`
+
+  - SECURITY_APPROVE_RULE_CONFIG
+  - SECURITY_REJECT_RULE_CONFIG
+  - SECURITY_WITHDRAW_RULE_CONFIG
+  - SECURITY_DEPLOY_RULE_CONFIG
+  - SECURITY_RETIRE_RULE_CONFIG
+  - SECURITY_ARCHIVE_RULE_CONFIG
+  - SECURITY_ABANDON_RULE_CONFIG
+
+
+  - SECURITY_APPROVE_TYPOLOGY
+  - SECURITY_REJECT_TYPOLOGY
+  - SECURITY_WITHDRAW_TYPOLOGY
+  - SECURITY_DEPLOY_TYPOLOGY
+  - SECURITY_RETIRE_TYPOLOGY
+  - SECURITY_ARCHIVE_TYPOLOGY
+  - SECURITY_ABANDON_TYPOLOGY
+
+  - SECURITY_REJECT_NETWORK_MAP
+  - SECURITY_WITHDRAW_NETWORK_MAP
+  - SECURITY_DEPLOY_NETWORK_MAP
+  - SECURITY_RETIRE_NETWORK_MAP
+  - SECURITY_ARCHIVE_NETWORK_MAP
+  - SECURITY_ABANDON_NETWORK_MAP
+
+#### config_service_approver
+
+- Click on `config_service_approver`
 - Click on `Role mapping`
 - Click on `Assign role`
 - Select the below roles:
-  - SECURITY_CREATE_RULE  
-  - SECURITY_CREATE_RULE_CONFIG  
-  - SECURITY_CREATE_TYPOLOGY  
-  - SECURITY_CREATE_TYPOLOGY_RULE_CONFIG  
+  - SECURITY_APPROVE_RULE
+  - SECURITY_REJECT_RULE
+  - SECURITY_APPROVE_RULE_CONFIG
+  - SECURITY_REJECT_RULE_CONFIG
+  - SECURITY_APPROVE_TYPOLOGY
+  - SECURITY_REJECT_TYPOLOGY
+  - SECURITY_APPROVE_NETWORK_MAP
+  - SECURITY_REJECT_NETWORK_MAP
+
+  - SECURITY_DEPLOY_RULE
+  - SECURITY_RETIRE_RULE
+  - SECURITY_ARCHIVE_RULE
+
+  - SECURITY_DEPLOY_RULE_CONFIG
+  - SECURITY_RETIRE_RULE_CONFIG
+  - SECURITY_ARCHIVE_RULE_CONFIG
+
+  - SECURITY_DEPLOY_TYPOLOGY
+  - SECURITY_RETIRE_TYPOLOGY
+  - SECURITY_ARCHIVE_TYPOLOGY
+
+  - SECURITY_DEPLOY_NETWORK_MAP
+  - SECURITY_RETIRE_NETWORK_MAP
+  - SECURITY_ARCHIVE_NETWORK_MAP
+
   - SECURITY_GET_RULE
   - SECURITY_GET_RULE_CONFIG
   - SECURITY_GET_RULE_CONFIGS
   - SECURITY_GET_RULE_RULE_CONFIG
-  - SECURITY_GET_RULES
-  - SECURITY_GET_TYPOLOGIES
   - SECURITY_GET_TYPOLOGY
-  - SECURITY_GET_TYPOLOGY_RULE_CONFIGS
+  - SECURITY_GET_TYPOLOGIES
   - SECURITY_GET_TYPOLOGY_RULE_CONFIG
-  - SECURITY_UPDATE_RULE  
-  - SECURITY_UPDATE_RULE_CONFIG  
-  - SECURITY_UPDATE_TYPOLOGY  
+  - SECURITY_GET_TYPOLOGY_RULE_CONFIGS
+  - SECURITY_GET_NETWORK_MAP
+
+#### config_service_editor
+
+- Click on `config_service_editor`
+- Click on `Role mapping`
+- Click on `Assign role`
+- Select the below roles:
+  - SECURITY_CREATE_RULE
+  - SECURITY_CREATE_RULE_CONFIG
+  - SECURITY_CREATE_TYPOLOGY
+  - SECURITY_CREATE_NETWORK_MAP
+  - SECURITY_CREATE_TYPOLOGY_RULE_CONFIG
+
+  - SECURITY_UPDATE_RULE
+  - SECURITY_UPDATE_RULE_CONFIG
+  - SECURITY_UPDATE_TYPOLOGY
+  - SECURITY_UPDATE_NETWORK_MAP
   - SECURITY_UPDATE_TYPOLOGY_RULE_CONFIG
 
-#### config_svc_editor
+  - SECURITY_GET_RULE
+  - SECURITY_GET_RULES
+  - SECURITY_GET_RULE_CONFIG
+  - SECURITY_GET_RULE_CONFIGS
+  - SECURITY_GET_RULE_RULE_CONFIG
+  - SECURITY_GET_TYPOLOGY
+  - SECURITY_GET_TYPOLOGIES
+  - SECURITY_GET_TYPOLOGY_RULE_CONFIG
+  - SECURITY_GET_TYPOLOGY_RULE_CONFIGS
+  - SECURITY_GET_NETWORK_MAP
 
-- Click on `config_svc_editor`
+  - SECURITY_WITHDRAW_RULE
+  - SECURITY_WITHDRAW_RULE_CONFIG
+  - SECURITY_WITHDRAW_TYPOLOGY
+  - SECURITY_WITHDRAW_NETWORK_MAP
+
+  - SECURITY_ABANDON_RULE
+  - SECURITY_ABANDON_RULE_CONFIG
+  - SECURITY_ABANDON_TYPOLOGY
+  - SECURITY_ABANDON_NETWORK_MAP
+
+#### config_service_viewer
+
+- Click on `config_service_viewer`
 - Click on `Role mapping`
 - Click on `Assign role`
 - Select the below roles:
-  - SECURITY_CREATE_RULE  
-  - SECURITY_CREATE_RULE_CONFIG  
-  - SECURITY_CREATE_TYPOLOGY  
-  - SECURITY_CREATE_TYPOLOGY_RULE_CONFIG  
   - SECURITY_GET_RULE
   - SECURITY_GET_RULE_CONFIG
   - SECURITY_GET_RULE_CONFIGS
@@ -294,26 +418,8 @@ We have created 31 realm roles.
   - SECURITY_GET_TYPOLOGY
   - SECURITY_GET_TYPOLOGY_RULE_CONFIG
   - SECURITY_GET_TYPOLOGY_RULE_CONFIGS
-  - SECURITY_UPDATE_RULE  
-  - SECURITY_UPDATE_RULE_CONFIG  
-  - SECURITY_UPDATE_TYPOLOGY  
-  - SECURITY_UPDATE_TYPOLOGY_RULE_CONFIG
 
-#### config_svc_viewer
-
-- Click on `config_svc_viewer`
-- Click on `Role mapping`
-- Click on `Assign role`
-- Select the below roles:
-  - SECURITY_GET_RULE
-  - SECURITY_GET_RULE_CONFIG
-  - SECURITY_GET_RULE_CONFIGS
-  - SECURITY_GET_RULE_RULE_CONFIG
-  - SECURITY_GET_RULES
-  - SECURITY_GET_TYPOLOGIES
-  - SECURITY_GET_TYPOLOGY
-  - SECURITY_GET_TYPOLOGY_RULE_CONFIG
-  - SECURITY_GET_TYPOLOGY_RULE_CONFIGS
+  - SECURITY_GET_NETWORK_MAP
 
 ### Create User
 
@@ -345,15 +451,16 @@ You can assign groups or change the groups of an exitsing user
 - Select the required group
 - Then click on `Join`
 
+
 ## Config Service Packages
 
-Clone the config service frontend and backend using this command `git clone --branch dev https://github.com/frmscoe/config-service.git`
+Clone the config service frontend and backend using this command `git clone --branch dev https://github.com/lextego/config-service.git`
 
-or `git clone --branch dev git@github.com:frmscoe/config-service.git` if you have setup SSH
+or `git clone --branch dev git@github.com:lextego/config-service.git` if you have setup SSH
 
 ## Config Service Backend Deployment
 
-Navigate to `config-service/packages/config-svc-be`
+Navigate to `config-service/packages/config-service-be`
 
 ### Install All The Required Dependencies
 
@@ -364,7 +471,7 @@ npm install
 
 ### Auth Lib Dependency - NPM Package Installation
 
-Ensure that a `.npmrc` file exists at the same location with the `package.json` file of `config-svc-be`.
+Ensure that a `.npmrc` file exists at the same location with the `package.json` file of `config-service-be`.
 It should contain the below content:
 
 ```sh
@@ -378,6 +485,61 @@ Then run the below command to install `auth-lib`
 npm install @tazama-lf/auth-lib
 ```
 
+## Audit and Logging
+
+navigate to config-service-be and install this library
+
+```sh
+npm i @tazama-lf/frms-coe-lib
+```
+
+confirm that Elastic search is running
+
+```sh
+http://localhost:9200/
+```
+
+confirm that kibana is running
+```sh
+http://localhost:5601
+```
+
+NB: The ELK will use the environment variables that are set in Full-Stack-Docker-Tazama. The same environment variables have to be repeated on `.env` of the config-service-be. Check the `env.sample` for all the required environment variables
+
+Copy and paste this environment variable on `.env` file of config-service-be.
+
+```sh
+# Audit and Logging
+SIDECAR_HOST=localhost:15000
+NODE_ENV=dev
+FUNCTION_NAME=relay-service
+MAX_CPU=1
+
+EVENT_SIDECAR_PORT=15000                  # Must match SIDECAR_HOST port
+
+
+NATS_SERVER=nats://nats:4222              # Must match event-sidecar's NATS_SERVER
+NATS_SUBJECT=Lumberjack                   # Must match event-sidecar's NATS_SUBJECT
+ELASTIC_SEARCH_VERSION=8.15.1             # Match your Elasticsearch version
+ELASTIC_HOST=http://elasticsearch:9200
+FLUSHBYTES=1024                           # Can tune based on volume
+ES_PORT=9200 
+```
+
+Create a folder inside config-service-be called `env` inside it, create a file called `lumberjack.env`
+
+Paste the following environment variables inside the file
+
+```sh
+ELASTIC_HOST=http://elasticsearch:9200
+ELASTIC_STACK_VERSION=8.15.1
+ELASTIC=true
+NATS_SERVER=nats://nats:4222
+NATS_SUBJECT=Lumberjack
+FLUSHBYTES=1024
+ES_PORT=9200
+```
+
 ### Set Environment Variables
 
 There is a `.env` file created at the root of the folder and setup the environment variables below.
@@ -385,13 +547,13 @@ There is a `.env` file created at the root of the folder and setup the environme
 ```t
 # Arango Database Connection.
 DATABASE_HOST=http://localhost:18529/ # ArangoDB URL
-DATABASE_NAME=config-svc-db # The main database
+DATABASE_NAME=config-service-db # The main database
 SYSTEM_DATABASE_NAME=_system # System database (pre-installed)
 DATABASE_USERNAME=root # Default username
 DATABASE_PASSWORD=password # Default password
-DATABASE_NAME_TEST=config-svc-db-test # Test database
+DATABASE_NAME_TEST=config-service-db-test # Test database
 
-# config-svc-be application port
+# config-service-be application port
 PORT=3007
 ```
 
@@ -419,7 +581,7 @@ A test-public-key.pem has been provided for you. You should find it in `config-s
 
 #### Store Paths in the `.env` File
 
-Now that you have your keys, store the file paths in `config-svc-be/.env`:
+Now that you have your keys, store the file paths in `config-service-be/.env`:
 
 ```t
 CERT_PATH_PRIVATE=/absolute/path/to/config-service/packages/test-private-key.pem
@@ -452,7 +614,7 @@ NB: for the environment variables, you can copy the contents in `.env.sample` fi
 
 ## Config Service Frontend Deployment
 
-Navigate to `config-service/packages/config-svc-fe`
+Navigate to `config-service/packages/config-service-fe`
 
 ### NPM Package Installation
 
@@ -468,7 +630,7 @@ create a `.env` and paste the following environment variables:
 ```t
 PORT=4000 # this specifies the port the frontend is running
 
-NEXT_PUBLIC_CONFIG_SVC_BE_URL=http://localhost:3007 # this is the config_svc_be URL
+NEXT_PUBLIC_CONFIG_service_BE_URL=http://localhost:3007 # this is the config_service_be URL
 NEXT_PUBLIC_SECURITY_BC_CLIENT_ID=auth-lib-client # this is the keycloak client ID
 NEXT_PUBLIC_SECURITY_BC_SECRET=auth-lib-client-test-secret # this is the keycloak client secret
 ```

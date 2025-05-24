@@ -52,7 +52,8 @@ export const Sidebar = ({ onSetIsSidebarOpen, isSidebarOpen }: Props) => {
   }, [mobileView, onSetIsSidebarOpen]);
 
   useEffect(() => {
-    const currentPath = pathname;
+    // const currentPath = pathname;
+    const currentPath = pathname ?? '';
     const foundIndex = sidebarItems.findIndex((item) =>
       item.children?.some((child) => currentPath.includes(child.url)),
     );

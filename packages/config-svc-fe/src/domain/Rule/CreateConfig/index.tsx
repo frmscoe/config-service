@@ -1,4 +1,5 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
+// Rule Creation Does Not Clear Data on Exit & Lacks Exit Warning
 import React, { useEffect, useState } from "react"
 import CreateConfig from "./Create"
 import usePrivileges from "~/hooks/usePrivileges"
