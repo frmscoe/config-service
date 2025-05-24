@@ -92,9 +92,8 @@ export const Create: React.FunctionComponent<Props> = ({ rules, loadingRules, ..
         <Col span={5}>
 
           <div className='shadow-md h-full flex flex-col'>
-
-            <TypologyDetails attachedRules={props.attachedRules} watch={props.watch} />
             <TypologyForm {...props} />
+            <TypologyDetails attachedRules={props.attachedRules} watch={props.watch} />
             <RulesAttached rulesAttached={props.attachedRules} />
             <RulesConfigurationsAttached rulesAttached={props.attachedRules} />
             <Structure rulesAttached={props.attachedRules} />

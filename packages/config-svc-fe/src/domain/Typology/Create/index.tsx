@@ -10,13 +10,15 @@ import { IRuleConfig } from "~/domain/Rule/RuleConfig/RuleConfigList/types";
 import { useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
-import { createNodesAndEdges, createTypology, hasChanged, updateLayout, updateTypology } from "./service";
+import { createNodesAndEdges, createTypology, hasChanged, updateLayout, updateTypology, checkTypologyDuplicate } from "./service";
 import { Modal } from "antd";
 import { useCommonTranslations } from "~/hooks";
 import { Router, useRouter } from "next/router";
 import { useParams } from "next/navigation";
 import { getTypology } from "../Score/service";
 import { ITypology } from "../List/service";
+import { canTransition } from '../../../../machine/guards';
+
 
 export interface AttachedRules extends IRule {
     attachedConfigs: IRuleConfig[];
@@ -28,15 +30,26 @@ const nodeDefaults = {
 };
 
 
+// const initialNodes = [
+//     {
+//         id: '1',
+//         position: { x: 0, y: 150 },
+//         data: { label: 'Typology', showDelete: false },
+//         ...nodeDefaults,
+
+//     },
+// ];
 const initialNodes = [
     {
         id: '1',
+        type: 'customNode',
         position: { x: 0, y: 150 },
         data: { label: 'Typology', showDelete: false },
-        ...nodeDefaults,
-
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
     },
 ];
+
 
 const initialEdges = [
     {
@@ -53,7 +66,8 @@ const CreateEditTopologyPage = () => {
     const [page, setPage] = useState(1);
     const [loadingRules, setLoadingRules] = useState(true);
     const [error, setError] = useState('');
-    const { canCreateTypology, canViewRuleWithConfigs, canEditTypology } = usePrivileges();
+    // const { canCreateTypology, canViewRuleWithConfigs, canEditTypology } = usePrivileges();
+    const { privileges, canCreateTypology, canViewRuleWithConfigs } = usePrivileges();
     const reactFlowWrapper = useRef<any>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -62,6 +76,7 @@ const CreateEditTopologyPage = () => {
     const [ruleDragIndex, setRuleDragIndex] = useState<number | null>(null);
     const [removedRules, setRemoveRules] = useState<IRule[] | IRuleConfig[]>([]);
     const [saveLoading, setSaveLoading] = useState(false);
+    const [canEdit, setCanEdit] = useState(false);
     const [saved, setSaved] = useState(false);
     const [editData, setEditData] = useState<ITypology & {attachedRules: AttachedRules[]}>({
         attachedRules: [],
@@ -72,6 +87,14 @@ const CreateEditTopologyPage = () => {
     const isEditMode = useMemo(() => {
         return !!id;
     }, [id])
+
+    useEffect(() => {
+        if (isEditMode && editData?.state && privileges) {
+            const allowed = canTransition(privileges, 'TYPOLOGY', editData.state, 'EDIT');
+            setCanEdit(allowed);
+        }
+    }, [isEditMode, editData?.state, privileges]);
+
 
     const schema = useMemo(() => {
         return yup.object().shape({
@@ -182,9 +205,32 @@ const CreateEditTopologyPage = () => {
 
     }
 
+    // const onSubmit = async (data: any) => {
+    //     await save(data);
+    // };
+
     const onSubmit = async (data: any) => {
-        await save(data);
+      const version = `${data.major}.${data.minor}.${data.patch}`;
+
+      const isDuplicate = await checkTypologyDuplicate(data.name, version);
+      if (isDuplicate) {
+        modal.warning({
+          title: 'Duplicate Typology Detected',
+          content: 'A typology with the same name and version already exists. Please modify the name or version before submitting.',
+          okButtonProps: {
+            style: {
+              backgroundColor: '#1677ff',
+              color: '#fff',
+              border: 'none',
+            },
+          },
+        });
+        return;
+      }
+
+      await save(data);
     };
+
 
     const onConnect = useCallback(
         (params: any) =>
@@ -358,146 +404,162 @@ const CreateEditTopologyPage = () => {
 
     }, [attachedRules, rules,]);
 
+    
     const onDrop = useCallback((event: any) => {
-        event.preventDefault();
-        setRuleDragIndex(null);
-        const type = event.dataTransfer.getData('type');
-        const data = event.dataTransfer.getData('data');
-        if (type === 'rule') {
-            const rule: IRule = JSON.parse(data);
-            if (attachedRules.find((r) => r._key === rule._key)) {
-                return;
-            }
-            if (nodes.length === 1) {
-                const node = {
-                    ...nodeDefaults,
-                    id: rule._key,
-                    data: {
-                        label: rule.name,
-                        ...rule,
-                        onDelete: handleDelete,
-                        type: 'rule',
-                        showDelete: true
-                    },
-                    position: { x: 250, y: nodes[0]?.position?.y || 100 },
-                    type: 'customNode'
-                }
-                const edge = {
-                    id: rule._key,
-                    source: '1',
-                    target: node.id,
-                }
-                setNodes([...nodes, node]);
-                setEdges([...edges, edge]);
-                updateLayout([...nodes, node], [...edges, edge]);
-            } else {
-                const node = {
-                    ...nodeDefaults,
-                    id: rule._key,
-                    data: { label: rule.name, ...rule, onDelete: handleDelete, type: 'rule', showDelete: true },
-                    position: { x: 250, y: nodes[nodes.length - 1].position.y + 50 },
-                    type: 'customNode'
-                }
-                const edge = {
-                    id: rule._key,
-                    source: '1',
-                    target: node.id,
-                }
-                const layedOutNodes = updateLayout([...nodes, node], [...edges, edge]);
-                setNodes([...layedOutNodes]);
-                setEdges([...edges, edge]);
-            }
-            const attachedRulesIds = attachedRules.map((r) => r._key);
-            const newOptions = rules.filter((r) => r._key !== rule._key);
-            setRuleOptions([...newOptions.filter((r) => !attachedRulesIds.includes(r._key))]);
-            setAttachedRules([...attachedRules, { ...rule, attachedConfigs: [] }]);
+      event.preventDefault();
+      setRuleDragIndex(null);
+
+      const type = event.dataTransfer.getData('type');
+      const data = event.dataTransfer.getData('data');
+
+      if (type === 'rule') {
+        const rule: IRule = JSON.parse(data);
+        if (attachedRules.find((r) => r._key === rule._key)) {
+          return;
+        }
+
+        const ruleIndex = attachedRules.length;
+
+        const node = {
+          id: rule._key,
+          position: {
+            x: 300 * ruleIndex + 250, // Horizontal position based on index
+            y: 150
+          },
+          data: {
+            label: rule.name,
+            ...rule,
+            type: 'rule',
+            onDelete: handleDelete,
+            showDelete: true
+          },
+          type: 'customNode',
+          sourcePosition: Position.Right,
+          targetPosition: Position.Left
+        };
+
+        const edge = {
+          id: `edge-1-${rule._key}`,
+          source: '1', // Always from Typology
+          target: rule._key,
+          type: 'smoothstep'
+        };
+
+        setNodes([...nodes, node]);
+        setEdges([...edges, edge]);
+
+        const newOptions = rules.filter((r) => r._key !== rule._key);
+        const attachedRulesIds = attachedRules.map((r) => r._key);
+        setRuleOptions([...newOptions.filter((r) => !attachedRulesIds.includes(r._key))]);
+        setAttachedRules([...attachedRules, { ...rule, attachedConfigs: [] }]);
+
+      } else {
+        const config: IRuleConfig = JSON.parse(data);
+        const parentNode = nodes.find((n) => n.id === config.ruleId && n.data.type === 'rule');
+
+        if (parentNode) {
+          const configIndex = attachedRules.find((r) => r._key === config.ruleId)?.attachedConfigs.length || 0;
+
+          const configNode = {
+            id: config._key,
+            position: {
+              x: parentNode.position.x + 300,
+              y: parentNode.position.y + configIndex * 100
+            },
+            data: {
+              label: `${parentNode.data.name}-config-${config.cfg}`,
+              ...config,
+              type: 'config',
+              onDelete: handleDelete,
+              showDelete: true
+            },
+            type: 'customNode',
+            sourcePosition: Position.Right,
+            targetPosition: Position.Left
+          };
+
+          const edge = {
+            id: `edge-${config.ruleId}-${config._key}`,
+            source: config.ruleId,
+            target: config._key,
+            type: 'smoothstep'
+          };
+
+          setEdges([...edges, edge]);
+          setNodes([...nodes, configNode]);
+
+          const updatedRules = [...attachedRules];
+          const ruleIndex = updatedRules.findIndex((r) => r._key === config.ruleId);
+          if (ruleIndex !== -1) {
+            updatedRules[ruleIndex].attachedConfigs.push(config);
+            setAttachedRules(updatedRules);
+          }
 
         } else {
-            const config: IRuleConfig = JSON.parse(data);
-            const parentNode: any = nodes.find((n: any) => n.id === config.ruleId && (n?.data?.type) === 'rule');
-            //handle if rule for rule configuration has been added already;
-            if (parentNode) {
-                const nodeConfig = {
-                    id: config._key,
-                    position: { x: 500, y: 100 },
-                    data: {
-                        label: `${parentNode?.data?.name || ''}-config-${config.cfg || ''}`,
-                        type: 'config',
-                        onDelete: handleDelete,
-                        showDelete: true,
-                        ...config,
-                    },
-                    ...nodeDefaults,
-                }
+          // Rule not yet on canvas — add both rule and config
+          const rule = rules.find((r) => r._key === config.ruleId);
+          if (!rule) return;
 
-                const edge = {
-                    id: config._key,
-                    source: config.ruleId,
-                    target: nodeConfig.id,
-                }
-                setEdges([...edges, edge]);
-                const layedOutNodes = updateLayout([...nodes, nodeConfig], [...edges, edge]);
-                setNodes(layedOutNodes);
-                const currentAttachedRules = attachedRules;
-                const updateRuleIndex = attachedRules.findIndex((r) => r._key === config.ruleId);
-                if (updateRuleIndex !== -1) {
-                    currentAttachedRules[updateRuleIndex].attachedConfigs = [
-                        ...(currentAttachedRules[updateRuleIndex].attachedConfigs || []),
-                        config
-                    ]
-                    setAttachedRules([...currentAttachedRules]);
-                }
+          const ruleIndex = attachedRules.length;
 
-            } else {
-                //no parent node rule node
-                const config: IRuleConfig = JSON.parse(data);
-                const rule = rules.find((r) => r._key === config.ruleId);
-                if (rule) {
-                    const parentNode = {
-                        id: rule._key,
-                        position: { x: 250, y: 100 },
-                        data: {
-                            label: rule.name,
-                            ...rule,
-                            type: 'rule',
-                            onDelete: handleDelete,
-                            showDelete: true,
-                        },
-                        ...nodeDefaults
-                    }
-                    const parentEdge = {
-                        id: parentNode.id,
-                        source: '1',
-                        target: parentNode.id,
-                    }
-                    const configNode = {
-                        id: config._key,
-                        position: { x: 500, y: 100 },
-                        data: {
-                            label: `${parentNode?.data?.name || ''}-config-${config.cfg || ''}`,
-                            ...config,
-                            type: 'config',
-                            onDelete: handleDelete,
-                            showDelete: true,
-                        },
-                        ...nodeDefaults
-                    }
+          const parentNode = {
+            id: rule._key,
+            position: {
+              x: 300 * ruleIndex + 250,
+              y: 150
+            },
+            data: {
+              label: rule.name,
+              ...rule,
+              type: 'rule',
+              onDelete: handleDelete,
+              showDelete: true
+            },
+            type: 'customNode',
+            sourcePosition: Position.Right,
+            targetPosition: Position.Left
+          };
 
-                    const configEdge = {
-                        id: configNode.id,
-                        source: rule._key,
-                        target: configNode.id,
-                    }
-                    setEdges([...edges, parentEdge, configEdge]);
-                    const layedOutNodes = updateLayout([...nodes, parentNode, configNode], [...edges, parentEdge, configEdge]);
-                    setNodes(layedOutNodes);
-                    handleRuleNodeAdded(rule, config);
+          const configNode = {
+            id: config._key,
+            position: {
+              x: parentNode.position.x + 300,
+              y: parentNode.position.y
+            },
+            data: {
+              label: `${rule.name}-config-${config.cfg}`,
+              ...config,
+              type: 'config',
+              onDelete: handleDelete,
+              showDelete: true
+            },
+            type: 'customNode',
+            sourcePosition: Position.Right,
+            targetPosition: Position.Left
+          };
 
-                }
+          const edge1 = {
+            id: `edge-1-${rule._key}`,
+            source: '1', // Ensure rule connects to Typology
+            target: rule._key,
+            type: 'smoothstep'
+          };
 
-            }
+          const edge2 = {
+            id: `edge-${rule._key}-${config._key}`,
+            source: rule._key,
+            target: config._key,
+            type: 'smoothstep'
+          };
+
+          setNodes([...nodes, parentNode, configNode]);
+          setEdges([...edges, edge1, edge2]);
+
+          handleRuleNodeAdded(rule, config);
         }
-    }, [nodes, rules, attachedRules, edges, handleDelete]);
+      }
+    }, [nodes, edges, rules, attachedRules, handleDelete]);
+
 
     const handleSetEditData = useCallback((rules: IRule[]) => {
         getTypology(id as string)
@@ -569,9 +631,13 @@ const CreateEditTopologyPage = () => {
     if (!canCreateTypology) {
         return <AccessDeniedPage />
     }
-    if (isEditMode && !canEditTypology) {
+    // if (isEditMode && !canEditTypology) {
+    //     return <AccessDeniedPage />
+    // }
+    if (isEditMode && !canEdit) {
         return <AccessDeniedPage />
     }
+
     return <> <Create
         rules={rules}
         loadingRules={loadingRules}

@@ -333,6 +333,7 @@ export const deCommon = {
     "cases": "Fälle",
     "save": "Speichern",
     "exit": "Ausgang",
+    "ruleDetails": "Regeldetails",
     errors: {
       minorRequired: 'Minor ist erforderlich',
       patchRequired: 'Patch ist erforderlich',
@@ -407,6 +408,20 @@ export const deCommon = {
       selectParameterType: 'Parameter Typ wählen',
       parameterValue: 'Parameterwert',
       add: 'Hinzufügen'
+    },
+    ruleDetailsForm: {
+      name: "Regelname",
+      description: "Beschreibung",
+      createdBy: "Erstellt von",
+      modifiedBy: "Zuletzt geändert von",
+      updatedAt: "Zuletzt aktualisiert",
+      dependencies: "Abhängigkeiten",
+      cfg: "Version",
+      dataType: "Datentyp",
+      approvedBy: "Genehmigt von",
+      dependencies: "Abhängigkeiten",
+      createdAt: "Erstellt",
+      status: "Aktueller Status"
     }
 
   },
@@ -484,7 +499,10 @@ export const deCommon = {
     cancel: 'Abbrechen',
     errorTitle: 'Fehler',
     errorMessage: 'Ein Fehler ist aufgetreten',
-    retry: 'Wiederholen'
+    retry: 'Wiederholen',
+    parameters: 'Parameters',
+    bands: 'Bereiche',
+    cases: 'Fälle'
   },
   ruleConfigReviewPage: {
     version: 'Version',
@@ -532,5 +550,16 @@ export const deCommon = {
     closeExpand: 'Erweiterung Schließen',
     typology: 'Typologie',
     version: 'Version',
+  },
+  stateMachine: {
+    submitForReview: "Zur Überprüfung einreichen",
+    approve: "Genehmigen",
+    reject: "Ablehnen",
+    withdraw: "Zurückziehen",
+    abandon: "Verwerfen",
+    deploy: "Bereitstellen",
+    retire: "Stilllegen",
+    archive: "Archivieren"
   }
+
 };

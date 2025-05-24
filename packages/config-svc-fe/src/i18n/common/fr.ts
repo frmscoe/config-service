@@ -328,6 +328,7 @@ export const frCommon = {
     "cases": "Cas",
     "save": "Enregistrer",
     "exit": "Sortie",
+    "ruleDetails": "Détails de la règle",
     errors: {
       minorRequired: 'Mineur est requis',
       patchRequired: 'Patch est requis',
@@ -404,6 +405,20 @@ export const frCommon = {
       selectParameterType: 'Sélectionner le type de paramètre',
       parameterValue: 'Valeur du paramètre',
       add: 'Ajouter'
+    },
+    ruleDetailsForm: {
+      name: "Nom de la règle",
+      description: "Description",
+      createdBy: "Créé par",
+      modifiedBy: "Modifié par",
+      updatedAt: "Dernière mise à jour",
+      dependencies: "Dépendances",
+      cfg: "Version",
+      dataType: "Type de données",
+      approvedBy: "Approuvé par",
+      dependencies: "Dépendances",
+      status: "Statut actuel",
+      createdAt: "Créé"
     }
   },
   typologyListPage: {
@@ -494,7 +509,10 @@ export const frCommon = {
     cancel: 'Annuler',
     errorTitle: 'Erreur',
     errorMessage: 'Une erreur est survenue',
-    retry: 'Réessayer'
+    retry: 'Réessayer',
+    parameters: 'Paramètres',
+    bands: 'Plages',
+    cases: 'Cas'
   },
   createEditNetworkMap: {
     searchRules: "Rechercher des règles",
@@ -528,5 +546,16 @@ export const frCommon = {
     typology: 'Typologie',
     version: 'Version',
 
+  },
+  stateMachine: {
+    submitForReview: "Soumettre pour révision",
+    approve: "Approuver",
+    reject: "Rejeter",
+    withdraw: "Retirer",
+    abandon: "Abandonner",
+    deploy: "Déployer",
+    retire: "Retirer du service",
+    archive: "Archiver"
   }
+
 };

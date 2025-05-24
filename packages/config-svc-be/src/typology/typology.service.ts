@@ -26,15 +26,15 @@ export class TypologyService {
     const collection = db.collection(TYPOLOGY_COLLECTION);
 
     // check if the username is present in the request
-    if (!req['user'].username) {
-      throw new BadRequestException(
-        'Failed to create typology: username is missing',
-      );
-    }
+    // if (!req['user'].username) {
+    //   throw new BadRequestException(
+    //     'Failed to create typology: username is missing',
+    //   );
+    // }
 
     const newTypology: Typology = {
       ...createTypologyDto,
-      ownerId: req['user'].username,
+      ownerId: req['user'].username ?? '',
       _key: uuidv4(),
       state: StateEnum['01_DRAFT'],
     };

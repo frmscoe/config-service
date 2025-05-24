@@ -22,11 +22,47 @@ export interface IRule {
  * @param limit 
  * @returns {data: IRule[], count: number}
  */
-export const getRules = ({page = 1, limit = 10 }) => {
-    return Api.get('/rule', {
-        params: {
-            page,
-            limit
-        }
-    });
-}
+// export const getRules = ({page = 1, limit = 10 }) => {
+//     return Api.get('/rule', {
+//         params: {
+//             page,
+//             limit
+//         }
+//     });
+// }
+
+
+export const getRules = ({
+  page = 1,
+  limit = 10,
+  desc,
+  name,
+  cfg,
+  state,
+  ownerId,
+}: {
+  page?: number;
+  limit?: number;
+  desc?: string;
+  name?: string;
+  cfg?: string;
+  state?: string;
+  ownerId?: string;
+}) => {
+  return Api.get('/rule', {
+    params: {
+      page,
+      limit,
+      desc,
+      name,
+      cfg,
+      state,
+      ownerId,
+    },
+  });
+};
+
+
+
+
+

@@ -2,7 +2,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from "react";
-import { Review } from "./Review";
 import usePrivileges from "~/hooks/usePrivileges";
 import AccessDeniedPage from "~/components/common/AccessDenied";
 import { getRule, getRuleConfig } from "./service";
@@ -10,9 +9,10 @@ import { useParams } from "next/navigation";
 import { IRuleConfig } from "../RuleConfig/RuleConfigList/types";
 import { IRule } from "../RuleDetailPage/service";
 import { useAuth } from "~/context/auth";
-import { canTransition } from '../../../../machine/guards';
+import { canTransition } from "../../../../machine/guards";
+import EditConfigForm from "./EditConfigForm"; // New form component
 
-const ReviewPage = () => {
+const EditConfigPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [configuration, setConfiguration] = useState<IRuleConfig | null>(null);
@@ -47,14 +47,14 @@ const ReviewPage = () => {
         fetchConfig();
     }, [fetchConfig]);
 
-    const canReview = configuration && canTransition(privileges, 'RULE_CONFIG', configuration.state, 'REVIEW');
+    const canEdit = configuration && canTransition(privileges, 'RULE_CONFIG', configuration.state, 'EDIT');
 
-    if (configuration && !canReview) {
+    if (configuration && !canEdit) {
         return <AccessDeniedPage />;
     }
 
     return (
-        <Review
+        <EditConfigForm
             loading={loading}
             configuration={configuration}
             error={error}
@@ -65,4 +65,4 @@ const ReviewPage = () => {
     );
 };
 
-export default ReviewPage;
+export default EditConfigPage;

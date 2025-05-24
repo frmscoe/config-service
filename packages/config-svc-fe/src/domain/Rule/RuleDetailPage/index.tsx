@@ -16,6 +16,15 @@ const Rule = () => {
     const [openEdit, setOpenEdit] = useState(false);
     const[selectedRule, setSelectedRule] = useState<IRule | null>(null);
 
+    const [filters, setFilters] = useState({
+      desc: '',
+      name: '',
+      cfg: '',
+      state: '',
+      ownerId: '',
+    });
+
+
     const {profile} = useAuth();
     const {canViewRules} = usePrivileges();
 
@@ -23,19 +32,51 @@ const Rule = () => {
         setPage(newPage);
     }, []);
 
+    // const fetchRules = useCallback(() => {
+    //     setError('');
+    //     setLoading(true);
+    //     // getRules({ page, limit: 10 })
+    //     getRules({ page, limit: 10, ...filters })
+    //         .then(({ data }) => {
+    //             setRules(data?.rules || []);
+    //             setTotalItems(data.count || 0);
+    //         }).finally(() => {
+    //             setLoading(false)
+    //         }).catch((e) => {
+    //             setError(e.response?.data?.message || e?.message || 'Something went wrong getting rules');
+    //         })
+    // }, [page]);
+
+    // const fetchRules = useCallback(() => {
+    //     setError('');
+    //     setLoading(true);
+    //     getRules({ page, limit: 10, ...filters })
+    //         .then(({ data }) => {
+    //             setRules(data?.rules || []);
+    //             setTotalItems(data.count || 0);
+    //         }).finally(() => {
+    //             setLoading(false)
+    //         }).catch((e) => {
+    //             setError(e.response?.data?.message || e?.message || 'Something went wrong getting rules');
+    //         })
+    // }, [page, filters]); // include filters here
     const fetchRules = useCallback(() => {
-        setError('');
-        setLoading(true);
-        getRules({ page, limit: 10 })
-            .then(({ data }) => {
-                setRules(data?.rules || []);
-                setTotalItems(data.count || 0);
-            }).finally(() => {
-                setLoading(false)
-            }).catch((e) => {
-                setError(e.response?.data?.message || e?.message || 'Something went wrong getting rules');
-            })
-    }, [page]);
+      setError('');
+      setLoading(true);
+      getRules({ page, limit: 10, ...filters })
+        .then(({ data }) => {
+          setRules(data?.rules || []);
+          setTotalItems(data.count || 0);
+        })
+        .catch((e) => {
+          setError(e.response?.data?.message || e?.message || 'Something went wrong getting rules');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }, [page, filters]); // filters included
+
+
 
     useEffect(() => {
         if(canViewRules) {
@@ -43,18 +84,52 @@ const Rule = () => {
         }
     }, [fetchRules, canViewRules]);
 
+    // const retry = (pageNumber?: number) => {
+    //     if(pageNumber) {
+    //         setPage(pageNumber);
+    //     } 
+    //     fetchRules();
+    // }
+    // const retry = (pageNumber?: number) => {
+    //     if (pageNumber) {
+    //         setPage(pageNumber); // will trigger useEffect
+    //     }
+    // }
     const retry = (pageNumber?: number) => {
-        if(pageNumber) {
-            setPage(pageNumber);
-        } 
-        fetchRules();
-    }
+      if (pageNumber) {
+        setPage(pageNumber);
+      } else {
+        // Always reset to page 1 when filters change
+        setPage(1);
+      }
+    };
+    
+
+
+
 
 
     if(!canViewRules) {
         return <AccessDeniedPage/>
     }
 
+    // return <RuleView
+    //     loading={loading}
+    //     error={error}
+    //     retry={retry}
+    //     data={rules}
+    //     page={page}
+    //     total={totalItems}
+    //     onPageChange={onPageChange}
+    //     open={open}
+    //     setOpen={setOpen}
+    //     user={profile}
+    //     openEdit={openEdit}
+    //     setOpenEdit={setOpenEdit}
+    //     selectedRule={selectedRule}
+    //     setSelectedRule={setSelectedRule}
+
+    // />
     return <RuleView
         loading={loading}
         error={error}
@@ -70,8 +145,10 @@ const Rule = () => {
         setOpenEdit={setOpenEdit}
         selectedRule={selectedRule}
         setSelectedRule={setSelectedRule}
-
+        filters={filters}                // pass filters down
+        setFilters={setFilters}          // pass setter for filters
     />
+
 }
 
 export default Rule;

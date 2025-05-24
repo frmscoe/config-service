@@ -332,6 +332,7 @@ export const enCommon = {
     "cases": "Cases",
     "save": "Save",
     "exit": "Exit",
+    "ruleDetails": "Rule Details",
     errors: {
       minorRequired: 'Minor is required',
       patchRequired: 'Patch is required',
@@ -405,6 +406,19 @@ export const enCommon = {
       selectParameterType: 'Select Parameter Type',
       parameterValue: 'Parameter Value',
       add: 'Add'
+    },
+    ruleDetailsForm: {
+      name: "Rule Name",
+      description: "Description",
+      cfg: "Version",
+      dataType: "Data Type",
+      createdBy: "Created By",
+      modifiedBy: "Last Modified By",
+      approvedBy: "Approved By",
+      createdAt: "Created",
+      updatedAt: "Last Updated",
+      dependencies: "Dependencies",
+      status: "Current Status"
     },
    
   },
@@ -484,7 +498,10 @@ export const enCommon = {
     cancel: 'Cancel',
     errorTitle: 'Error',
     errorMessage: 'An error occurred',
-    retry: 'Retry'
+    retry: 'Retry',
+    parameters: 'Parameters',
+    bands: 'Bands',
+    cases: 'Cases'
   },
   ruleConfigReviewPage: {
     version: 'Version',
@@ -532,6 +549,16 @@ createEditNetworkMap: {
   closeExpand: 'Close Expand',
   typology: 'Typology',
    version: 'Version',
+},
+stateMachine: {
+  submitForReview: "Submit for Review",
+  approve: "Approve",
+  reject: "Reject",
+  withdraw: "Withdraw",
+  abandon: "Abandon",
+  deploy: "Deploy",
+  retire: "Retire",
+  archive: "Archive"
 }
 
 };

@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This document outlines the automated test coverage for the **Import Rule** feature implemented in the `config-svc-fe` frontend. The goal of these tests is to ensure the feature behaves as expected under all key user flows and system interactions.
+This document outlines the automated test coverage for the **Import Rule** feature implemented in the `config-service-fe` frontend. The goal of these tests is to ensure the feature behaves as expected under all key user flows and system interactions.
 
 ## Background
 

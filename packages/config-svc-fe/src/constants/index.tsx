@@ -44,7 +44,22 @@ export const languages = [
   },
 ];
 
+// export const RULE_STATES = [
+//   { key: 'DRAFT', value: '01_DRAFT' },
+//   { key: 'PENDING_REVIEW', value: '10_PENDING_REVIEW' },
+//   { key: 'REJECTED', value: '11_REJECTED' },
+//   { key: 'WITHDRAWN', value: '12_WITHDRAWN' },
+//   { key: 'APPROVED', value: '20_APPROVED' },
+//   { key: 'DEPLOYED', value: '30_DEPLOYED' },
+//   { key: 'RETIRED', value: '32_RETIRED' },
+//   { key: 'ABANDONED', value: '90_ABANDONED' },
+//   { key: 'ARCHIVED', value: '91_ARCHIVED' },
+//   { key: 'DISABLED', value: '92_DISABLED' },
+//   { key: 'MARKED_FOR_DELETION', value: '93_MARKED_FOR_DELETION' }
+// ];
+
 export const RULE_STATES = [
+  { key: 'NEW', value: '00_NEW' },
   { key: 'DRAFT', value: '01_DRAFT' },
   { key: 'PENDING_REVIEW', value: '10_PENDING_REVIEW' },
   { key: 'REJECTED', value: '11_REJECTED' },
@@ -54,9 +69,11 @@ export const RULE_STATES = [
   { key: 'RETIRED', value: '32_RETIRED' },
   { key: 'ABANDONED', value: '90_ABANDONED' },
   { key: 'ARCHIVED', value: '91_ARCHIVED' },
-  { key: 'DISABLED', value: '92_DISABLED' },
-  { key: 'MARKED_FOR_DELETION', value: '93_MARKED_FOR_DELETION' }
+  // The following are not part of the official machine and should only be included if justified:
+  // { key: 'DISABLED', value: '92_DISABLED' },
+  // { key: 'MARKED_FOR_DELETION', value: '93_MARKED_FOR_DELETION' },
 ];
+
 
 export const RULE_DATA_TYPES = [
   {key: 'currency', value: 'CURRENCY'},

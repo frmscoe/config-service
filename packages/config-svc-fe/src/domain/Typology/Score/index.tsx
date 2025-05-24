@@ -16,6 +16,8 @@ import { IOutcome } from "./Outcomes";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { debounce } from "lodash";
+import { canTransition } from '../../../../machine/guards';
+
 
 const initialNodes: Node[] = [
     {
@@ -35,7 +37,9 @@ const ScorePage = () => {
     const [modal, contextHolder] = Modal.useModal();
     const [loadingRules, setLoadingRules] = useState(false);
     const [error, setError] = useState('');
-    const { canReviewTypology } = usePrivileges();
+    // const { canReviewTypology } = usePrivileges();
+    const { privileges } = usePrivileges();
+    const [canReview, setCanReview] = useState(false);
     const reactFlowWrapper = useRef<any>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -513,35 +517,68 @@ const ScorePage = () => {
     }, []);
 
 
+    // const fetchTypology = React.useCallback(() => {
+    //     setError('');
+    //     if (canReviewTypology) {
+    //         setLoadingRules(true);
+    //         getTypology(id as string)
+    //             .then(({ data }) => {
+    //                 setTypology(data as ITypology);
+    //                 setRules(data?.ruleWithConfigs || []);
+    //                 const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(data?.ruleWithConfigs || []);
+    //                 setNodes((prev) => ([...prev, ...newNodes]));
+    //                 setEdges((prev) => ([...prev, ...newEdges]));
+    //                 updateLayout([...initialNodes, ...newNodes], [...initialEdges, ...newEdges]);
+    //                 setActiveKeys((prev) => [...prev, '2']);
+    //             }).catch((e: any) => {
+    //                 const message = e.response?.data?.message || e?.message || 'Something went wrong'
+    //                 setError(message);
+    //             }).finally(() => {
+    //                 setLoadingRules(false);
+    //             })
+    //     }
+    // }, [canReviewTypology, id]);
     const fetchTypology = React.useCallback(() => {
         setError('');
-        if (canReviewTypology) {
+        if (id) {
             setLoadingRules(true);
             getTypology(id as string)
                 .then(({ data }) => {
                     setTypology(data as ITypology);
                     setRules(data?.ruleWithConfigs || []);
+
                     const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(data?.ruleWithConfigs || []);
                     setNodes((prev) => ([...prev, ...newNodes]));
                     setEdges((prev) => ([...prev, ...newEdges]));
                     updateLayout([...initialNodes, ...newNodes], [...initialEdges, ...newEdges]);
                     setActiveKeys((prev) => [...prev, '2']);
-                }).catch((e: any) => {
-                    const message = e.response?.data?.message || e?.message || 'Something went wrong'
-                    setError(message);
-                }).finally(() => {
-                    setLoadingRules(false);
+
+                    // Compute dynamic privilege based on typology state
+                    const canReviewNow = canTransition(privileges, 'TYPOLOGY', data.state, 'REVIEW');
+                    setCanReview(canReviewNow);
                 })
+                .catch((e: any) => {
+                    const message = e.response?.data?.message || e?.message || 'Something went wrong';
+                    setError(message);
+                })
+                .finally(() => {
+                    setLoadingRules(false);
+                });
         }
-    }, [canReviewTypology, id]);
+    }, [id, privileges, updateLayout]);
+
 
     useEffect(() => {
         fetchTypology();
     }, []);
 
-    if (!canReviewTypology) {
-        return <AccessDeniedPage />
+    // if (!canReviewTypology) {
+    //     return <AccessDeniedPage />
+    // }
+    if (!canReview) {
+        return <AccessDeniedPage />;
     }
+
 
     return <ReactFlowProvider>
         {contextHolder}

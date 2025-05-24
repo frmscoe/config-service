@@ -1,4 +1,5 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
+// Misaligned Description Label and Input Box in Rule Config Creation
 import { Checkbox, Form, Input, Select } from "antd";
 import { Controller } from "react-hook-form";
 import { RULE_DATA_TYPES } from "~/constants";
@@ -46,20 +47,34 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
             </Form.Item>
 
             <Form.Item 
-                label={t('createRuleConfigPage.informationForm.description')}
-                validateStatus={formState?.errors?.description ? 'error' : ''}
-                help={formState?.errors?.description && formState.errors?.description?.message}
-                className="py-0 mb-4"
-                labelAlign="left"
-
+              label={t('createRuleConfigPage.informationForm.description')}
+              labelCol={{ span: 4.5 }} 
+              wrapperCol={{ span: 18 }} 
+              validateStatus={formState?.errors?.description ? 'error' : ''}
+              help={formState?.errors?.description?.message}
+              className="py-0 mb-4"
+              labelAlign="left"
             >
-                <Controller
-                    name={'description'}
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => <Input.TextArea data-testid="description-input" rows={5} {...field} placeholder={t('createRuleConfigPage.informationForm.description')} />}
-                />
+              <Controller
+                name="description"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <Input.TextArea
+                    data-testid="description-input"
+                    rows={5}
+                    {...field}
+                    placeholder={t('createRuleConfigPage.informationForm.description')}
+                    style={{ width: '100%', paddingLeft: 8 }} 
+                  />
+                )}
+              />
             </Form.Item>
+
+
+
+
+
             <Form.Item
                 label={t('createRuleConfigPage.informationForm.version')}
                 className="py-0 mb-0"

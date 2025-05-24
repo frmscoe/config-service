@@ -51,11 +51,11 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
 
   const items: CollapseProps['items'] = useMemo(() => {
     return [
-      {
-        key: '1',
-        label: t('typologyScorePage.conditions'),
-        children: <Conditions onDrop={props.onDrop} />
-      },
+      // {
+      //   key: '1',
+      //   label: t('typologyScorePage.conditions'),
+      //   children: <Conditions onDrop={props.onDrop} />
+      // },
       {
         key: '2',
         label: t('typologyScorePage.rules'),

@@ -155,3 +155,36 @@ const areAttachedRulesEqual = (rules1: AttachedRules[], rules2: AttachedRules[])
     return true;
 };
 
+
+// export const checkTypologyDuplicate = async (name: string, version: string) => {
+//   const res = await Api.get('/typology', {
+//     params: {
+//       name,
+//       cfg: version,
+//     },
+//   });
+
+//   // 'data' is the array of typologies from the API response
+//   return res.data.data?.length > 0;
+// };
+
+export const checkTypologyDuplicate = async (name: string, version: string) => {
+  const res = await Api.get('/typology', {
+    params: {
+      page: 1,
+      limit: 100, // increase limit to get more results
+      name,
+    },
+  });
+
+  const matches = res.data.data?.filter(
+    (typology: any) =>
+      typology.name?.trim().toLowerCase() === name.trim().toLowerCase() &&
+      typology.cfg === version
+  );
+
+  return matches.length > 0;
+};
+
+
+

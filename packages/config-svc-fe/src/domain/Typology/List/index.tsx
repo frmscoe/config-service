@@ -12,7 +12,7 @@ const ListTopology = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [totalItems, setTotalItems] = useState(0)
-    const {canViewTypologyList} = usePrivileges();
+    const {canViewTypologies} = usePrivileges();
 
     const onPageChange = useCallback((newPage: number) => {
         setPage(newPage);
@@ -33,10 +33,10 @@ const ListTopology = () => {
     }, [page]);
 
     useEffect(() => {
-        if(canViewTypologyList) {
+        if(canViewTypologies) {
             fetchTypologies();
         }
-    }, [fetchTypologies, canViewTypologyList]);
+    }, [fetchTypologies, canViewTypologies]);
 
     const retry = (pageNumber?: number) => {
         if(pageNumber) {
@@ -46,7 +46,7 @@ const ListTopology = () => {
     }
 
 
-    if(!canViewTypologyList) {
+    if(!canViewTypologies) {
         return <AccessDeniedPage/>
     }
 

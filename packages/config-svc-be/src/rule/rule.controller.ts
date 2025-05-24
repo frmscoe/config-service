@@ -56,11 +56,32 @@ export class RuleController {
     return this.ruleService.create(createRuleDto, req);
   }
 
+  // @Get()
+  // @Roles(RulePrivileges.GET_RULES)
+  // @ApiOperation({ summary: 'Retrieve all rules' })
+  // @ApiQuery({ name: 'page', type: 'number', required: false, example: 1 })
+  // @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
+  // @ApiOkResponse({
+  //   description: 'List of rules',
+  //   type: Rule,
+  //   isArray: true,
+  // })
+  // findAll(
+  //   @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+  //   @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  // ) {
+  //   return this.ruleService.findAll({ page, limit });
+  // }
   @Get()
   @Roles(RulePrivileges.GET_RULES)
-  @ApiOperation({ summary: 'Retrieve all rules' })
+  @ApiOperation({ summary: 'Retrieve all rules with optional filters' })
   @ApiQuery({ name: 'page', type: 'number', required: false, example: 1 })
   @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
+  @ApiQuery({ name: 'desc', type: 'string', required: false, description: 'Filter by description (partial match, case-insensitive)' })
+  @ApiQuery({ name: 'name', type: 'string', required: false, description: 'Filter by rule name (partial match, case-insensitive)' })
+  @ApiQuery({ name: 'cfg', type: 'string', required: false, description: 'Filter by config value (partial match, case-insensitive)' })
+  @ApiQuery({ name: 'state', type: 'string', required: false, description: 'Filter by rule state (exact match)' })
+  @ApiQuery({ name: 'ownerId', type: 'string', required: false, description: 'Filter by owner ID (exact match)' })
   @ApiOkResponse({
     description: 'List of rules',
     type: Rule,
@@ -69,9 +90,24 @@ export class RuleController {
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('desc') desc?: string,
+    @Query('name') name?: string,
+    @Query('cfg') cfg?: string,
+    @Query('state') state?: string,
+    @Query('ownerId') ownerId?: string,
   ) {
-    return this.ruleService.findAll({ page, limit });
+    return this.ruleService.findAll({
+      page,
+      limit,
+      desc,
+      name,
+      cfg,
+      state,
+      ownerId,
+    });
   }
+
+
 
   @Post('/import')
   @Roles(RulePrivileges.CREATE_RULE) // TODO: Update this to IMPORT_RULE when all privileges are implemented. 
