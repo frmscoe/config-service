@@ -1,17 +1,20 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
-import { Row, Col, Spin, Button, Collapse, Space, Typography, Card, Checkbox } from 'antd';
-import React, { DragEventHandler, useMemo } from 'react';
-import { EventsProps } from './Events';
+import type { MenuProps } from 'antd';
+import { Row, Col, Spin, Button, Collapse, Space, Typography, Card, Checkbox, Tag, Dropdown, DownOutlined } from 'antd';
+import React, { DragEventHandler, useMemo, useState } from 'react';
+import { Events, EventsProps } from './Events';
 import { IRule } from '~/domain/Rule/RuleDetailPage/service';
 import { RulesAttached, RulesConfigurationsAttached } from './Rules-Attached';
 import { Handle, NodeMouseHandler, NodeProps, Panel, Position } from 'reactflow';
 import { useCommonTranslations } from '~/hooks';
 import { Flow } from '../../Typology/Create/Flow';
-import { CloseOutlined, ExpandAltOutlined, MinusCircleFilled, NodeIndexOutlined, PlusCircleFilled } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseOutlined, ExpandAltOutlined, MinusCircleFilled, NodeIndexOutlined, PlusCircleFilled } from '@ant-design/icons';
 import styles from './style.module.scss';
 import { UnAssignedTypologies, UnassignedTypologiesProps } from './Typology-List';
 import { RuleWithConfig } from '~/domain/Typology/Score/service';
 import Link from 'next/link';
+
+
 
 interface Props {
   loadingTypologies: boolean;
@@ -37,34 +40,79 @@ interface Props {
   expandAll: () => void;
   loadingAttached: boolean;
   handleSave: () => void;
+  
 
 }
 
 const Version = React.lazy(() => import('./Versions'));
+
 
 const EventNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
   const handleExpand = () => {
     if (data.handleExpand) {
       data.handleExpand(id);
     }
-  }
-  return <div className={styles['custom-node']}>
-    <NodeIndexOutlined />
-    {data.label}
-    {data.expanded ? <MinusCircleFilled className='relative left-5 top-0' onClick={handleExpand} style={{ fontSize: '1.5rem', color: '#54B352', cursor: 'pointer' }} />
-      : <PlusCircleFilled className='relative left-5 top-0' onClick={handleExpand} style={{ fontSize: '1.5rem', color: '#54B352', cursor: 'pointer' }} />}
-    <Handle
-      type="source"
-      id={id}
-      position={Position.Right}
-      className={styles['hidden-handle']}
+  };
 
-    />
-  </div>
-}
+  return (
+    <div
+      className={styles['custom-node']}
+      style={{
+        border: data.isActive ? '2px solid green' : '1px solid #ccc',
+        borderRadius: '6px',
+        padding: '5px 10px',
+        backgroundColor: '#fff',
+        position: 'relative',
+        fontWeight: 500,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+        minWidth: 150,
+      }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center' }}>
+        <NodeIndexOutlined style={{ marginRight: 6 }} />
+        {data.label}
+      </span>
+
+      {data.expanded ? (
+        <MinusCircleFilled
+          className="absolute right-2 top-1/2 transform -translate-y-1/2"
+          onClick={handleExpand}
+          style={{
+            fontSize: '1.5rem',
+            color: '#54B352',
+            cursor: 'pointer',
+          }}
+        />
+      ) : (
+        <PlusCircleFilled
+          className="absolute right-2 top-1/2 transform -translate-y-1/2"
+          onClick={handleExpand}
+          style={{
+            fontSize: '1.5rem',
+            color: '#54B352',
+            cursor: 'pointer',
+          }}
+        />
+      )}
+
+      <Handle
+        type="source"
+        id={id}
+        position={Position.Right}
+        className={styles['hidden-handle']}
+      />
+    </div>
+  );
+};
+
+
 
 const TypologyNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
   const {t} = useCommonTranslations();
+  const [showDetails, setShowDetails] = useState(true);
   const ruleConfigurations = useMemo(() => {
     const configurations: string[] = [];
     data?.rules_rule_configs?.forEach((r: { ruleId: string; ruleConfigId: string[] }) => {
@@ -81,40 +129,90 @@ const TypologyNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
     }
   }
 
+ 
+
+  const handleExpand = (nodeId) => {
+    // Now 'onNodesChange' should be defined and accessible here
+    onNodesChange((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          // Your logic for expanding/collapsing node details
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              isExpanded: !node.data.isExpanded, // Example: toggle an expanded flag
+            },
+            // You might also adjust node style directly here, e.g., height
+            // style: { ...node.style, height: node.data.isExpanded ? 'auto' : 'some_collapsed_height' }
+          };
+        }
+        return node;
+      })
+    );
+  };
+
   const handleExpandVersions = () => {
     if (data.handleExpandVersions) {
       data.handleExpandVersions(id, data.expanded);
     }
-  }
+  };
+
+  const handleExpandTypologyPanel = () => {
+    setShowDetails(prev => !prev);
+  };
+
   return <Card className='p-0 m-0'
     title={data.label || data.name || "Typology"}
     data-testid="typology-node"
     extra={<>
       <CloseOutlined data-testid="remove-node" className={styles['delete-icon']} onClick={handleDelete} />
-      {/* <ExpandAltOutlined style={{fontSize: '1.2rem'}} onClick={handleExpand} className='cursor-pointer' /> */}
+       {/*<ExpandAltOutlined style={{fontSize: '1.2rem'}} onClick={handleExpand} className='cursor-pointer' /> */}
+      <ExpandAltOutlined
+        style={{ fontSize: '1.2rem' }}
+        onClick={handleExpandTypologyPanel}
+        className='cursor-pointer'
+      />
     </>}
     styles={{ header: { background: '#EEEEEE' } }}
     style={{ minWidth: 350 }}>
-    <Row>
-      <Col span={23}>
-        <div className='flex justify-between'>
-          <Typography.Paragraph>{t('createEditNetworkMap.lastUpdated')}</Typography.Paragraph>
-          <Typography.Paragraph>{new Date(data.updatedAt).toDateString()}</Typography.Paragraph>
-        </div>
-        <div className='flex justify-between'>
-          <Typography.Paragraph>{t('createEditNetworkMap.rules')}</Typography.Paragraph>
-          <Typography.Paragraph>{data?.rules_rule_configs?.length}</Typography.Paragraph>
-        </div>
+    
 
-        <div className='flex justify-between'>
-          <Typography.Paragraph>{t('createEditNetworkMap.configurations')}</Typography.Paragraph>
-          <Typography.Paragraph>{ruleConfigurations.length}</Typography.Paragraph>
-        </div>
-      </Col>
-      <Col span={1} className='h-full w-full mx-auto relative left-5 top-4'>
-        {data.expanded ? <MinusCircleFilled data-testid="close-expand" onClick={handleExpandVersions} style={{ fontSize: '2rem', color: '#54B352', cursor: 'pointer' }} />
-          : <PlusCircleFilled data-testid="open-expand" onClick={handleExpandVersions} style={{ fontSize: '2rem', color: '#54B352', cursor: 'pointer' }} />}      </Col>
-    </Row>
+
+    {showDetails && (
+      <Row>
+        <Col span={23}>
+          <div className='flex justify-between'>
+            <Typography.Paragraph>{t('createEditNetworkMap.lastUpdated')}</Typography.Paragraph>
+            <Typography.Paragraph>{new Date(data.updatedAt).toDateString()}</Typography.Paragraph>
+          </div>
+          <div className='flex justify-between'>
+            <Typography.Paragraph>{t('createEditNetworkMap.rules')}</Typography.Paragraph>
+            <Typography.Paragraph>{data?.rules_rule_configs?.length}</Typography.Paragraph>
+          </div>
+          <div className='flex justify-between'>
+            <Typography.Paragraph>{t('createEditNetworkMap.configurations')}</Typography.Paragraph>
+            <Typography.Paragraph>{ruleConfigurations.length}</Typography.Paragraph>
+          </div>
+        </Col>
+        <Col span={1} className='h-full w-full mx-auto relative left-5 top-4'>
+          {data.expanded ? (
+            <MinusCircleFilled
+              data-testid="close-expand"
+              onClick={handleExpandVersions}
+              style={{ fontSize: '2rem', color: '#54B352', cursor: 'pointer' }}
+            />
+          ) : (
+            <PlusCircleFilled
+              data-testid="open-expand"
+              onClick={handleExpandVersions}
+              style={{ fontSize: '2rem', color: '#54B352', cursor: 'pointer' }}
+            />
+          )}
+        </Col>
+      </Row>
+    )}
+
 
     <Handle type="target" id={id} position={Position.Left} />
     <Handle type="source" id={id} position={Position.Right}
@@ -129,7 +227,12 @@ const VersionNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
       data.handleCheck(data, !data.checked);
     }
   }
-  return <div className={styles['custom-node']} data-testid="version-node">
+  return <div
+    className={styles['custom-node']}
+    data-testid="version-node"
+    onClick={() => data.handleVersionClick?.(data.typologyId)}
+    style={{ cursor: 'pointer' }}
+  >
     <Checkbox checked={data.checked} data-testid="version-node-check" onChange={handleCheck} />
     {data.label}
     <Handle
@@ -154,13 +257,13 @@ export const Create: React.FunctionComponent<Props & UnassignedTypologiesProps &
   const { t } = useCommonTranslations();
 
   //Disabled donot delete
-  // const events: MenuProps['items'] = useMemo(() => {
-  //   return props.events.map((e) => ({
-  //     key: e.value, icon: <CheckCircleOutlined />,
-  //     label: <Tag className='rounded-full' color={e.color || 'blue'}>{e.label}</Tag>,
-  //     disabled: e.disabled,
-  //   }))
-  // }, [props.events]);
+  const events: MenuProps['items'] = useMemo(() => {
+    return props.events.map((e) => ({
+      key: e.value, icon: <CheckCircleOutlined />,
+      label: <Tag className='rounded-full' color={e.color || 'blue'}>{e.label}</Tag>,
+      disabled: e.disabled,
+    }))
+  }, [props.events]);
   if (loadingTypologies) {
     return <Spin data-testid="spinner" className='w-full h-full mx-auto' />
   }
@@ -184,12 +287,13 @@ export const Create: React.FunctionComponent<Props & UnassignedTypologiesProps &
           setOpen={props.setShowVersions}
         />
       </React.Suspense>
+      
       <Row className='h-full w-full'>
         <Col span={5}>
           {/* Disabled not part of this iteration */}
-          {/* <Events
+           <Events
             {...props}
-          /> */}
+          /> 
 
           <UnAssignedTypologies
             {...props}

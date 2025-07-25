@@ -51,4 +51,14 @@ export class UpdateRuleDto extends PartialType(CreateRuleDto) {
   @IsOptional()
   @IsEnum(SourceEnum)
   source?: SourceEnum;
+
+  @ApiProperty({
+  example: '20_APPROVED',
+    description: 'State of the rule',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  state?: string;
+
 }

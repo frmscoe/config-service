@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Review } from "./Review";
 import usePrivileges from "~/hooks/usePrivileges";
 import AccessDeniedPage from "~/components/common/AccessDenied";
-import { getFullRuleConfig } from "./service";
+import { getFullRuleConfig, updateRuleState } from "./service";
 import { useParams } from "next/navigation";
 import { IFullRule } from "./types";
 import { useAuth } from "~/context/auth";
@@ -15,7 +15,6 @@ const ReviewPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [rule, setRule] = useState<IFullRule | null>(null);
-  // const { id } = useParams();
   const id = (useParams()?.id || '') as string;
   const { privileges } = usePrivileges();
   const { profile } = useAuth();
@@ -42,9 +41,6 @@ const ReviewPage = () => {
     fetchRule();
   }, [fetchRule]);
 
-  // const canReview = rule &&
-  //   canTransition(privileges, 'RULE', rule.state, 'REVIEW') &&
-  //   profile?.username !== rule.ownerId;
   const canReview = rule && canTransition(privileges, 'RULE', rule.state, 'REVIEW');
 
 

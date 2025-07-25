@@ -3,7 +3,7 @@
     "url": ""
   },
   "contributors": [
-    "Ome Chukwuemeka"
+    "Ome Chukwuemeka <ome.chukwuemeka@lextego.com>"
   ],
   "dependencies": {
     "@ant-design/icons": "^5.3.6",
@@ -19,7 +19,7 @@
     "dotenv": "^16.4.5",
     "i18next": "^23.10.0",
     "lodash": "^4.17.21",
-    "next": "14.1.3",
+    "next": "^14.2.30",
     "next-i18next": "^15.2.0",
     "qs": "^6.14.0",
     "react": "^18",
@@ -72,7 +72,7 @@
     "postcss-nesting": "^12.1.0",
     "postcss-scss": "^4.0.9",
     "prettier": "^3.2.5",
-    "stylelint": "16.1.0",
+    "stylelint": "^16.21.0",
     "stylelint-config-recommended-scss": "^14.0.0",
     "stylelint-config-standard": "^36.0.0",
     "stylelint-order": "^6.0.4",
@@ -87,7 +87,7 @@
   "engines": {
     "node": ">=20.10.0"
   },
-  "homepage": "https://github.com/lextego/config-svc-fe",
+  "homepage": "https://github.com/frmscoe/config-svc-fe",
   "license": "Apache-2.0",
   "name": "@lextego/config-svc-fe",
   "private": true,

@@ -6,8 +6,10 @@ import {
   IsOptional,
   IsString,
   ValidateNested,
+  IsEnum, // Import IsEnum
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { StateEnum } from '../../rule/schema/rule.schema'; // Import StateEnum
 
 class RuleConfigSummaryDto {
   @ApiProperty({
@@ -136,6 +138,15 @@ export class CreateEventDto {
 }
 
 export class CreateNetworkMapDto {
+  @ApiProperty({ example: 'Transaction Network Map', description: 'The name of the network map.' })
+  @IsString()
+  readonly name: string;
+
+  @ApiProperty({ example: 'This network map is for processing transactions', description: 'Optional description.' })
+  @IsOptional()
+  @IsString()
+  readonly description?: string;
+
   @ApiProperty({
     description: 'Flag to indicate if the network map is active.',
     default: false,
@@ -149,6 +160,11 @@ export class CreateNetworkMapDto {
   })
   @IsString()
   readonly cfg: string;
+
+  @ApiProperty({ enum: StateEnum, example: StateEnum['01_DRAFT'], description: 'The current state of the network map.' })
+  @IsEnum(StateEnum)
+  @IsOptional() // Make it optional since the schema provides a default
+  readonly state?: StateEnum; // Add the state property
 
   @ApiProperty({
     description: 'Array of events associated with the network map.',

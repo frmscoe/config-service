@@ -36,6 +36,9 @@ export const RulesAttached: React.FunctionComponent<RulesAttachedProps> = ({ rul
         }
     }
 
+console.log("RulesAttached loading:", loadingAttached);
+console.log("RulesAttached rulesAttached:", rulesAttached);
+
     return <Spin spinning={loadingAttached}>
         <div className="mt-1">
             <Input data-testid="rules-attached-search" onChange={(e) => handleSearch(e?.target?.value)} placeholder={t('createEditNetworkMap.searchRules')} className="mb-2 border-none shadow-none focus:ring-0" />
@@ -89,6 +92,11 @@ export const RulesConfigurationsAttached: React.FunctionComponent<RulesAttachedP
         }
 
     }, [rulesAttached]);
+
+
+
+console.log("RulesConfigurationsAttached loading:", loadingAttached);
+console.log("RulesConfigurationsAttached rulesAttached:", rulesAttached);
 
 
     return <Spin spinning={loadingAttached}>

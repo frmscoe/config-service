@@ -16,3 +16,8 @@ export const postRuleConfig = (data: any) => {
 export const getFullRuleConfig = (ruleName: string) => {
   return Api.get(`/rule/rule-and-its-configs/${ruleName}`);
 };
+
+export const updateRuleConfig = async (id: string, payload: Partial<IRuleConfig>) => {
+  // return Api.patch(`/rule-config/${id}`, payload);
+  return Api.patch(`/rule-config/${encodeURIComponent(id)}`, payload);
+};

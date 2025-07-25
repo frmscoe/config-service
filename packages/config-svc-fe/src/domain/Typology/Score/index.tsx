@@ -8,15 +8,16 @@ import usePrivileges from "~/hooks/usePrivileges";
 import { AttachedRules } from "../Create";
 import React from "react";
 import AccessDeniedPage from "~/components/common/AccessDenied";
-import { ITypology, RuleWithConfig, getTypology } from "./service";
+import { ITypology, RuleWithConfig, getTypology, getTypologyWithRules, getRuleById, getRuleConfigById, getAllRules, updateTypology } from "./service";
 import dagre from 'dagre';
-import { nodeDefaults, createNodesAndEdges, extractOutcomes, defaultNodeWidth, defaultNodeHeight, createNewNodesAndEdges } from "./helpers";
+import { nodeDefaults, createNodesAndEdges, extractOutcomes, defaultNodeWidth, defaultNodeHeight, createNewNodesAndEdges, buildScorePayload } from "./helpers";
 import { getRandomNumber } from "~/utils/getRandomNumberHelper";
 import { IOutcome } from "./Outcomes";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { debounce } from "lodash";
 import { canTransition } from '../../../../machine/guards';
+
 
 
 const initialNodes: Node[] = [
@@ -316,6 +317,8 @@ const ScorePage = () => {
         updateLayout(newNodes, newEdges);
     };
 
+    
+
     const onDrop: DragEventHandler<HTMLDivElement> = (e) => {
         const type = e.dataTransfer.getData('type');
         if (type === 'operator') {
@@ -358,7 +361,6 @@ const ScorePage = () => {
 
             // Get the y position for the new outcome node to place it at the bottom
             const yPos = sortedOutcomeNodes.reduce((maxY, node) => Math.max(maxY, node.position.y), 0) + 100;
-
             const outcomeNode = {
                 ...nodeDefaults,
                 id: getRandomNumber(10000).toString(),
@@ -368,12 +370,14 @@ const ScorePage = () => {
             };
             newNodes.push(outcomeNode);
 
+            // This edge connects the rule to the newly dropped outcome
             const edge = {
-                id: getRandomNumber(10000).toString(),
-                source: selectedRule || data.ruleId,
+                id: `${(selectedRule || data.ruleId)}-${outcomeNode.id}`, // Modified: Consistent ID
+                source: selectedRule || data.ruleId, // Use selectedRule if available, otherwise data.ruleId
                 target: outcomeNode.id,
+                type: 'smoothstep', // This is required for curved edges
+                data: { type: 'outcome' },
             };
-
             newEdges.push(edge);
 
             const scoreNode = {
@@ -396,27 +400,29 @@ const ScorePage = () => {
                 id: getRandomNumber(10000).toString(),
                 source: outcomeNode.id,
                 target: scoreNode.id,
+                type: 'smoothstep', // Also required here
+                data: { type: 'score' },
             };
             newEdges.push(scoreEdge);
             const updatedNodes = [...nodes, ...newNodes];
-
             const outcomeNodes = updatedNodes
                 .filter((node) => node.data?.type === "outcome")
                 .sort((a, b) => a.position.y - b.position.y);
             const otherNodes = updatedNodes
                 .filter((node) => node.data?.type !== "outcome");
-
             const sortedNodes = [...outcomeNodes, ...otherNodes];
-
             const updatedEdges = [...edges, ...newEdges].filter((e) => e.data?.type !== 'operator');
-
             setEdges(updatedEdges);
-            updateLayout(sortedNodes, updatedEdges);
+            
+            updateLayout(sortedNodes, [...edges, ...newEdges]);
             setOutcomeOptions((prev) => prev.filter((outcome) => `${outcome.type}-${outcome.ruleId}-${outcome.subRuleRef}` !== `${data.type}-${data.ruleId}-${data.subRuleRef}`));
-            setSelectedOutComes([...selectedOutcomes, { ...data, id: outcomeNode.id }]);
+            setSelectedOutComes((prev) => [...prev, outcomeNode]);
+            setActiveKeys((prev) => [...prev, '3']);
         }
     };
 
+
+    
 
     const onNodeClick: NodeMouseHandler = (event: any, node: Node) => {
         if (event?.target?.tagName === 'path' || event?.target?.tagName === 'svg') {
@@ -424,16 +430,27 @@ const ScorePage = () => {
         }
         event.preventDefault();
         setSelectedRuleIndex(node.data.ruleId);
+
+        if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+            console.warn("ruleWithConfigs not yet available");
+            return;
+        }
+
         const rule = typology.ruleWithConfigs.find((r) => r.rule._key === node.data.ruleId);
         const selectedOutcomes = extractOutcomes(rule?.ruleConfigs || [], node.data.ruleId);
         setOutComes([...selectedOutcomes]);
         setOutcomeOptions([...selectedOutcomes]);
         setActiveKeys((prev) => [...prev, '3']);
-
     };
+
 
     const handleSelectRule = (id: string) => {
         setSelectedRuleIndex(id);
+        
+        if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+            console.warn("ruleWithConfigs not available yet.");
+            return;
+          }
         const rule = typology.ruleWithConfigs.find((r) => r.rule._key === id);
         const selectedOutcomes = extractOutcomes(rule?.ruleConfigs || [], id);
         setOutComes([...selectedOutcomes]);
@@ -517,67 +534,114 @@ const ScorePage = () => {
     }, []);
 
 
-    // const fetchTypology = React.useCallback(() => {
-    //     setError('');
-    //     if (canReviewTypology) {
-    //         setLoadingRules(true);
-    //         getTypology(id as string)
-    //             .then(({ data }) => {
-    //                 setTypology(data as ITypology);
-    //                 setRules(data?.ruleWithConfigs || []);
-    //                 const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(data?.ruleWithConfigs || []);
-    //                 setNodes((prev) => ([...prev, ...newNodes]));
-    //                 setEdges((prev) => ([...prev, ...newEdges]));
-    //                 updateLayout([...initialNodes, ...newNodes], [...initialEdges, ...newEdges]);
-    //                 setActiveKeys((prev) => [...prev, '2']);
-    //             }).catch((e: any) => {
-    //                 const message = e.response?.data?.message || e?.message || 'Something went wrong'
-    //                 setError(message);
-    //             }).finally(() => {
-    //                 setLoadingRules(false);
-    //             })
-    //     }
-    // }, [canReviewTypology, id]);
+    
+
     const fetchTypology = React.useCallback(() => {
-        setError('');
-        if (id) {
-            setLoadingRules(true);
-            getTypology(id as string)
-                .then(({ data }) => {
-                    setTypology(data as ITypology);
-                    setRules(data?.ruleWithConfigs || []);
+      setError('');
 
-                    const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(data?.ruleWithConfigs || []);
-                    setNodes((prev) => ([...prev, ...newNodes]));
-                    setEdges((prev) => ([...prev, ...newEdges]));
-                    updateLayout([...initialNodes, ...newNodes], [...initialEdges, ...newEdges]);
-                    setActiveKeys((prev) => [...prev, '2']);
+      if (!id) return;
 
-                    // Compute dynamic privilege based on typology state
-                    const canReviewNow = canTransition(privileges, 'TYPOLOGY', data.state, 'REVIEW');
-                    setCanReview(canReviewNow);
-                })
-                .catch((e: any) => {
-                    const message = e.response?.data?.message || e?.message || 'Something went wrong';
-                    setError(message);
-                })
-                .finally(() => {
-                    setLoadingRules(false);
-                });
-        }
-    }, [id, privileges, updateLayout]);
+      setLoadingRules(true);
+
+      getTypologyWithRules(id as string)
+        .then(async (data) => {
+          console.log("Typology API Response:", data);
+
+          const attachedRuleEntries = await Promise.all(
+            (data.rules_rule_configs || []).map(async (entry: any) => {
+              const rule = await getRuleById(entry.ruleId).catch(() => null);
+              const configs = await Promise.all(
+                (entry.ruleConfigId || []).map((cfgId: string) =>
+                  getRuleConfigById(cfgId).catch(() => null)
+                )
+              );
+
+              if (!rule) return null;
+
+              return {
+                rule,
+                ruleConfigs: configs.filter(Boolean),
+              };
+            })
+          );
+
+          const attachedRules = attachedRuleEntries.filter(Boolean);
+
+          const ruleConfigsMap = attachedRules
+            .flatMap(r => r.ruleConfigs)
+            .reduce((acc, cfg) => {
+              acc[cfg._key] = cfg;
+              return acc;
+            }, {} as Record<string, IRuleConfig>);
+
+          const outcomes = extractOutcomes(data.rules_rule_configs, ruleConfigsMap);
+
+          setTypology(data);
+          setRules(attachedRules);
+
+          // FIX: Flatten rule structure to what Rules.tsx expects
+          setRuleOptions(
+            attachedRules.map(ar => ({
+              _key: ar.rule._key,
+              name: ar.rule.name,
+              ...ar.rule,
+              ruleConfigs: ar.ruleConfigs,
+            }))
+          );
+
+          setOutComes(outcomes);
+          setOutcomeOptions(outcomes);
+          console.log("Extracted Outcomes:", outcomes);
+
+          const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(attachedRules);
+          setNodes(prev => [...prev, ...newNodes]);
+          setEdges(prev => [...prev, ...newEdges]);
+          updateLayout([...initialNodes, ...newNodes], [...initialEdges, ...newEdges]);
+          setActiveKeys(prev => [...prev, '2']);
+        })
+        .catch((e: any) => {
+          const message = e.response?.data?.message || e?.message || 'Something went wrong';
+          setError(message);
+        })
+        .finally(() => {
+          setLoadingRules(false);
+        });
+    }, [id, updateLayout]);
 
 
     useEffect(() => {
         fetchTypology();
     }, []);
 
-    // if (!canReviewTypology) {
-    //     return <AccessDeniedPage />
-    // }
-    if (!canReview) {
-        return <AccessDeniedPage />;
-    }
+    
+    const handleSave = async () => {
+      if (!typology?._key) {
+        Modal.error({ title: "Missing Typology", content: "Typology ID not found." });
+        return;
+      }
+
+      const scorePayload = await buildScorePayload(nodes);
+      console.log("Final Score Payload", scorePayload);
+
+      try {
+        await updateTypology({ score: scorePayload }, typology._key);
+        Modal.success({
+          title: "Saved!",
+          content: "Score section saved successfully.",
+        });
+      } catch (error) {
+        console.error("Error saving score:", error);
+        Modal.error({
+          title: "Save Failed",
+          content: "Something went wrong while saving the score.",
+        });
+      }
+    };
+
+
+
+
+
 
 
     return <ReactFlowProvider>
@@ -625,6 +689,7 @@ const ScorePage = () => {
             error={error}
             fetchTypology={fetchTypology}
             onOpenTypologyView={onOpenTypologyView}
+            handleSave={handleSave}
             onNodeDrag={(e, node, nodesList) => {
                 onNodeDrag(e, node, nodesList);
             }}

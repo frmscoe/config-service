@@ -44,3 +44,4 @@ export class AuthDto {
   // Allow additional properties dynamically
   [key: string]: any;
 }
+

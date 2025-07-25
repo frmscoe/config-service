@@ -16,20 +16,7 @@ export interface IRule {
     name: string;
     ruleConfigs: IRuleConfig[]
 }
-/**
- * 
- * @param page 
- * @param limit 
- * @returns {data: IRule[], count: number}
- */
-// export const getRules = ({page = 1, limit = 10 }) => {
-//     return Api.get('/rule', {
-//         params: {
-//             page,
-//             limit
-//         }
-//     });
-// }
+
 
 
 export const getRules = ({

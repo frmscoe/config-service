@@ -16,6 +16,7 @@ import {
 import { RuleConfigService } from './rule-config.service';
 import { CreateRuleConfigDto } from './dto/create-rule-config.dto';
 import { UpdateRuleConfigDto } from './dto/update-rule-config.dto';
+import { TransitionRuleConfigDto } from './dto/transition-rule-config.dto'; // NEW IMPORT
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -53,23 +54,22 @@ export class RuleConfigController {
   @Get()
   @Roles(RuleConfigPrivilege.GET_RULE_CONFIGS)
   @ApiOperation({ summary: 'Retrieve all rule configurations' })
-  @ApiQuery({ name: 'page', type: 'number', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
   @ApiOkResponse({
     description: 'All rule configurations have been successfully retrieved.',
-    type: RuleConfig,
-    isArray: true,
+    type: [RuleConfig],
   })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ): Promise<{ count: number; data: RuleConfig[] }> {
-    return this.ruleConfigService.findAll({ page, limit });
+  ) {
+    return this.ruleConfigService.findAll(page, limit);
   }
 
   @Get(':id')
   @Roles(RuleConfigPrivilege.GET_RULE_CONFIG)
-  @ApiOperation({ summary: 'Get a single rule configuration by ID' })
+  @ApiOperation({ summary: 'Retrieve a rule configuration by ID' })
   @ApiOkResponse({
     description: 'The rule configuration has been successfully retrieved.',
     type: RuleConfig,
@@ -78,9 +78,30 @@ export class RuleConfigController {
     return this.ruleConfigService.findOne(id);
   }
 
+  // // This endpoint remains for general content updates (and for creating new versions)
+  // @Patch(':id')
+  // @Roles(RuleConfigPrivilege.UPDATE_RULE_CONFIG)
+  // @ApiOperation({ summary: 'Update a rule configuration (creates new version if applicable)' })
+  // @ApiOkResponse({
+  //   description: 'The rule configuration has been successfully updated or a new version created.',
+  //   type: RuleConfig,
+  // })
+  // update(
+  //   @Param('id') id: string,
+  //   @Body() updateRuleConfigDto: UpdateRuleConfigDto,
+  //   @Request() req,
+  // ) {
+  //   // This still calls duplicateRuleConfig based on your existing service logic
+  //   return this.ruleConfigService.duplicateRuleConfig(
+  //     id,
+  //     updateRuleConfigDto,
+  //     req,
+  //   );
+  // }
+
   @Patch(':id')
   @Roles(RuleConfigPrivilege.UPDATE_RULE_CONFIG)
-  @ApiOperation({ summary: 'Update a rule configuration' })
+  @ApiOperation({ summary: 'Update an existing rule configuration' })
   @ApiOkResponse({
     description: 'The rule configuration has been successfully updated.',
     type: RuleConfig,
@@ -90,9 +111,28 @@ export class RuleConfigController {
     @Body() updateRuleConfigDto: UpdateRuleConfigDto,
     @Request() req,
   ) {
-    return this.ruleConfigService.duplicateRuleConfig(
+    return this.ruleConfigService.update(id, updateRuleConfigDto);
+  }
+
+
+
+  // NEW ENDPOINT FOR STATE TRANSITIONS
+  @Patch(':id/transition') // Dedicated endpoint for state transitions
+  // The RolesGuard will check for UPDATE_RULE_CONFIG privilege
+  @Roles(RuleConfigPrivilege.UPDATE_RULE_CONFIG)
+  @ApiOperation({ summary: 'Transition the state of a rule configuration' })
+  @ApiOkResponse({
+    description: 'The rule configuration state has been successfully transitioned.',
+    type: RuleConfig,
+  })
+  transition(
+    @Param('id') id: string,
+    @Body() transitionRuleConfigDto: TransitionRuleConfigDto, // Use the new DTO
+    @Request() req,
+  ) {
+    return this.ruleConfigService.transitionRuleConfigState( // New service method
       id,
-      updateRuleConfigDto,
+      transitionRuleConfigDto.state,
       req,
     );
   }
@@ -117,10 +157,7 @@ export class RuleConfigController {
     description: 'The rule configuration has been successfully disabled.',
     type: RuleConfig,
   })
-  async disableRule(
-    @Param('id') id: string,
-    @Request() req,
-  ): Promise<RuleConfig> {
-    return await this.ruleConfigService.disableRuleConfig(id, req);
+  disable(@Param('id') id: string, @Request() req) {
+    return this.ruleConfigService.disableRuleConfig(id, req);
   }
 }

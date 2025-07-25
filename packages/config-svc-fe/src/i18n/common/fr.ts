@@ -17,7 +17,7 @@ export const frCommon = {
   dashboard: "Dashboard",
   typologyBuilder: "Typology Builder",
   networkMap: "Network Map",
-  deployment: "Deployment",
+  deployment: "Exportation",
   logout: "Logout",
   create: "Create",
   search: "Search",
@@ -174,7 +174,7 @@ export const frCommon = {
   ruleDetails: "Détails de la règle",
   rules: "Règles",
   import: "Importer",
-  settings: "Paramètre",
+  settings: "Conditions de sortie",
 
   typologyID: "Typology ID",
   typologyName: "Typology Name",
@@ -233,6 +233,7 @@ export const frCommon = {
     selectDataType: 'Sélectionner le Type de Données',
     exit: 'Sortie',
     success: 'Règle créée avec succès',
+    ok: 'Ok',
     errors: {
       nameRequired: 'Le nom est obligatoire',
       nameLength: 'Le nom doit comporter au moins 3 caractères',
@@ -329,6 +330,8 @@ export const frCommon = {
     "save": "Enregistrer",
     "exit": "Sortie",
     "ruleDetails": "Détails de la règle",
+    success: 'Configuration de règle créée avec succès',
+    ok: 'Ok',
     errors: {
       minorRequired: 'Mineur est requis',
       patchRequired: 'Patch est requis',
@@ -342,6 +345,7 @@ export const frCommon = {
       nameRequired: 'Nom est requis',
       outcomeRequired: 'Résultat est requis',
       minItems: 'Veuillez ajouter au moins 1 élément',
+      subRuleRefRequired: 'Référence de sous-règle requise',
     },
     bandForm: {
       minimum: 'Minimum',
@@ -387,7 +391,9 @@ export const frCommon = {
         text: 'Résultat',
 
       },
-      addCondition: 'Ajouter une condition'
+      addCondition: 'Ajouter une condition',
+      noConditionsAvailable: 'Aucune condition de sortie disponible',
+      cannotBeGreaterThanMax: 'Ne peut pas être supérieur au maximum',
     },
     informationForm: {
       dataType: 'Type de Données',
@@ -477,6 +483,73 @@ export const frCommon = {
     "openScoringView": "Ouvrir en vue de notation",
     "keepInDrafts": "Garder en brouillons"
   },
+
+  
+  typologyReviewPage: {
+    "invalidId": "ID de typologie non valide fourni.",
+    "fetchError": "Échec du chargement des données de typologie. Veuillez réessayer.",
+    "retry": "Réessayer",
+    "notFound": "Typologie introuvable.",
+    "transitionSuccess": "L'état de la typologie a été modifié avec succès en.",
+    "transitionError": "Échec de la modification de la typologie. Veuillez réessayer.",
+    "title": "Examen de la typologie",
+    "details": "Détails de la typologie",
+    "id": "ID",
+    "name": "Nom",
+    "description": "Description",
+    "configVersion": "Version de la config",
+    "owner": "Propriétaire",
+    "currentState": "État actuel",
+    "submitReview": "Soumettre pour révision",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "withdraw": "Retirer",
+    "abandon": "Abandonner",
+    "deploy": "Déployer",
+    "retire": "Retirer",
+    "archive": "Archiver",
+    "back": "Retour",
+    "version": "Version",
+    "createdAt": "Créé le",
+    "updatedAt": "Mis à jour le",
+    "updatedBy": "Mis à jour par",
+    "rulesTitle": "Règles",
+    "ruleId": "ID de la règle"
+  },
+
+  networkMapReviewPage: {
+  "invalidId": "ID de Network Map invalide.",
+  "fetchError": "Échec du chargement des données de la Network Map. Veuillez réessayer.",
+  "retry": "Réessayer",
+  "notFound": "Network Map non trouvée.",
+  "transitionSuccess": "État de la Network Map modifié avec succès.",
+  "transitionError": "Échec de la modification de l'état de la Network Map. Veuillez réessayer.",
+  "title": "Revue de la Network Map",
+  "details": "Détails de la Network Map",
+  "id": "ID",
+  "name": "Nom",
+  "description": "Description",
+  "configVersion": "Version de Configuration",
+  "owner": "Propriétaire",
+  "currentState": "État Actuel",
+  "submitReview": "Soumettre pour Révision",
+  "approve": "Approuver",
+  "reject": "Rejeter",
+  "withdraw": "Retirer",
+  "abandon": "Abandonner",
+  "deploy": "Déployer",
+  "retire": "Retirer",
+  "archive": "Archiver",
+  "back": "Retour",
+  "version": "Version",
+  "createdAt": "Créé le",
+  "updatedAt": "Mis à jour le",
+  "updatedBy": "Mis à jour par",
+  "rulesTitle": "Règles",
+  "ruleId": "ID de Règle"
+},
+
+
   ruleConfigReviewPage: {
     version: 'Version',
     description: 'Description',
@@ -491,11 +564,19 @@ export const frCommon = {
     errorTitle: 'Erreur',
     errorMessage: 'Une erreur est survenue',
     retry: 'Réessayer',
-    "openScoringView": "Ouvrir en vue de notation",
-    "keepInDrafts": "Garder en brouillons",
-    openTypologyView: "Ouvrir en vue de typologie",
-
-  },
+    parameters: 'Paramètres',
+    no: 'Non',
+    found: 'trouvé',
+    bands: 'Bandes', // Or 'Plages' for numerical ranges
+    subRuleRef: 'Référence de sous-règle',
+    reason: 'Raison',
+    cases: 'Cas',
+    exitConditions: 'Conditions de sortie',
+    name: 'Nom',
+    value: 'Valeur',
+    type: 'Type',
+    stateUpdatedSuccessfully: "La configuration de la règle a été mise à jour avec succès"
+},
   ruleReviewPage: {
     version: 'Version',
     description: 'Description',

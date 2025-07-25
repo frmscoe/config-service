@@ -1,0 +1,15 @@
+// <!-- SPDX-License-Identifier: Apache-2.0 -->
+export enum TypologyStateEnum {
+  '01_DRAFT' = '01_DRAFT',
+  '10_PENDING_REVIEW' = '10_PENDING_REVIEW', // This is the corrected value
+  '11_REJECTED' = '11_REJECTED',
+  '12_WITHDRAWN' = '12_WITHDRAWN',
+  '20_APPROVED' = '20_APPROVED',
+  '30_DEPLOYED' = '30_DEPLOYED',
+  '32_RETIRED' = '32_RETIRED',
+  '90_ABANDONED' = '90_ABANDONED',
+  '91_ARCHIVED' = '91_ARCHIVED',
+  '92_DISABLED' = '92_DISABLED',
+  '93_MARKED_FOR_DELETION' = '93_MARKED_FOR_DELETION',
+}
+

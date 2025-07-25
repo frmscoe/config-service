@@ -9,7 +9,9 @@ const instance = axios.create({
 instance.interceptors.request.use(
     function (config) {
         const token = localStorage.getItem('token');
+        const config_svc_username = localStorage.getItem('config_svc_username');
         console.log("Axios Sending Token:", token); // Add this
+        console.log("Logged In Username:", config_svc_username); // Add this
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

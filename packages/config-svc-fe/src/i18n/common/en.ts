@@ -17,7 +17,7 @@ export const enCommon = {
   dashboard: "Dashboard",
   typologyBuilder: "Typology Builder",
   networkMap: "Network Map",
-  deployment: "Deployment",
+  deployment: "Export",
   logout: "Logout",
   create: "Create",
   search: "Search",
@@ -174,7 +174,7 @@ export const enCommon = {
   ruleDetails: "Rule Details",
   rules: "Rules",
   import: "Import",
-  settings: "Settings",
+  settings: "Exit Conditions",
 
   typologyID: "Typology ID",
   typologyName: "Typology Name",
@@ -238,6 +238,7 @@ export const enCommon = {
     selectDataType: 'Select Data Type',
     exit: 'Exit',
     success: 'Rule Created Successfully',
+    ok: 'Ok',
     errors: {
       nameRequired: 'Name is required',
       nameLength: 'Name must be at least 3 characters long',
@@ -333,6 +334,8 @@ export const enCommon = {
     "save": "Save",
     "exit": "Exit",
     "ruleDetails": "Rule Details",
+    success: 'Rule Config Created Successfully',
+    ok: 'Ok',
     errors: {
       minorRequired: 'Minor is required',
       patchRequired: 'Patch is required',
@@ -346,6 +349,7 @@ export const enCommon = {
       nameRequired: 'Name is required',
       outcomeRequired: 'Outcome is required',
       minItems: 'Please add at least 1 item',
+      subRuleRefRequired: 'Sub Rule Ref Required',
     },
     bandForm: {
       minimum: 'Minimum',
@@ -388,7 +392,9 @@ export const enCommon = {
         text: 'Outcome'
 
       },
-      addCondition: 'Add Condition'
+      addCondition: 'Add Condition',
+      noConditionsAvailable: 'No Exit Condition Available',
+      cannotBeGreaterThanMax: 'Can Not Be Greater Than The Maximum',
     },
     informationForm: {
       dataType: 'Data Type',
@@ -485,6 +491,71 @@ export const enCommon = {
 
 
   },
+
+  typologyReviewPage: {
+    "invalidId": "Invalid Typology ID provided.",
+    "fetchError": "Failed to load typology data. Please try again.",
+    "retry": "Retry",
+    "notFound": "Typology not found.",
+    "transitionSuccess": "Typology state successfully transitioned.",
+    "transitionError": "Failed to transition typology. Please try again.",
+    "title": "Typology Review",
+    "details": "Typology Details",
+    "id": "ID",
+    "name": "Name",
+    "description": "Description",
+    "configVersion": "Config Version",
+    "owner": "Owner",
+    "currentState": "Current State",
+    "submitReview": "Submit for Review",
+    "approve": "Approve",
+    "reject": "Reject",
+    "withdraw": "Withdraw",
+    "abandon": "Abandon",
+    "deploy": "Deploy",
+    "retire": "Retire",
+    "archive": "Archive",
+    "back": "Back",
+    "version": "Version",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "updatedBy": "Updated By",
+    "rulesTitle": "Rules",
+    "ruleId": "Rule ID"
+  },
+
+  networkMapReviewPage: {
+    "invalidId": "Invalid Network Map ID provided.",
+    "fetchError": "Failed to load network map data. Please try again.",
+    "retry": "Retry",
+    "notFound": "Network Map not found.",
+    "transitionSuccess": "Network Map state successfully transitioned.",
+    "transitionError": "Failed to transition network map. Please try again.",
+    "title": "Network Map Review",
+    "details": "Network Map Details",
+    "id": "ID",
+    "name": "Name",
+    "description": "Description",
+    "configVersion": "Config Version",
+    "owner": "Owner",
+    "currentState": "Current State",
+    "submitReview": "Submit for Review",
+    "approve": "Approve",
+    "reject": "Reject",
+    "withdraw": "Withdraw",
+    "abandon": "Abandon",
+    "deploy": "Deploy",
+    "retire": "Retire",
+    "archive": "Archive",
+    "back": "Back",
+    "version": "Version",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "updatedBy": "Updated By",
+    "rulesTitle": "Rules",
+    "ruleId": "Rule ID"
+  },
+
   ruleReviewPage: {
     version: 'Version',
     description: 'Description',
@@ -516,7 +587,20 @@ export const enCommon = {
     cancel: 'Cancel',
     errorTitle: 'Error',
     errorMessage: 'An error occurred',
-    retry: 'Retry'
+    retry: 'Retry',
+    // Corrected additions based on your feedback
+    parameters: 'Parameters',
+    no: 'no',
+    found: 'found',
+    bands: 'Bands',
+    subRuleRef: 'Sub-Rule Reference',
+    reason: 'Reason',
+    cases: 'Cases',
+    exitConditions: 'Exit Conditions',
+    name: 'Name', // Added
+    value: 'Value', // Added
+    type: 'Type', // Added
+    stateUpdatedSuccessfully: "Rule Config State Updated Successfully"
 },
 createEditNetworkMap: {
   searchRules: "Search rules",

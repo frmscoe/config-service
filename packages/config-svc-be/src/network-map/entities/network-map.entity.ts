@@ -147,6 +147,16 @@ export class NetworkMap {
   @IsBoolean()
   active: boolean;
 
+  @ApiProperty({ example: 'My Network Map' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ example: 'Used for processing PACS.002 flows' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+
   @ApiProperty({
     description: 'A x.y.z versioning for the network map',
     example: '1.0.0',
@@ -178,10 +188,14 @@ export class NetworkMap {
   @IsString()
   updatedAt?: string;
 
+  // @ApiProperty()
+  // @IsString()
+  // @IsOptional()
+  // updatedBy?: string;
   @ApiProperty()
   @IsString()
   @IsOptional()
-  updatedBy?: string;
+  modifiedBy?: string;
 
   @ApiProperty({
     description: 'Identifier for the owner of the network map.',
@@ -191,12 +205,12 @@ export class NetworkMap {
   ownerId: string;
 
   @ApiProperty({
-    description: 'Identifier for the approver of the network map.',
-    example: 'user@example.com',
+    description: 'Email of the user who approved the network map.',
+    example: 'approver@example.com',
   })
   @IsString()
   @IsOptional()
-  approverId?: string;
+  approvedBy?: string;
 
   @ApiProperty({
     description: 'Identifier for the network map that originated this one.',

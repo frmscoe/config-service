@@ -1,5 +1,4 @@
-// <!-- SPDX-License-Identifier: Apache-2.0 -->
-// Import Rule
+// // Import Rule
 import React, { useState } from 'react';
 import { Upload, message as antMessage, Select, Button, Modal, Spin, Radio } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
@@ -8,7 +7,7 @@ import { Api } from '~/client';
 import usePrivileges from '~/hooks/usePrivileges';
 import AccessDeniedPage from '~/components/common/AccessDenied';
 import { useCommonTranslations } from '~/hooks';
-import { stringify } from 'querystring';
+// import { stringify } from 'querystring'; // Removed as it's no longer needed
 
 const { Option } = Select;
 const { Dragger } = Upload;
@@ -20,9 +19,9 @@ const lightBlueButtonStyle = {
 };
 
 const cancelButtonStyle = {
-  backgroundColor: '#ff4d4f', 
-  borderColor: '#ff4d4f', 
-  color: '#fff', 
+  backgroundColor: '#ff4d4f',
+  borderColor: '#ff4d4f',
+  color: '#fff',
 };
 
 const ImportRuleConfig: React.FC = () => {
@@ -48,6 +47,9 @@ const ImportRuleConfig: React.FC = () => {
   const [exitConditions, setExitConditions] = useState([]);
   const [isSavingModalVisible, setIsSavingModalVisible] = useState(false);
   const [isCreatingConfigVisible, setIsCreatingConfigVisible] = useState(false);
+  // Add state for parameters
+  const [parameters, setParameters] = useState([]);
+
 
   const handleFileUpload = (file: any) => {
     const reader = new FileReader();
@@ -58,10 +60,12 @@ const ImportRuleConfig: React.FC = () => {
         const bandsFromJson = fileContent.config.bands || [];
         const casesFromJson = fileContent.config.cases || [];
         const exitConditionsFromJson = fileContent.config.exitConditions || [];
+        const parametersFromJson = fileContent.config.parameters || []; // Extract parameters
 
         setband(bandsFromJson);
         setcases(casesFromJson);
         setExitConditions(exitConditionsFromJson);
+        setParameters(parametersFromJson); // Set parameters state
         checkForExistingRule(fileContent);
       } catch (error) {
         showErrorModal(t('importRulePage.errorParsingJson'));
@@ -86,11 +90,6 @@ const ImportRuleConfig: React.FC = () => {
         setLoading(false);
         return;
       }
-      if (fileContent.desc === '') {
-        showErrorModal(t('importRulePage.invalidRuleDescription'));
-        setLoading(false);
-        return;
-      }
       if (fileContent.cfg === '') {
         showErrorModal(t('importRulePage.invalidConfig'));
         setLoading(false);
@@ -99,7 +98,7 @@ const ImportRuleConfig: React.FC = () => {
       const response = await Api.get(`rule/name/${ruleName}`);
       if (response.data && response.data.length > 0) { // Checking if data array has elements
         setRuleExists(true);
-        setExistingRuleVersion(response.data[0].cfg); // Assuming version is stored in the first object of the data array
+        setExistingRuleVersion(response.data[0].cfg);
         setExistingRuleId(response.data[0]._id); // Store the rule ID
         setModalMessage(t('importRulePage.existingRuleFound'));
         setIsModalVisible(true);
@@ -164,7 +163,6 @@ const ImportRuleConfig: React.FC = () => {
   const handleYesCreateNewConfig = async () => {
     setModalMessage(null);
     setIsIntermediateModalVisible(false);
-    setShowDataTypeSelection(false);
     setIsCreatingConfigVisible(true); // Show creating config modal
     await createNewConfig();
   };
@@ -216,7 +214,7 @@ const ImportRuleConfig: React.FC = () => {
     setIsVersionModalVisible(false);
   };
 
-  const createNewConfig = async (isVersionUpdate = false) => {
+  const createNewConfig = async (isVersionUpdate = false, ruleIdForConfig?: string) => {
     setLoading(true);
     setModalMessage(t('importRulePage.addingConfig'));
     try {
@@ -242,18 +240,26 @@ const ImportRuleConfig: React.FC = () => {
         newVersion = `${major}.${minor}.${patch}`;
       }
 
+      const targetRuleId = ruleIdForConfig || existingRuleId || jsonContent.id.split('@')[0];
+
+      // Ensure the ruleId is prefixed with "rule/" if it's not already
+      // This check remains useful if existingRuleId or jsonContent.id is used,
+      // but newRuleId (from response.data.rule._id) should already have the prefix.
+      let finalRuleIdForConfig = targetRuleId;
+      if (targetRuleId && !targetRuleId.startsWith('rule/')) {
+          finalRuleIdForConfig = `rule/${targetRuleId}`;
+      }
+
       const response = await Api.post('rule-config', {
         cfg: newVersion,
-        desc: jsonContent.desc,
-        ruleId: existingRuleId,
+        desc: jsonContent.desc || '', // Send empty string if desc is missing
+        ruleId: finalRuleIdForConfig, // Use the correctly formatted rule ID
         config: {
-          parameters: [
-            {
-              ParameterName: stringify(jsonContent.config.parameters.ParameterName),
-              ParameterValue: jsonContent.config.parameters.ParameterValue,
-              ParameterType: stringify(jsonContent.config.parameters.ParameterType)
-            }
-          ],
+          parameters: parameters.map((param: any) => ({
+            ParameterName: param.ParameterName,
+            ParameterValue: param.ParameterValue,
+            ParameterType: param.ParameterType,
+          })),
           exitConditions: exitConditions,
           bands: band,
           cases: cases,
@@ -266,7 +272,7 @@ const ImportRuleConfig: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error creating new config:', error);
-      showErrorModal(t('importRulePage.errorCreatingConfig'));
+      showErrorModal(error?.response?.data?.message || t('importRulePage.errorCreatingConfig'));
     } finally {
       setLoading(false);
       setIsCreatingConfigVisible(false); // Hide creating config modal
@@ -306,36 +312,48 @@ const ImportRuleConfig: React.FC = () => {
         rule_cfg: newVersion,
         name: ruleName,
         dataType: dataType,
-        rule_desc: jsonContent.desc,
+        rule_desc: jsonContent.desc || '', // Send empty string if desc is missing
         source: 'USER_IMPORTED',
-        rule_config_cfg: jsonContent.cfg,
-        rule_config_desc: jsonContent.desc,
-        ruleId: ruleName,
-        version: newVersion,
-        configVersion: '1.0.0',
+        rule_config_cfg: jsonContent.cfg, // This is the config version from the file
+        rule_config_desc: jsonContent.desc || '', // Send empty string if desc is missing
+        version: newVersion, // This is the rule's version
+        configVersion: jsonContent.cfg, // Corrected: Should be from jsonContent.cfg
         config: {
-          parameters: [
-            {
-              ParameterName: stringify(jsonContent.config.parameters.ParameterName),
-              ParameterValue: jsonContent.config.parameters.ParameterValue,
-              ParameterType: stringify(jsonContent.config.parameters.ParameterType)
-            }
-          ],
+          parameters: parameters.map((param: any) => ({
+            ParameterName: param.ParameterName,
+            ParameterValue: param.ParameterValue,
+            ParameterType: param.ParameterType,
+          })),
           exitConditions: exitConditions,
           bands: band,
           cases: cases,
         }
       });
+
+      console.log('Response from rule/import API:', response.data);
+
       if (response.status === 201) {
-        setRuleCreated(true);
+        // Correctly extract _id from the nested 'rule' object
+        const newRuleId = response.data.rule ? response.data.rule._id : undefined;
+
+        if (!newRuleId) {
+          console.error('Error: newRuleId not found in response.data.rule');
+          showErrorModal(t('importRulePage.errorCreatingRule') + ': Rule ID not returned from backend.');
+          setLoading(false);
+          return; // Stop execution if ID is not found
+        }
+
+        setRuleCreated(false);
         setModalMessage(t('importRulePage.ruleCreatedSuccess'));
+
+        setIsCreatingConfigVisible(true);
+        await createNewConfig(false, newRuleId); // Pass newRuleId directly to createNewConfig
       }
     } catch (error: any) {
       console.error('Error creating new rule:', error);
-      showErrorModal(t('importRulePage.errorCreatingRule'));
+      showErrorModal(error?.response?.data?.message || t('importRulePage.errorCreatingRule'));
     } finally {
       setLoading(false);
-      setIsModalVisible(true);
     }
   };
 

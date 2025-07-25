@@ -156,17 +156,7 @@ const areAttachedRulesEqual = (rules1: AttachedRules[], rules2: AttachedRules[])
 };
 
 
-// export const checkTypologyDuplicate = async (name: string, version: string) => {
-//   const res = await Api.get('/typology', {
-//     params: {
-//       name,
-//       cfg: version,
-//     },
-//   });
 
-//   // 'data' is the array of typologies from the API response
-//   return res.data.data?.length > 0;
-// };
 
 export const checkTypologyDuplicate = async (name: string, version: string) => {
   const res = await Api.get('/typology', {
