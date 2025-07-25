@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
   ValidateNested,
+  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -74,4 +75,8 @@ export class UpdateTypologyDto extends PartialType(CreateTypologyDto) {
   @IsBoolean()
   @IsOptional()
   edited?: boolean;
+
+  @IsOptional()
+  @IsObject()
+  score?: Record<string, any>;
 }

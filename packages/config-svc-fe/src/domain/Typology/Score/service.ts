@@ -195,3 +195,40 @@ export const config = {
         }
     ],
 }
+
+
+export const getTypologyWithRules = async (id: string) => {
+  const response = await Api.get(`/typology/${encodeURIComponent(id)}`);
+  return response.data;
+};
+
+export const getRuleById = async (id: string) => {
+  const response = await Api.get(`/rule/${encodeURIComponent(id)}`);
+  return response.data;
+};
+
+export const getRuleConfigById = async (id: string) => {
+  const response = await Api.get(`/rule-config/${encodeURIComponent(id)}`);
+  return response.data;
+};
+
+
+export const getAllRules = async () => {
+  const response = await Api.get(`/rule?page=1&limit=1000`);
+  return response.data.rules; 
+};
+
+
+/**
+ * Updates an existing Typology.
+ * Used when modifying a typology in states that don't require a new version.
+ * @param data The partial Typology object with updated fields (excluding state).
+ * @param id The _key of the Typology to update.
+ * @returns Promise containing the updated Typology data.
+ */
+export const updateTypology = async (data: Partial<ITypology>, id: string): Promise<{ data: ITypology }> => {
+    // Uses PATCH for partial updates to an existing typology's endpoint
+    // `encodeURIComponent` ensures the ID (which can contain slashes like \"collection/key\") is correctly URL-encoded.
+    const response = await Api.patch<ITypology>(`/typology/${encodeURIComponent(id)}`, data);
+    return response.data;
+};

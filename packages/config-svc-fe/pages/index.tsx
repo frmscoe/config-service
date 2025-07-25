@@ -1,10 +1,30 @@
-import { useState } from "react";
+// <!-- SPDX-License-Identifier: Apache-2.0 -->
+import { useState, useEffect } from "react";
 import { DownOutlined, UpOutlined, SettingOutlined } from "@ant-design/icons";
+// Import the new service function alongside the existing ones
+import { fetchDashboardRules, fetchDashboardRuleConfigs, fetchDashboardTypologies, fetchDashboardNetworkMaps } from './service';
+import { useRouter } from 'next/router';
 
+// Define interfaces for data structure (no change to this part)
+interface DashboardCardData {
+  total: number;
+  draft: number;
+  pendingReview: number;
+}
+
+interface DashboardAllData {
+  rules: DashboardCardData;
+  typologies: DashboardCardData; // This interface is already defined and will now receive live data
+  networkMaps: DashboardCardData;
+  ruleConfigs: DashboardCardData;
+}
+
+// Simple Card component (no change)
 const Card = ({ children, className = "" }) => (
   <div className={`rounded-xl shadow-md bg-white ${className}`}>{children}</div>
 );
 
+// Simple Button component (no change)
 const Button = ({ children, variant = "solid", className = "", ...props }) => {
   const baseStyle =
     variant === "outline"
@@ -17,14 +37,23 @@ const Button = ({ children, variant = "solid", className = "", ...props }) => {
   );
 };
 
-const dummyData = {
-  rules: { total: 5, draft: 1, pendingReview: 1 },
-  typologies: { total: 3, draft: 1, pendingReview: 1 },
-  networkMaps: { total: 5, draft: 1, pendingReview: 1 },
-  ruleConfigs: { total: 3, draft: 1, pendingReview: 1 },
-};
-
 const Dashboard = () => {
+  // State for dashboard data, initialized with placeholder values
+  // 'rules', 'ruleConfigs', and 'typologies' will now be populated by API calls
+  const [dashboardData, setDashboardData] = useState<DashboardAllData>({
+    rules: { total: 0, draft: 0, pendingReview: 0 },
+    typologies: { total: 0, draft: 0, pendingReview: 0 }, // Initial zeros for typologies
+    networkMaps: { total: 5, draft: 1, pendingReview: 1 }, // Retaining dummy data for networkMaps
+    ruleConfigs: { total: 0, draft: 0, pendingReview: 0 },
+  });
+
+  // State for loading and error handling
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+
+  // State for individual card expansion (no change)
   const [expanded, setExpanded] = useState({
     rules: false,
     typologies: false,
@@ -32,44 +61,203 @@ const Dashboard = () => {
     ruleConfigs: false,
   });
 
-  const toggleExpand = (key) => {
-    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+  // State: To control customizing mode (no change)
+  // const [customizingMode, setCustomizingMode] = useState(false);
+  // State: To control the order of cards (no change)
+  // const [cardOrder, setCardOrder] = useState(['rules', 'typologies', 'networkMaps', 'ruleConfigs']);
+  const cardOrder: (keyof DashboardAllData)[] = ['networkMaps', 'typologies', 'rules', 'ruleConfigs'];
+  const routeMap: Record<keyof DashboardAllData, string> = {
+    networkMaps: 'network-map',
+    typologies: 'typology',
+    rules: 'rule',
+    ruleConfigs: 'rule-config',
   };
 
-  const renderCard = (title, key, color) => (
-    <Card className={`p-4 w-full max-w-xs border-l-4 ${color}`}>
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-2xl font-bold">{dummyData[key].total}</p>
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const getDashboardData = async () => {
+      setLoading(true);
+      setError(null); // Clear previous errors
+
+      let hasError = false; // Flag to track if any fetch operation failed
+
+      // Use Promise.allSettled to fetch all data concurrently and handle individual errors
+      const [rulesResult, ruleConfigsResult, typologiesResult, networkMapsResult] = await Promise.allSettled([
+        fetchDashboardRules(),
+        fetchDashboardRuleConfigs(),
+        fetchDashboardTypologies(), // Call the new fetch function
+        fetchDashboardNetworkMaps(),
+      ]);
+
+      setDashboardData(prev => ({
+        ...prev,
+        rules: rulesResult.status === 'fulfilled' ? rulesResult.value : prev.rules,
+        ruleConfigs: ruleConfigsResult.status === 'fulfilled' ? ruleConfigsResult.value : prev.ruleConfigs,
+        typologies: typologiesResult.status === 'fulfilled' ? typologiesResult.value : prev.typologies,
+        networkMaps: networkMapsResult.status === 'fulfilled' ? networkMapsResult.value : prev.networkMaps,
+      }));
+
+
+      // Check for any rejected promises to set a global error message
+      if (rulesResult.status === 'rejected' || ruleConfigsResult.status === 'rejected' || typologiesResult.status === 'rejected' || networkMapsResult === 'rejected') {
+        hasError = true;
+      }
+
+      setLoading(false);
+      if (hasError) {
+        setError("One or more dashboard data types failed to load. Please check console for details.");
+      }
+    };
+
+    getDashboardData();
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Function to toggle individual card expansion (no change)
+  const toggleExpand = (key: keyof DashboardAllData) => {
+    // console.log(`Clicked card key: ${key}`);
+    setExpanded((prev) => {
+      const newState = { ...prev, [key]: !prev[key] };
+      // console.log(`Previous expanded state:`, prev);
+      // console.log(`New expanded state for ${key}:`, newState);
+      return newState;
+    });
+  };
+
+  // Function to toggle customizing mode (no change)
+  // const toggleCustomizingMode = () => {
+  //   setCustomizingMode((prev) => !prev);
+  // };
+
+  // Helper function to shuffle an array (for demonstration of reordering) (no change)
+  const shuffleArray = (array: string[]) => {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex !== 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+    return [...array];
+  };
+
+  // Handler to shuffle cards when in customizing mode (no change)
+  // const handleShuffleCards = () => {
+  //   setCardOrder(shuffleArray(cardOrder));
+  // };
+
+  // Helper function to get card details (title and color) based on key (no change)
+  const getCardDetails = (key: keyof DashboardAllData) => {
+    switch (key) {
+      case 'rules':
+        return { title: 'Rules', color: 'border-red-500' };
+      case 'typologies':
+        return { title: 'Typologies', color: 'border-green-500' };
+      case 'networkMaps':
+        return { title: 'Network Maps', color: 'border-blue-500' };
+      case 'ruleConfigs':
+        return { title: 'Rule Configurations', color: 'border-purple-500' };
+      default:
+        return { title: '', color: '' };
+    }
+  };
+
+  // renderCard function (no change)
+  // const renderCard = (title: string, key: keyof DashboardAllData, color: string) => (
+  //   <Card className={`p-4 w-full max-w-xs border-l-4 ${color}`}>
+  //     <div className="flex justify-between items-center">
+  //       <div>
+  //         <h3 className="text-lg font-semibold">{title}</h3>
+  //         <p className="text-2xl font-bold">{dashboardData[key].total}</p>
+  //       </div>
+  //       <button onClick={() => toggleExpand(key)}>
+  //         {expanded[key] ? <UpOutlined /> : <DownOutlined />}
+  //       </button>
+  //     </div>
+  //     {expanded[key] && (
+  //       <div className="mt-3 text-sm">
+  //         <p>Draft: {dashboardData[key].draft}</p>
+  //         <p>Pending Review: {dashboardData[key].pendingReview}</p>
+  //       </div>
+  //     )}
+  //   </Card>
+  // );
+  // const renderCard = (title: string, key: keyof DashboardAllData, color: string) => (
+  //   <Card className={`p-4 w-full max-w-xs border-l-4 ${color}`}>
+  //     <div className="flex justify-between items-center">
+  //       <div>
+  //         <h3 className="text-lg font-semibold">{title}</h3>
+  //         <p className="text-2xl font-bold">{dashboardData[key].total}</p>
+  //       </div>
+  //       <button onClick={() => toggleExpand(key)} data-testid={`${key}-expand-button`}> {/* Add data-testid here */}
+  //         {expanded[key] ? <UpOutlined /> : <DownOutlined />}
+  //       </button>
+  //     </div>
+  //     {expanded[key] && (
+  //       <div className="mt-3 text-sm">
+  //         <p>Draft: {dashboardData[key].draft}</p>
+  //         <p>Pending Review: {dashboardData[key].pendingReview}</p>
+  //       </div>
+  //     )}
+  //   </Card>
+  // );
+
+  const renderCard = (title: string, key: keyof DashboardAllData, color: string) => (
+    <div
+      className="cursor-pointer"
+      onClick={() => router.push(`/${routeMap[key]}`)}
+      data-testid={`${key}-card`}
+    >
+      <Card className={`p-4 w-full max-w-xs border-l-4 ${color}`}>
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold">{title}</h3>
+            <p className="text-2xl font-bold">{dashboardData[key].total}</p>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // prevent routing when toggling
+              toggleExpand(key);
+            }}
+            data-testid={`${key}-expand-button`}
+          >
+            {expanded[key] ? <UpOutlined /> : <DownOutlined />}
+          </button>
         </div>
-        <button onClick={() => toggleExpand(key)}>
-          {expanded[key] ? <UpOutlined /> : <DownOutlined />}
-        </button>
-      </div>
-      {expanded[key] && (
-        <div className="mt-3 text-sm">
-          <p>Draft: {dummyData[key].draft}</p>
-          <p>Pending Review: {dummyData[key].pendingReview}</p>
-        </div>
-      )}
-    </Card>
+        {expanded[key] && (
+          <div className="mt-3 text-sm">
+            <p>Draft: {dashboardData[key].draft}</p>
+            <p>Pending Review: {dashboardData[key].pendingReview}</p>
+          </div>
+        )}
+      </Card>
+    </div>
   );
+
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button variant="outline" className="flex items-center gap-2">
-          <SettingOutlined /> Customize Dashboard
-        </Button>
+        {/*<div className="flex items-center gap-2">
+          {customizingMode && (
+            <Button onClick={handleShuffleCards}>Shuffle Cards</Button>
+          )}
+          <Button variant="outline" className="flex items-center gap-2" onClick={toggleCustomizingMode}>
+            <SettingOutlined /> {customizingMode ? 'Done Customizing' : 'Customize Dashboard'}
+          </Button>
+        </div>*/}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {renderCard("Rules", "rules", "border-red-500")}
-        {renderCard("Typologies", "typologies", "border-yellow-500")}
-        {renderCard("Network Maps", "networkMaps", "border-green-500")}
-        {renderCard("Rule Configurations", "ruleConfigs", "border-blue-500")}
-      </div>
+      {loading && <p>Loading dashboard data...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+      {!loading && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {cardOrder.map((key) => {
+            const { title, color } = getCardDetails(key as keyof DashboardAllData);
+            return <div key={key}>{renderCard(title, key as keyof DashboardAllData, color)}</div>;
+          })}
+        </div>
+      )}
     </div>
   );
 };

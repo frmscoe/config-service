@@ -15,3 +15,9 @@ export const getRules = ({page = 1, limit = 10 }) => {
         }
     });
 }
+
+export const getNetworkMaps = ({ page, limit }: { page: number; limit: number }) => {
+  return Api.get('/network-map', {
+    params: { page, limit },
+  });
+};

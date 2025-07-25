@@ -10,15 +10,13 @@ import { IRuleConfig } from "~/domain/Rule/RuleConfig/RuleConfigList/types";
 import { useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
-import { createNodesAndEdges, createTypology, hasChanged, updateLayout, updateTypology, checkTypologyDuplicate } from "./service";
+import { createNodesAndEdges, createTypology, hasChanged, updateLayout, updateTypology } from "./service";
 import { Modal } from "antd";
 import { useCommonTranslations } from "~/hooks";
 import { Router, useRouter } from "next/router";
 import { useParams } from "next/navigation";
 import { getTypology } from "../Score/service";
 import { ITypology } from "../List/service";
-import { canTransition } from '../../../../machine/guards';
-
 
 export interface AttachedRules extends IRule {
     attachedConfigs: IRuleConfig[];
@@ -30,15 +28,7 @@ const nodeDefaults = {
 };
 
 
-// const initialNodes = [
-//     {
-//         id: '1',
-//         position: { x: 0, y: 150 },
-//         data: { label: 'Typology', showDelete: false },
-//         ...nodeDefaults,
 
-//     },
-// ];
 const initialNodes = [
     {
         id: '1',
@@ -66,8 +56,7 @@ const CreateEditTopologyPage = () => {
     const [page, setPage] = useState(1);
     const [loadingRules, setLoadingRules] = useState(true);
     const [error, setError] = useState('');
-    // const { canCreateTypology, canViewRuleWithConfigs, canEditTypology } = usePrivileges();
-    const { privileges, canCreateTypology, canViewRuleWithConfigs } = usePrivileges();
+    const { canCreateTypology, canViewRuleWithConfigs, canEditTypology } = usePrivileges();
     const reactFlowWrapper = useRef<any>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -76,7 +65,6 @@ const CreateEditTopologyPage = () => {
     const [ruleDragIndex, setRuleDragIndex] = useState<number | null>(null);
     const [removedRules, setRemoveRules] = useState<IRule[] | IRuleConfig[]>([]);
     const [saveLoading, setSaveLoading] = useState(false);
-    const [canEdit, setCanEdit] = useState(false);
     const [saved, setSaved] = useState(false);
     const [editData, setEditData] = useState<ITypology & {attachedRules: AttachedRules[]}>({
         attachedRules: [],
@@ -87,14 +75,6 @@ const CreateEditTopologyPage = () => {
     const isEditMode = useMemo(() => {
         return !!id;
     }, [id])
-
-    useEffect(() => {
-        if (isEditMode && editData?.state && privileges) {
-            const allowed = canTransition(privileges, 'TYPOLOGY', editData.state, 'EDIT');
-            setCanEdit(allowed);
-        }
-    }, [isEditMode, editData?.state, privileges]);
-
 
     const schema = useMemo(() => {
         return yup.object().shape({
@@ -205,32 +185,9 @@ const CreateEditTopologyPage = () => {
 
     }
 
-    // const onSubmit = async (data: any) => {
-    //     await save(data);
-    // };
-
     const onSubmit = async (data: any) => {
-      const version = `${data.major}.${data.minor}.${data.patch}`;
-
-      const isDuplicate = await checkTypologyDuplicate(data.name, version);
-      if (isDuplicate) {
-        modal.warning({
-          title: 'Duplicate Typology Detected',
-          content: 'A typology with the same name and version already exists. Please modify the name or version before submitting.',
-          okButtonProps: {
-            style: {
-              backgroundColor: '#1677ff',
-              color: '#fff',
-              border: 'none',
-            },
-          },
-        });
-        return;
-      }
-
-      await save(data);
+        await save(data);
     };
-
 
     const onConnect = useCallback(
         (params: any) =>
@@ -631,13 +588,9 @@ const CreateEditTopologyPage = () => {
     if (!canCreateTypology) {
         return <AccessDeniedPage />
     }
-    // if (isEditMode && !canEditTypology) {
-    //     return <AccessDeniedPage />
-    // }
-    if (isEditMode && !canEdit) {
+    if (isEditMode && !canEditTypology) {
         return <AccessDeniedPage />
     }
-
     return <> <Create
         rules={rules}
         loadingRules={loadingRules}

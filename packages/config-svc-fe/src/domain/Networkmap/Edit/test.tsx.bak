@@ -1,0 +1,500 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Edit } from "./Edit";
+import usePrivileges from "~/hooks/usePrivileges";
+import { useNodesState, useEdgesState, Position, addEdge, NodeMouseHandler, Node, ConnectionLineType, Edge } from "reactflow";
+import dagre from 'dagre';
+import { GroupedTypology,
+        createNetworkMap,
+        getTypologies,
+        getTypology,
+        groupTypologies,
+        getRuleById,
+        getRuleConfigById,
+        IRule,
+        IRuleConfig,
+        getNetworkMap,
+        updateNetworkMap
+    } from "./service";
+import { Button, Modal, Result, message } from "antd";
+import { ITypology, RuleWithConfig } from "../../Typology/Score/service";
+import { IEvent } from "./Events";
+import { getRandomNumber } from "~/utils/getRandomNumberHelper";
+import Link from "next/link";
+import { useCommonTranslations } from "~/hooks";
+import { Api } from "~/client"
+import { useParams } from 'next/navigation';
+
+
+
+
+export interface AttachedRules extends IRule {
+    attachedConfigs: IRuleConfig[];
+}
+const nodeDefaults = {
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
+    type: 'customNode'
+};
+const nodeWidth = 172;
+const nodeHeight = 36;
+const initialEdges = [];
+const initialNodes: Node[] = [];
+
+const NetworkMapPage = () => {
+    const [rules, setRules] = useState<IRule[]>([]);
+    const [ruleOptions, setRuleOptions] = useState<IRule[]>([]);
+    const [modal, contextHolder] = Modal.useModal();
+    const [loadingTypologies, setLoadingTypologies] = useState(false);
+    const { canCreateNetworkMap, canViewTypologyList, canReviewTypology } = usePrivileges();
+    const reactFlowWrapper = useRef<any>(null);
+    const [selectedRule, setSelectedRuleIndex] = useState<null | string>(null);
+    // const [attachedRules, setAttachedRules] = useState<RuleWithConfig[]>([]);
+    const [ruleDragIndex, setRuleDragIndex] = useState<number | null>(null);
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [typologies, setTypologies] = useState<GroupedTypology[]>([]);
+    const [typologyOptions, setTypologyOptions] = useState<GroupedTypology[]>([]);
+    const [selectedTypology, setSelectedTypology] = useState<string | null>(null);
+    const [events] = useState<{ label: string, disabled: boolean, value: string; color: string }[]>([{ label: 'PAIN.001', value: 'pain_001', disabled: false, color: 'gold' }, { label: 'PAIN.013', value: 'pain_013', disabled: false, color: 'magenta' }, { label: 'PACS.002', value: 'pacs_001', disabled: false, color: 'gold' }, { label: 'PACS.008', value: 'pacs_008', disabled: false, color: 'gold' }]);
+    const [eventOptions, setEventOptions] = useState<IEvent[]>([]);
+    const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+    const [attacheEvents, setAttachedEvents] = useState([]);
+    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const [allExpanded, setAllExpanded] = useState(false);
+    const [showVersions, setShowVersions] = useState(false);
+    const [loadingAttached, setLoadingAttached] = useState(false);
+    const{t} = useCommonTranslations();
+
+    const [activeEventId, setActiveEventId] = useState<string | null>(null);
+
+    const params = useParams();
+    const networkMapId = params?.id;
+
+    // const [nodes, setNodes] = useState<Node[]>([]);
+    // const [edges, setEdges] = useState<Edge[]>([]);
+    const [attachedRules, setAttachedRules] = useState<RuleWithConfig[]>([]);
+    const [eventId, setEventId] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [originalNetworkMapData, setOriginalNetworkMapData] = useState<any>(null);
+
+
+
+
+    useEffect(() => {
+      if (!networkMapId) return;
+
+      const fetchNetworkMap = async () => {
+        setLoading(true);
+        try {
+          const { data } = await getNetworkMap(networkMapId);
+          console.log("Fetched Network Map Data:", data);
+
+          const event = data?.events?.[0];
+          if (!event) return;
+
+          const fetchedNodes: Node[] = [];
+          const fetchedEdges: Edge[] = [];
+          const allAttachedRules: RuleWithConfig[] = []; // Initialize a new array to collect all rules and configs
+
+          const eventNode: Node = {
+            ...nodeDefaults,
+            id: event.eventId,
+            type: 'eventNode',
+            data: {
+              label: event.eventId,
+              handleExpand: () => {}, // placeholder or actual handler
+              isActive: true,
+            },
+            position: { x: 100, y: 150 },
+          };
+
+          fetchedNodes.push(eventNode);
+          let yOffset = 200;
+
+          for (const typology of event.typologies || []) {
+            const typologyId = typology._id || typology.id?.split('@')[0];
+            let fullTypology = null;
+            let ruleWithConfigs: RuleWithConfig[] = [];
+
+            try {
+              const res = await getTypology(typologyId);
+              fullTypology = res.data;
+
+              for (const ruleEntry of fullTypology.rules_rule_configs || []) {
+                const ruleId = ruleEntry.ruleId?.split('/')?.[1] || ruleEntry.ruleId;
+                const ruleConfigIds = ruleEntry.ruleConfigId || [];
+
+                const rule = await getRuleById(ruleId)
+                  .then((r) => r.data)
+                  .catch(() => null);
+                const configs = await Promise.all(
+                  ruleConfigIds.map((cfgId) =>
+                    getRuleConfigById(cfgId.split('/')?.[1] || cfgId)
+                      .then((r) => r.data)
+                      .catch(() => null)
+                  )
+                );
+
+                if (rule) {
+                  const newRuleWithConfig: RuleWithConfig = {
+                    ruleId: rule._id,
+                    ruleConfigId: configs.filter(Boolean).map((c) => c._id),
+                    rule,
+                    ruleConfigs: configs.filter(Boolean) as IRuleConfig[],
+                    typologyId: fullTypology._id,
+                    typology: fullTypology,
+                  };
+                  ruleWithConfigs.push(newRuleWithConfig);
+                  allAttachedRules.push(newRuleWithConfig); // Add to the aggregated list
+                }
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch full data for typology ${typologyId}`, err);
+              // fallback to original data if fetch fails
+              fullTypology = typology;
+            }
+
+            // Important: Still add the node, even if data fetch fails
+            const typologyNode: Node = {
+              ...nodeDefaults,
+              id: typologyId,
+              type: 'typologyNode',
+              data: {
+                ...fullTypology,
+                label: fullTypology?.name?.slice(0, 25) || 'Unnamed',
+                handleExpandVersions,
+                handleExpand: handleExpandTypology,
+                handleDelete,
+                eventId: event.eventId,
+                rules_rule_configs: ruleWithConfigs,
+                updatedAt: fullTypology?.updatedAt,
+                cfg: fullTypology?.cfg,
+                onNodesChange,
+              },
+              position: { x: 600, y: yOffset },
+              width: 350,
+              height: 350,
+            };
+            console.log('✅ Built Typology Node', {
+              typologyId,
+              name: fullTypology?.name,
+              updatedAt: fullTypology?.updatedAt,
+              cfg: fullTypology?.cfg,
+              ruleWithConfigs,
+              nodeData: {
+                ...fullTypology,
+                label: fullTypology?.name?.slice(0, 25) || 'Unnamed',
+                handleExpandVersions,
+                handleExpand: handleExpandTypology,
+                handleDelete,
+                eventId: event.eventId,
+                rules_rule_configs: ruleWithConfigs,
+                updatedAt: fullTypology?.updatedAt,
+                cfg: fullTypology?.cfg,
+                onNodesChange,
+              }
+            });
+            fetchedNodes.push(typologyNode);
+            fetchedEdges.push({
+              id: `${event.eventId}-${typologyId}`,
+              source: event.eventId,
+              target: typologyId,
+              type: 'smoothstep',
+              animated: false,
+            });
+
+            yOffset += 200;
+          }
+
+          setNodes(fetchedNodes);
+          setEdges(fetchedEdges);
+          setAttachedRules(allAttachedRules); // Set the aggregated attached rules here
+          setEventId(event.eventId);
+          setOriginalNetworkMapData(data);
+        } catch (error) {
+          console.error("Failed to fetch network map:", error);
+          message.error("Failed to load network map.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchNetworkMap();
+    }, [networkMapId]);
+
+    const onConnect = useCallback(
+        (params: any) => setEdges((eds) => addEdge(params, eds)),
+        [setEdges],
+    );
+
+    const handleExpandTypology = useCallback((nodeId: string) => {
+        setNodes((nds) =>
+            nds.map((node) => {
+                if (node.id === nodeId) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            expanded: !node.data.expanded,
+                        },
+                    };
+                }
+                return node;
+            })
+        );
+    }, [setNodes]);
+
+    const handleExpandVersions = useCallback((nodeId: string) => {
+        setShowVersions(true);
+    }, []);
+
+    const handleDelete = useCallback((nodeId: string) => {
+        setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+        setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+        setAttachedRules((prev) => prev.filter((rule) => rule.typologyId !== nodeId));
+    }, [setNodes, setEdges, setAttachedRules]);
+
+    const onDragOver = useCallback((event: any) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }, []);
+
+    const onDrop: DragEventHandler = useCallback(async (event) => {
+        event.preventDefault();
+        const type = event.dataTransfer.getData('type');
+        const data = JSON.parse(event.dataTransfer.getData('data'));
+        const position = reactFlowWrapper.current?.getBoundingClientRect();
+        const flowPosition = reactFlowInstance?.project({
+            x: event.clientX - (position?.left || 0) - nodeWidth / 2,
+            y: event.clientY - (position?.top || 0) - nodeHeight / 2,
+        });
+
+        if (!flowPosition) {
+            console.error("Failed to project drop position.");
+            return;
+        }
+
+
+        if (type === 'typology' && flowPosition) {
+            setLoadingAttached(true);
+            try {
+                // Here, we re-fetch the full typology data when it's dropped.
+                // This ensures we have the latest and complete information,
+                // including rules and configurations, regardless of what was in the drag data.
+                const { data: fullTypology } = await getTypology(data._id);
+
+                const ruleWithConfigs: RuleWithConfig[] = [];
+
+                for (const ruleEntry of fullTypology.rules_rule_configs || []) {
+                    const ruleId = ruleEntry.ruleId?.split('/')?.[1] || ruleEntry.ruleId;
+                    const ruleConfigIds = ruleEntry.ruleConfigId || [];
+
+                    const rule = await getRuleById(ruleId).then(r => r.data).catch(() => null);
+                    const configs = await Promise.all(
+                        ruleConfigIds.map(cfgId => getRuleConfigById(cfgId.split('/')?.[1] || cfgId).then(r => r.data).catch(() => null))
+                    );
+
+                    if (rule) {
+                        ruleWithConfigs.push({
+                            ruleId: rule._id,
+                            ruleConfigId: configs.filter(Boolean).map(c => c._id),
+                            rule,
+                            ruleConfigs: configs.filter(Boolean) as IRuleConfig[],
+                            typologyId: fullTypology._id,
+                            typology: fullTypology,
+                        });
+                    }
+                }
+
+                const newNode: Node = {
+                    id: data._id, // Use the actual ID from the data
+                    type: 'typologyNode',
+                    position: flowPosition,
+                    data: {
+                        ...fullTypology, // Spreads fullTypology (includes updatedAt, cfg, rules_rule_configs)
+                        label: fullTypology.name || 'New Typology Node',
+                        handleExpandVersions: handleExpandVersions,
+                        handleExpand: handleExpandTypology,
+                        handleDelete: handleDelete,
+                        rules_rule_configs: ruleWithConfigs, // Explicitly sets ruleWithConfigs
+                        updatedAt: fullTypology.updatedAt,
+                        cfg: fullTypology.cfg,
+                        onNodesChange: onNodesChange,
+                    },
+                };
+                setNodes((nds) => {
+                    const existingNodeIndex = nds.findIndex(node => node.id === newNode.id);
+                    if (existingNodeIndex > -1) {
+                        const newNds = [...nds];
+                        newNds[existingNodeIndex] = newNode;
+                        return newNds;
+                    }
+                    return nds.concat(newNode);
+                });
+
+                setAttachedRules((prev) => {
+                    // Filter out existing rules for this typology to avoid duplicates
+                    const filteredPrev = prev.filter(ar => ar.typologyId !== fullTypology._id);
+                    return [...filteredPrev, ...ruleWithConfigs];
+                });
+
+                setEdges((eds) => addEdge({
+                    id: `edge-${event.dataTransfer.getData('eventId')}-${newNode.id}`,
+                    source: event.dataTransfer.getData('eventId'),
+                    target: newNode.id,
+                    type: 'smoothstep',
+                    animated: true,
+                }, eds));
+
+
+            } catch (error) {
+                console.error("Error processing dropped typology:", error);
+                message.error("Failed to add typology to network map.");
+            } finally {
+                setLoadingAttached(false);
+            }
+        }
+    }, [reactFlowInstance, handleExpandTypology, handleDelete, setNodes, setEdges, handleExpandVersions, onNodesChange, getTypology, getRuleById, getRuleConfigById, setAttachedRules, setLoadingAttached]);
+
+    const onNodeClick: NodeMouseHandler = useCallback((event, node) => {
+        setNodes((nds) => {
+            const newNodes = nds.map((n) => ({
+                ...n,
+                data: {
+                    ...n.data,
+                    isActive: n.id === node.id,
+                },
+            }));
+            return newNodes;
+        });
+
+        // if (node.type === 'typologyNode') {
+        //   setSelectedTypology(node.id);
+        // }
+    }, [setNodes]);
+
+    const onConnectStart = useCallback((_, { nodeId, handleType }) => {
+        console.log('onConnectStart', { nodeId, handleType });
+        setActiveEventId(nodeId);
+    }, []);
+
+    const onConnectEnd = useCallback(() => {
+        setActiveEventId(null);
+    }, []);
+
+    const expandAll = useCallback(() => {
+        setAllExpanded(prev => !prev);
+        setNodes((nds) =>
+            nds.map((node) => ({
+                ...node,
+                data: {
+                    ...node.data,
+                    expanded: !allExpanded,
+                },
+            }))
+        );
+    }, [allExpanded, setNodes]);
+
+    const handleSave = async () => {
+        setSaveLoading(true);
+        try {
+
+            const nodesData = nodes.map((node) => ({
+                id: node.id,
+                type: node.type,
+                position: node.position,
+                data: node.data,
+            }));
+
+            const events = [{
+                eventId: eventId,
+                typologies: nodesData.filter((node) => node.type === 'typologyNode').map((typology) => ({
+                    id: typology.id,
+                    name: typology.data.name,
+                    rules_rule_configs: typology.data.rules_rule_configs.map((r: RuleWithConfig) => ({
+                        ruleId: r.ruleId,
+                        ruleConfigId: r.ruleConfigId
+                    }))
+                }))
+            }];
+
+            const dataToSave = {
+                name: originalNetworkMapData.name, // Assuming name is available from original fetch
+                events: events,
+                // Add any other top-level network map data here as needed
+            };
+
+            if (networkMapId) {
+                await updateNetworkMap(networkMapId, dataToSave);
+                message.success(t('createEditNetworkMap.networkMapUpdatedSuccessfully'));
+            } else {
+                await createNetworkMap(dataToSave);
+                message.success(t('createEditNetworkMap.networkMapCreatedSuccessfully'));
+            }
+        } catch (error) {
+            console.error("Failed to save network map:", error);
+            message.error("Failed to save network map.");
+        } finally {
+            setSaveLoading(false);
+        }
+    };
+
+
+    return <>
+        <Edit
+            loadingTypologies={loadingTypologies}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onConnect={onConnect}
+            onEdgesChange={onEdgesChange}
+            onDrop={onDrop}
+            flowRef={reactFlowWrapper}
+            ruleOptions={ruleOptions}
+            setRuleOptions={setRuleOptions}
+            selectedRule={selectedRule}
+            setSelectedRuleIndex={setSelectedRuleIndex}
+            attachedRules={attachedRules}
+            ruleDragIndex={ruleDragIndex}
+            setRuleDragIndex={setRuleDragIndex}
+            onNodeClick={onNodeClick}
+            saveLoading={saveLoading}
+
+            typologies={typologies}
+            typologyOptions={typologyOptions}
+            setTypologyOptions={setTypologyOptions}
+            selectedTypology={selectedTypology}
+            setSelectedTypology={setSelectedTypology}
+            showVersions={showVersions}
+            setShowVersions={setShowVersions}
+
+            events={events}
+            eventOptions={eventOptions}
+            setEventOptions={setEventOptions}
+            selectEvent={selectedEvent}
+            setSelectedEvent={setSelectedEvent}
+            attachedEvents={attacheEvents}
+            expandAll={expandAll}
+            loadingAttached={loadingAttached}
+            handleSave={handleSave}
+
+            // initialNodes={nodes}
+            // initialEdges={edges}
+            // initialAttachedRules={attachedRules}
+            // initialEventId={activeEventId || ''}
+            // nodes={nodes} // Pass nodes from useNodesState
+            // edges={edges} // Pass edges from useEdgesState
+            // onNodesChange={onNodesChange} // Pass the handler
+            onEdgesChange={onEdgesChange} // Pass the handler
+
+
+            initialNodes={nodes}
+            initialEdges={edges}
+            initialAttachedRules={attachedRules}
+            initialEventId={eventId}
+
+        />
+        {contextHolder}
+    </>
+}
+export default NetworkMapPage;

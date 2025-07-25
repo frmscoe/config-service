@@ -39,6 +39,46 @@ export const typologySchema: { schema: SchemaOptions; computedValues: any } = {
             },
           },
         },
+        score: {
+              type: 'object',
+              properties: {
+                rules: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      cfg: { type: 'string' },
+                      ref: { type: 'string' },
+                      true: { type: 'string' },
+                      false: { type: 'string' }
+                    },
+                    required: ['id', 'cfg', 'ref', 'true', 'false']
+                  }
+                },
+                expression: {
+                  type: 'object',
+                  properties: {
+                    operator: { type: 'string' },
+                    terms: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          cfg: { type: 'string' }
+                        },
+                        required: ['id', 'cfg']
+                      }
+                    }
+                  },
+                  required: ['operator', 'terms']
+                }
+              },
+              required: ['rules', 'expression']
+            },
+
+          },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },
         updatedBy: { type: 'string' },
@@ -54,8 +94,7 @@ export const typologySchema: { schema: SchemaOptions; computedValues: any } = {
         edited: { type: 'boolean', default: false }, // Newly added field to track if the document has been edited
       },
       additionalProperties: false,
-    },
-  },
+    }as any,
   computedValues: [
     {
       name: 'createdAt',

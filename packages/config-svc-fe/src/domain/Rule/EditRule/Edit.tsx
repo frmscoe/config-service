@@ -1,11 +1,13 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
-import React, { useEffect } from 'react';
-import { Drawer, Form, Input, Button, Select, Alert } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Drawer, Form, Input, Button, Select, Alert, Modal } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCommonTranslations } from '~/hooks';
 import { IRule } from '../RuleDetailPage/service';
+import { createRule } from '../CreateRule/service';
+import { getRules } from '../RuleDetailPage/service';
 
 
 const { Item: FormItem } = Form;
@@ -25,15 +27,17 @@ export interface Props {
     open: boolean;
     setOpen(val: boolean): void;
     setSelectedRule(rule: IRule | null): void;
-    onSubmit(data: FormData): void;
+    onSubmit(data: FormData): Promise<void>; // CHANGE: Make it return a Promise
     error: string;
-    success: string;
     loading: boolean;
     rule: IRule | null;
+    // Removed afterCreate prop from here as Edit.tsx doesn't directly trigger list refresh.
+    // It only needs to know when its submission is done to close itself.
 }
 
 const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) => {
     const { t } = useCommonTranslations();
+    const [versionModalVisible, setVersionModalVisible] = useState(false);
 
     const validationSchema = React.useMemo(() => {
         return yup.object().shape({
@@ -60,16 +64,29 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
             resolver: yupResolver<FormData>(validationSchema),
         });
 
-    const onSubmit = (data: FormData) => {
-        props.onSubmit(data);
+    // CHANGE: Make onSubmit async and await props.onSubmit.
+    // Close drawer only after successful submission (or handle error via props.error)
+    const onSubmit = async (data: FormData) => {
+        try {
+            await props.onSubmit(data); // Await the async operation from the parent
+            // If the above line completes without throwing an error, it means
+            // the rule was successfully updated/created in EditRulePage (index.tsx)
+            // and EditRulePage has set its success modal state.
+            handleDrawerClose(); // Now close the EditRule drawer
+        } catch (e) {
+            // Error handling is managed by the parent via props.error,
+            // so we don't need to re-throw or set local error state here.
+            // Just prevent the drawer from closing if there's an error.
+            console.error("Submission failed in EditRule form:", e);
+        }
     };
 
     useEffect(() => {
-        if (props.success) {
+        if (!open) {
             reset();
             clearErrors();
         }
-    }, [props.success])
+    }, [open, reset, clearErrors]);
 
     useEffect(() => {
         if (props.rule?._key) {
@@ -81,7 +98,74 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
             setValue("patch", patch ? Number(patch) : 0);
             setValue("state", props.rule.state);
         }
-    }, [props.rule]);
+    }, [props.rule, setValue]);
+
+    const handleDrawerClose = () => {
+        setOpen(false);
+        props.setSelectedRule(null);
+    };
+
+    const calculateNextVersion = (currentVersion: string, type: 'major' | 'minor' | 'patch') => {
+      const [major, minor, patch] = currentVersion.split('.').map(Number);
+      switch (type) {
+        case 'major': return `${major + 1}.0.0`;
+        case 'minor': return `${major}.${minor + 1}.0`;
+        case 'patch': return `${major}.${minor}.${patch + 1}`;
+        default: return currentVersion;
+      }
+    };
+
+
+
+    const handleClone = async (versionType: 'major' | 'minor' | 'patch') => {
+      if (!props.rule) return;
+
+      try {
+        const allRules = await getRules({ page: 1, limit: 99999 }).then(res => res.data.rules);
+
+        // Get all rules with the same name
+        const sameNameRules = allRules.filter(r => r.name === props.rule!.name);
+        const existingVersions = sameNameRules.map(r => r.cfg);
+
+        // Compute the next version based on selected change type
+        const newVersion = calculateNextVersion(props.rule.cfg, versionType);
+
+        // Check if that version already exists for this rule name
+        if (existingVersions.includes(newVersion)) {
+          Modal.error({
+            title: 'Version Already Exists',
+            content: `Version ${newVersion} already exists for rule "${props.rule.name}". Please go to that version and clone it instead.`,
+          });
+          return;
+        }
+
+        // Proceed to clone
+        await createRule({
+          cfg: newVersion,
+          desc: props.rule.desc,
+          name: props.rule.name,
+          state: '01_DRAFT',
+          dataType: 'NUMERIC'
+        });
+
+        Modal.success({
+          title: 'Cloned Successfully',
+          content: `Rule cloned as version ${newVersion}`,
+          onOk: () => {
+            setOpen(false);
+            props.setSelectedRule(null);
+            props.afterEdit?.();
+          }
+        });
+
+      } catch (err) {
+        Modal.error({
+          title: 'Clone Failed',
+          content: err?.response?.data?.message || err?.message || 'Something went wrong'
+        });
+      }
+    };
+
 
 
     return (
@@ -90,13 +174,12 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                 title={props.rule?.state === '01_DRAFT' ? 'Edit' : 'Create'}
                 placement={'right'}
                 closable={false}
-                onClose={() => setOpen(false)}
+                onClose={handleDrawerClose}
                 open={open}
-                key={'create-form'}
+                key={'edit-form'}
                 width={'50%'}
             >
                 <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-                    {/* Name field */}
                     <FormItem
                         label={t('createRulePage.name')}
                         htmlFor='name'
@@ -110,7 +193,6 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                         />
                     </FormItem>
 
-                    {/* Description field */}
                     <FormItem
                         htmlFor='description'
                         label={t('createRulePage.description')}
@@ -151,7 +233,6 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                     <div className="mb-4">
                         <label className="block text-gray-700 mb-3">(Version)</label>
                         <div className="flex space-x-4">
-                            {/* Major Version Field */}
                             <div className="w-1/3">
                                 <label className="block text-gray-700">{t('createRulePage.major')}</label>
                                 <Controller
@@ -172,7 +253,6 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                                 {errors.major && <span className="text-red-500">{errors.major.message}</span>}
                             </div>
 
-                            {/* Minor Version Field */}
                             <div className="w-1/3">
                                 <label className="block text-gray-700">{t('createRulePage.minor')}</label>
                                 <Controller
@@ -194,7 +274,6 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                                 {errors.minor && <span className="text-red-500">{errors.minor.message}</span>}
                             </div>
 
-                            {/* Patch Version Field */}
                             <div className="w-1/3">
                                 <label className="block text-gray-700">{t('createRulePage.patch')}</label>
                                 <Controller
@@ -217,12 +296,6 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                         </div>
                     </div>
 
-                    {props.success && <Alert
-                        className='mb-5' showIcon
-                        message="Success"
-                        description={props.success}
-                        closable
-                        type="success" />}
                     {props.error && <Alert
                         message="Error"
                         description={props.error}
@@ -232,22 +305,52 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                         showIcon
                     />}
 
-                    {/* Submit button */}
                     <FormItem>
                         <Button loading={props.loading} type="primary" htmlType="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 rounded mr-5  ">
                             {t('createRulePage.submit')}
                         </Button>
 
-                        <Button loading={props.loading} onClick={() => {
-                            setOpen(false);
-                            props.setSelectedRule(null);
-                        }}
+
+                        <Button
+                          type="default"
+                          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 rounded"
+                          onClick={() => setVersionModalVisible(true)}
+                        >
+                          Clone
+                        </Button>
+
+
+
+                        <Button loading={props.loading} onClick={handleDrawerClose}
                             className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 rounded">
                             {t('createRulePage.exit')}
                         </Button>
+
                     </FormItem>
                 </Form>
             </Drawer>
+
+            <Modal
+              title="Select Version Type"
+              open={versionModalVisible}
+              footer={null}
+              onCancel={() => setVersionModalVisible(false)}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {['major', 'minor', 'patch'].map(type => (
+                  <Button
+                    key={type}
+                    onClick={() => {
+                      setVersionModalVisible(false); // Close modal
+                      handleClone(type as 'major' | 'minor' | 'patch'); // Trigger clone
+                    }}
+                  >
+                    {type.toUpperCase()}
+                  </Button>
+                ))}
+              </div>
+            </Modal>
+
         </>
     );
 };

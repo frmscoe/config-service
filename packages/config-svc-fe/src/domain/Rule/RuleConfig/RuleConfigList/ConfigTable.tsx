@@ -1,3 +1,4 @@
+// <!-- SPDX-License-Identifier: Apache-2.0 -->
 import { TableColumnsType, Input, Space, Button, Table, Modal } from "antd";
 import { uniqueArray } from "~/utils/uniqueItems";
 import { IRuleConfig } from "./types";
@@ -5,8 +6,8 @@ import styles from './RuleConfigList.module.scss';
 import { useMemo, useState } from "react";
 import { useCommonTranslations } from "~/hooks";
 import Link from "next/link";
-import usePrivileges from "~/hooks/usePrivileges";
-import { canTransition } from '../../../../../machine/guards';
+import usePrivileges from "~/hooks/usePrivileges"; // Keep this import
+import { canTransition } from '../../../../../machine/guards'; // Keep this import
 
 
 export interface IProps {
@@ -15,8 +16,8 @@ export interface IProps {
   setSearchConfigText(val: string): void;
   data: IRuleConfig[];
   setSearchSubmitted(val: boolean): void;
-  canEditConfig: boolean;
-  canReviewConfig: boolean;
+  canEditConfig: boolean; // Note: This prop is now redundant if using canTransition
+  canReviewConfig: boolean; // Note: This prop is now redundant if using canTransition
   searchSubmitted: boolean;
   searchConfigResults: IRuleConfig[];
 }
@@ -27,14 +28,13 @@ export const ConfigTable: React.FunctionComponent<IProps> = ({
   setSearchConfigText,
   data,
   setSearchSubmitted,
-  canEditConfig,
-  canReviewConfig,
   searchSubmitted,
   searchConfigResults
 }) => {
   const { t: commonTranslations } = useCommonTranslations();
   const { privileges } = usePrivileges();
   const [selectedConfig, setSelectedConfig] = useState<IRuleConfig | null>(null);
+  const username = localStorage.getItem('config_svc_username')?.toLowerCase() || '';
 
   const columns: TableColumnsType<IRuleConfig> = useMemo(() => {
     return [
@@ -42,108 +42,118 @@ export const ConfigTable: React.FunctionComponent<IProps> = ({
         title: commonTranslations('rulesConfigListPage.table.version'),
         dataIndex: 'cfg',
         key: 'cfg',
-        showSorterTooltip: { target: 'full-header' },
-        sorter: (a, b) => a.state.localeCompare(b.cfg),
-        filters: uniqueArray(data, 'cfg').map(obj => ({ text: obj.cfg, value: obj.cfg.toLowerCase() })),
-        onFilter: (value, record) => record.cfg.toLowerCase().includes(value as string),
-      },
-      {
-        title: commonTranslations('rulesConfigListPage.table.description'),
-        dataIndex: 'desc',
-        key: 'desc',
-        defaultSortOrder: 'descend',
-        filtered: !!(searchConfigText?.trim().length && searchSubmitted),
-        filterDropdown: ({ confirm, clearFilters }) => (
-          <div style={{ padding: 8 }}>
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+          <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
             <Input
-              placeholder={commonTranslations('rulesListPage.searchDescription')}
+              placeholder={commonTranslations('rulesConfigListPage.table.searchVersion')}
               value={searchConfigText}
               onChange={(e) => {
-                setSearchConfigText(e.target.value);
+                const value = e.target.value;
+                setSearchConfigText(value);
                 setSearchSubmitted(false);
+                setSelectedKeys(value ? [value] : []);
               }}
               onPressEnter={() => handleSearchConfig(confirm)}
-              className={styles['input-description-search']}
+              style={{ marginBottom: 8, display: 'block' }}
             />
             <Space>
               <Button
                 type="primary"
                 onClick={() => handleSearchConfig(confirm)}
+                icon={<i className="fa-solid fa-search" />}
                 size="small"
-                className={styles['reset-button']}
+                style={{ width: 90 }}
               >
-                {commonTranslations('rulesListPage.search')}
+                {commonTranslations('rulesConfigListPage.table.search')}
               </Button>
               <Button
                 onClick={() => {
+                  clearFilters && clearFilters();
                   setSearchConfigText('');
-                  clearFilters();
-                  confirm();
+                  setSearchSubmitted(false);
                 }}
                 size="small"
                 style={{ width: 90 }}
               >
-                {commonTranslations('rulesListPage.reset')}
+                {commonTranslations('rulesConfigListPage.table.reset')}
+              </Button>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => {
+                  close();
+                }}
+              >
+                {commonTranslations('rulesConfigListPage.table.close')}
               </Button>
             </Space>
           </div>
-        )
+        ),
+        filterIcon: (filtered: boolean) => (
+          <i className="fa-solid fa-search" style={{ color: filtered ? '#1677ff' : undefined }} />
+        ),
+        onFilter: (value, record) => {
+          if (typeof value === 'string') {
+            return record.cfg?.toLowerCase().includes(value.toLowerCase());
+          }
+          return false;
+        },
       },
       {
         title: commonTranslations('rulesConfigListPage.table.state'),
         dataIndex: 'state',
         key: 'state',
-        showSorterTooltip: { target: 'full-header' },
-        sorter: (a, b) => a.state.localeCompare(b.state),
-        filters: uniqueArray(data, 'state').map(obj => ({ text: obj.state, value: obj.state.toLowerCase() })),
-        onFilter: (value, record) => record.state.toLowerCase().includes(value as string),
+        filters: uniqueArray(data.map((item) => item.state)).map((state) => ({ text: state, value: state })),
+        onFilter: (value, record) => typeof value === 'string' && record.state.includes(value),
+      },
+      {
+        title: commonTranslations('rulesConfigListPage.table.description'),
+        dataIndex: 'desc',
+        key: 'desc',
       },
       {
         title: commonTranslations('rulesConfigListPage.table.owner'),
         dataIndex: 'ownerId',
-        showSorterTooltip: { target: 'full-header' },
-        sorter: (a, b) => a.ownerId.localeCompare(b.ownerId),
-        filters: uniqueArray(data, 'ownerId').map(obj => ({ text: obj.ownerId, value: obj.ownerId.toLowerCase() })),
-        onFilter: (value, record) => record.ownerId.toLowerCase().includes(value as string),
+        key: 'ownerId',
+      },
+      {
+        title: commonTranslations('rulesConfigListPage.table.createdAt'),
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (text: string) => text ? new Date(text).toDateString() : 'N/A', // Applied date formatting
+        sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       },
       {
         title: commonTranslations('rulesConfigListPage.table.updatedAt'),
         dataIndex: 'updatedAt',
-        key: 'updatedAt'
+        key: 'updatedAt',
+        render: (text: string) => text ? new Date(text).toDateString() : 'N/A', // Applied date formatting
+        sorter: (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
       },
       {
         title: commonTranslations('rulesConfigListPage.table.action'),
         key: 'action',
         render: (_, record) => (
           <Space size="middle">
-            {canTransition(privileges, 'RULE_CONFIG', record.state, 'EDIT') && (
-              // <Button type="link" onClick={() => {
-              //   if (record.state !== '01_DRAFT') {
-              //     Modal.confirm({
-              //       title: 'Confirmation',
-              //       content: 'Do you wish to create a new version of this rule config?',
-              //       okButtonProps: {
-              //         className: 'bg-green-500 text-white'
-              //       },
-              //       onOk: () => {
-              //         setSelectedConfig(record);
-              //         // handleEdit logic here
-              //       }
-              //     });
-              //   } else {
-              //     setSelectedConfig(record);
-              //     // handleEdit logic here
-              //   }
-              // }}>
-              //   {commonTranslations('rulesListPage.table.modify')}
-              // </Button>
+            {/* UPDATED: Add conditional check for Modify button */}
+            {/*{canTransition(privileges, 'RULE_CONFIG', record.state, 'EDIT') && (
               <Link href={`/rule-config/${record._key}/edit`}>
                 <Button type="link">
                   {commonTranslations('rulesListPage.table.modify')}
                 </Button>
               </Link>
+            )}*/}
 
+            {canTransition(privileges, 'RULE_CONFIG', record.state, 'EDIT') &&
+              record.ownerId?.toLowerCase() === username && (
+                <Link href={`/rule-config/${record._key}/edit`}>
+                  <Button type="link">
+                    {commonTranslations('rulesListPage.table.modify')}
+                  </Button>
+                </Link>
             )}
+
+
             {canTransition(privileges, 'RULE_CONFIG', record.state, 'REVIEW') && (
               <Button type="link">
                 <Link href={`/rule-config/${record._key}/review`}>
@@ -152,10 +162,10 @@ export const ConfigTable: React.FunctionComponent<IProps> = ({
               </Button>
             )}
           </Space>
-        )
+        ),
       },
     ];
-  }, [data, searchConfigText, searchSubmitted, privileges]);
+  }, [data, searchConfigText, searchSubmitted, privileges, commonTranslations, handleSearchConfig, setSearchConfigText, setSearchSubmitted]);
 
   return (
     <Table

@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+#<!-- SPDX-License-Identifier: Apache-2.0 -->
 # TMS Configuration Service Documentation [Draft]
 
 ## Introduction  
@@ -170,10 +170,10 @@ You should see **tazama_admin** and **tazama_tms**
 
 - Go to Groups. Click on ***create group***
 - Enter the following one at a time:
-  - `config_service_admin`
-  - `config_service_editor`
-  - `config_service_approver`
-  - `config_service_viewer`
+  - `config_svc_admin`
+  - `config_svc_editor`
+  - `config_svc_approver`
+  - `config_svc_viewer`
 
 ### Create Realm Roles
 
@@ -247,17 +247,24 @@ You should see GET_V1_EVENT_FLOW_CONTROL_ACCOUNT and more
   - SECURITY_ARCHIVE_NETWORK_MAP
   - SECURITY_ABANDON_NETWORK_MAP
 
+  - EXIT_COND_GET_ALL
+  - EXIT_COND_GET_BY_ID
+  - EXIT_COND_GET_USER_DEFAULT
+  - EXIT_COND_CREATE_USER
+  - EXIT_COND_SET_USER_DEFAULT
+  - EXIT_COND_DELETE_USER
+
 ### Assign Realm Roles to Groups  
 
 We have created 58 realm roles.
 
-#### config_service_admin
+#### config_svc_admin
 
 - Go to `Groups`
-- Click on `config_service_admin`
+- Click on `config_svc_admin`
 - Click on `Role mapping`
 - Click on `Assign role`
-- Select the following roles. all 31 of them (expand the modal so you can see all of the roles in needed):
+- Select the following roles. all 58 of them (expand the modal so you can see all of the roles in needed):
   - SECURITY_APPROVE_NETWORK_MAP
   - SECURITY_CREATE_NETWORK_MAP
   - SECURITY_CREATE_RULE
@@ -323,9 +330,18 @@ We have created 58 realm roles.
   - SECURITY_ARCHIVE_NETWORK_MAP
   - SECURITY_ABANDON_NETWORK_MAP
 
-#### config_service_approver
+  - EXIT_COND_GET_ALL
+  - EXIT_COND_GET_BY_ID
+  - EXIT_COND_GET_USER_DEFAULT
+  - EXIT_COND_CREATE_USER
+  - EXIT_COND_SET_USER_DEFAULT
+  - EXIT_COND_DELETE_USER
 
-- Click on `config_service_approver`
+- The total roles should be 58 in number
+
+#### config_svc_approver
+
+- Click on `config_svc_approver`
 - Click on `Role mapping`
 - Click on `Assign role`
 - Select the below roles:
@@ -355,6 +371,7 @@ We have created 58 realm roles.
   - SECURITY_ARCHIVE_NETWORK_MAP
 
   - SECURITY_GET_RULE
+  - SECURITY_GET_RULES
   - SECURITY_GET_RULE_CONFIG
   - SECURITY_GET_RULE_CONFIGS
   - SECURITY_GET_RULE_RULE_CONFIG
@@ -364,9 +381,18 @@ We have created 58 realm roles.
   - SECURITY_GET_TYPOLOGY_RULE_CONFIGS
   - SECURITY_GET_NETWORK_MAP
 
-#### config_service_editor
+  - EXIT_COND_GET_ALL
+  - EXIT_COND_GET_BY_ID
+  - EXIT_COND_GET_USER_DEFAULT
+  - EXIT_COND_CREATE_USER
+  - EXIT_COND_SET_USER_DEFAULT
+  - EXIT_COND_DELETE_USER
 
-- Click on `config_service_editor`
+- The Total Roles should be 36 in Number
+
+#### config_svc_editor
+
+- Click on `config_svc_editor`
 - Click on `Role mapping`
 - Click on `Assign role`
 - Select the below roles:
@@ -403,9 +429,18 @@ We have created 58 realm roles.
   - SECURITY_ABANDON_TYPOLOGY
   - SECURITY_ABANDON_NETWORK_MAP
 
-#### config_service_viewer
+  - EXIT_COND_GET_ALL
+  - EXIT_COND_GET_BY_ID
+  - EXIT_COND_GET_USER_DEFAULT
+  - EXIT_COND_CREATE_USER
+  - EXIT_COND_SET_USER_DEFAULT
+  - EXIT_COND_DELETE_USER
 
-- Click on `config_service_viewer`
+- The Total Roles should be 34 in Number
+
+#### config_svc_viewer
+
+- Click on `config_svc_viewer`
 - Click on `Role mapping`
 - Click on `Assign role`
 - Select the below roles:
@@ -420,6 +455,15 @@ We have created 58 realm roles.
   - SECURITY_GET_TYPOLOGY_RULE_CONFIGS
 
   - SECURITY_GET_NETWORK_MAP
+
+  - EXIT_COND_GET_ALL
+  - EXIT_COND_GET_BY_ID
+  - EXIT_COND_GET_USER_DEFAULT
+  - EXIT_COND_CREATE_USER
+  - EXIT_COND_SET_USER_DEFAULT
+  - EXIT_COND_DELETE_USER
+
+- The Total Roles should be 16 in Number
 
 ### Create User
 
@@ -454,13 +498,13 @@ You can assign groups or change the groups of an exitsing user
 
 ## Config Service Packages
 
-Clone the config service frontend and backend using this command `git clone --branch dev https://github.com/lextego/config-service.git`
+Clone the config service frontend and backend using this command `git clone --branch dev https://github.com/frmscoe/config-service.git`
 
-or `git clone --branch dev git@github.com:lextego/config-service.git` if you have setup SSH
+or `git clone --branch dev git@github.com:frmscoe/config-service.git` if you have setup SSH
 
 ## Config Service Backend Deployment
 
-Navigate to `config-service/packages/config-service-be`
+Navigate to `config-service/packages/config-svc-be`
 
 ### Install All The Required Dependencies
 
@@ -471,7 +515,7 @@ npm install
 
 ### Auth Lib Dependency - NPM Package Installation
 
-Ensure that a `.npmrc` file exists at the same location with the `package.json` file of `config-service-be`.
+Ensure that a `.npmrc` file exists at the same location with the `package.json` file of `config-svc-be`.
 It should contain the below content:
 
 ```sh
@@ -487,7 +531,7 @@ npm install @tazama-lf/auth-lib
 
 ## Audit and Logging
 
-navigate to config-service-be and install this library
+navigate to config-svc-be and install this library
 
 ```sh
 npm i @tazama-lf/frms-coe-lib
@@ -504,9 +548,9 @@ confirm that kibana is running
 http://localhost:5601
 ```
 
-NB: The ELK will use the environment variables that are set in Full-Stack-Docker-Tazama. The same environment variables have to be repeated on `.env` of the config-service-be. Check the `env.sample` for all the required environment variables
+NB: The ELK will use the environment variables that are set in Full-Stack-Docker-Tazama. The same environment variables have to be repeated on `.env` of the config-svc-be. Check the `env.sample` for all the required environment variables
 
-Copy and paste this environment variable on `.env` file of config-service-be.
+Copy and paste this environment variable on `.env` file of config-svc-be.
 
 ```sh
 # Audit and Logging
@@ -526,7 +570,7 @@ FLUSHBYTES=1024                           # Can tune based on volume
 ES_PORT=9200 
 ```
 
-Create a folder inside config-service-be called `env` inside it, create a file called `lumberjack.env`
+Create a folder inside config-svc-be called `env` inside it, create a file called `lumberjack.env`
 
 Paste the following environment variables inside the file
 
@@ -547,13 +591,13 @@ There is a `.env` file created at the root of the folder and setup the environme
 ```t
 # Arango Database Connection.
 DATABASE_HOST=http://localhost:18529/ # ArangoDB URL
-DATABASE_NAME=config-service-db # The main database
+DATABASE_NAME=config-svc-db # The main database
 SYSTEM_DATABASE_NAME=_system # System database (pre-installed)
 DATABASE_USERNAME=root # Default username
 DATABASE_PASSWORD=password # Default password
-DATABASE_NAME_TEST=config-service-db-test # Test database
+DATABASE_NAME_TEST=config-svc-db-test # Test database
 
-# config-service-be application port
+# config-svc-be application port
 PORT=3007
 ```
 
@@ -581,7 +625,7 @@ A test-public-key.pem has been provided for you. You should find it in `config-s
 
 #### Store Paths in the `.env` File
 
-Now that you have your keys, store the file paths in `config-service-be/.env`:
+Now that you have your keys, store the file paths in `config-svc-be/.env`:
 
 ```t
 CERT_PATH_PRIVATE=/absolute/path/to/config-service/packages/test-private-key.pem
@@ -614,7 +658,7 @@ NB: for the environment variables, you can copy the contents in `.env.sample` fi
 
 ## Config Service Frontend Deployment
 
-Navigate to `config-service/packages/config-service-fe`
+Navigate to `config-service/packages/config-svc-fe`
 
 ### NPM Package Installation
 
@@ -630,12 +674,20 @@ create a `.env` and paste the following environment variables:
 ```t
 PORT=4000 # this specifies the port the frontend is running
 
-NEXT_PUBLIC_CONFIG_service_BE_URL=http://localhost:3007 # this is the config_service_be URL
+NEXT_PUBLIC_CONFIG_SVC_BE_URL=http://localhost:3007 # this is the config_svc_be URL
 NEXT_PUBLIC_SECURITY_BC_CLIENT_ID=auth-lib-client # this is the keycloak client ID
 NEXT_PUBLIC_SECURITY_BC_SECRET=auth-lib-client-test-secret # this is the keycloak client secret
 ```
 
 > Warning :exclamation: You must set your IP instead of local host, if you are running a remote machine.
+
+### SSL Certificate
+You need an SSL certificate to run the server.
+
+1. At the project root config-svc-fe, run this command `mkdir certificates`
+2. At the project root config-svc-fe, rune this command `openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -keyout certificates/localhost.key -out certificates/localhost.crt -subj "/CN=localhost"` 
+
+NB: This uses OpenSSL and they come preinstalled in macOS and Linux.
 
 ### Start The Server
 ```sh
@@ -643,7 +695,7 @@ npm run dev
 ```
 
 ***Check Server***
-http://localhost:4000
+http://localhost:4000 or https://localhost:4000
 
 NB: for the environment variables, you can copy the contents in `.env.sample` file into `.env` file and then modify them to suit your setup.
 

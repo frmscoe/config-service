@@ -1,7 +1,7 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
 import { useCallback, useEffect, useState } from 'react';
 import List from './List';
-import { getRules } from './service';
+import { getRules, getNetworkMaps } from './service';
 import { useAuth } from '~/context/auth';
 import usePrivileges from '~/hooks/usePrivileges';
 import AccessDeniedPage from '~/components/common/AccessDenied';
@@ -19,32 +19,38 @@ const NetworkMapList = () => {
         setPage(newPage);
     }, []);
 
-    const fetchRules = useCallback(() => {
+    
+
+    const fetchNetworkMaps = useCallback(() => {
         setError('');
         setLoading(true);
-        getRules({ page, limit: 10 })
+        getNetworkMaps({ page, limit: 10 })
             .then(({ data }) => {
-                setNetworkMaps(data?.rules || []);
-                setTotalItems(data.count || 0);
+                setNetworkMaps(data?.items || []);
+                setTotalItems(data?.total || 0);
             }).finally(() => {
                 setLoading(false)
             }).catch((e) => {
-                setError(e.response?.data?.message || e?.message || 'Something went wrong getting rules');
-            })
+                setError(e.response?.data?.message || e?.message || 'Something went wrong getting network maps');
+            });
     }, [page]);
 
+
+    
+
     useEffect(() => {
-        if(canViewRules) {
-            fetchRules();
+        if (canViewRules) {
+            fetchNetworkMaps();
         }
-    }, [fetchRules, canViewRules]);
+    }, [fetchNetworkMaps, canViewRules]);
 
     const retry = (pageNumber?: number) => {
-        if(pageNumber) {
+        if (pageNumber) {
             setPage(pageNumber);
-        } 
-        fetchRules();
-    }
+        }
+        fetchNetworkMaps();
+    };
+
 
 
     if(!canViewRules) {

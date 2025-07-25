@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: (c) LexTego Ltd
+// SPDX-License-Identifier: Apache-2.0
 import React, { useState } from 'react';
 import {
   Button,
@@ -14,8 +14,9 @@ import { IRuleConfig } from '../RuleConfig/RuleConfigList/types';
 import { IRule } from '../RuleDetailPage/service';
 import { IUserProfile } from '~/context/auth';
 import { useCommonTranslations } from '~/hooks';
-import { ConfigForm } from '../CreateConfig/Forms';
-import { postRuleConfig, getFullRuleConfig } from './service'; // ✅ corrected import
+// import { ConfigForm } from '../CreateConfig/Forms';
+import { ConfigForm } from './Forms';
+import { postRuleConfig, getFullRuleConfig, updateRuleConfig } from './service'; // corrected import
 
 const { Option } = Select;
 
@@ -71,46 +72,7 @@ const EditConfigForm: React.FC<Props> = ({
     { key: '6', label: 'Rule', children: rule?.name },
   ];
 
-  // const handleClone = async () => {
-  //   if (!selectedVersionType) return;
-
-  //   try {
-  //     const currentVersion = configuration.cfg.split('.').map(Number);
-  //     let [major, minor, patch] = currentVersion;
-
-  //     if (selectedVersionType === 'major') {
-  //       major += 1; minor = 0; patch = 0;
-  //     } else if (selectedVersionType === 'minor') {
-  //       minor += 1; patch = 0;
-  //     } else if (selectedVersionType === 'patch') {
-  //       patch += 1;
-  //     }
-
-  //     const newVersion = `${major}.${minor}.${patch}`;
-  //     const existing = await getFullRuleConfig(rule?.name || '');
-  //     const exists = existing.ruleConfigs.some(cfg => cfg.cfg === newVersion);
-
-  //     if (exists) {
-  //       message.warning(`Version ${newVersion} already exists.`);
-  //       return;
-  //     }
-
-  //     await postRuleConfig({
-  //       ruleId: configuration.ruleId,
-  //       desc: configuration.desc,
-  //       cfg: newVersion,
-  //       config: configuration.config,
-  //     });
-
-  //     message.success(`Cloned as version ${newVersion}`);
-  //     setCloneModalOpen(false);
-  //     setSelectedVersionType(null);
-  //     fetchConfig();
-  //   } catch (err: any) {
-  //     console.error(err);
-  //     message.error(err?.message || 'Cloning failed');
-  //   }
-  // };
+  
 
   const handleClone = async () => {
     if (!selectedVersionType) return;
@@ -215,10 +177,55 @@ const EditConfigForm: React.FC<Props> = ({
         handleClose={() => setEditDrawerOpen(false)}
         rule={rule}
         configToEdit={configuration}
-        onSubmit={async () => {
-          setEditDrawerOpen(false);
-          fetchConfig();
+        // onSubmit={async () => {
+        //   setEditDrawerOpen(false);
+        //   fetchConfig();
+        // }}
+        onSubmit={async (data) => {
+          try {
+            await updateRuleConfig(configuration._key || configuration._id, {
+              cfg: configuration.cfg, // Keep original version
+              desc: data.description,
+              ruleId: configuration.ruleId,
+              ownerId: user?.email,
+              state: configuration.state,
+              createdAt: configuration.createdAt,
+              updatedAt: new Date().toISOString(),
+              updatedBy: user?.email,
+              originatedID: configuration.originatedID,
+              config: {
+                parameters: data.parameters || [],
+                exitConditions: (data.exitConditions || []).map((cond: any) => ({
+                  subRuleRef: cond.id,
+                  reason: cond.reason
+                })),
+                bands: data.category === 'isBand'
+                  ? [
+                      ...data.bands.map((band: any, index: number) => ({
+                        ...(index !== 0 && { lowerLimit: band.value }),
+                        upperLimit: band.value,
+                        subRuleRef: `0.${index + 1}`,
+                        reason: band.reason,
+                      })),
+                      {
+                        lowerLimit: data.bandMaximumCondition,
+                        subRuleRef: `0.${data?.bands?.length + 1}`,
+                        reason: data.bandMaxReason,
+                      },
+                    ]
+                  : [],
+                cases: data.category === 'isCase' ? data.cases : [],
+              }
+            });
+            
+            message.success("Rule Config updated successfully");
+            setEditDrawerOpen(false);
+            fetchConfig();
+          } catch (err: any) {
+            message.error(err?.response?.data?.message || "Update failed");
+          }
         }}
+
         conditions={[]}
         setConditions={() => {}}
       />

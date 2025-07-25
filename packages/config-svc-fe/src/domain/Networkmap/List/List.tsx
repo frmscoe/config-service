@@ -35,17 +35,24 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
     const [networkMaps, setNetworkMaps] = useState<any[]>([]);
 
     const canCreate = useMemo(() => {
-        return user?.privileges?.includes('SECURITY_CREATE_RULE')
+        return user?.privileges?.includes('SECURITY_CREATE_NETWORK_MAP')
     }, [user]);
 
     const canEdit = useMemo(() => {
-        return user?.privileges?.includes('SECURITY_UPDATE_RULE')
+        return user?.privileges?.includes('SECURITY_UPDATE_NETWORK_MAP')
+    }, [user]);
+
+    const canReview = useMemo(() => {
+        return user?.privileges?.includes('SECURITY_GET_NETWORK_MAP')
     }, [user]);
 
 
+    
+
     useEffect(() => {
-        setNetworkMaps([...data.map((o, i) => ({...o, name:  `Network Map ${i + 1}`}))]);
-    }, [data])
+        setNetworkMaps(data);
+    }, [data]);
+
 
     const handleSearch = useCallback((confirm: () => void) => {
         if (searchText.trim().length) {
@@ -67,8 +74,14 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
                 dataIndex: 'name',
                 showSorterTooltip: { target: 'full-header' },
                 sorter: (a: any, b: any) => a.state.localeCompare(b.name),
-                filters: uniqueArray(data, 'cfg').map((obj) => ({ text: obj.name, value: obj.name.toLowerCase() })),
-                onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
+                // filters: uniqueArray(data, 'cfg').map((obj) => ({ text: obj.name, value: obj.name.toLowerCase() })),
+                filters: uniqueArray(data, 'cfg').map((obj) => ({
+                  text: obj.cfg,
+                  value: obj.cfg.toLowerCase(),
+                })),
+
+                // onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
+                onFilter: (value, record) => record.cfg?.toLowerCase().includes(value as string),
 
             },
             {
@@ -80,12 +93,13 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
                 onFilter: (value, record) => record.cfg.toLowerCase().includes(value as string),
 
             },
+            
             {
                 title: commonTranslations('rulesListPage.table.description'),
-                dataIndex: 'desc',
+                dataIndex: 'description',
                 defaultSortOrder: 'descend',
-                sorter: (a: any, b: any) => a.state.localeCompare(b.desc),
-                onFilter: (value, record) => record.desc.toLowerCase().includes(value as string),
+                sorter: (a: any, b: any) => a.description?.localeCompare(b.description),
+                onFilter: (value, record) => record.description?.toLowerCase().includes(value as string),
                 filterDropdown: ({ confirm, clearFilters }: any) => (
                     <div style={{ padding: 8 }}>
                         <Input
@@ -94,7 +108,6 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
                             onChange={(e) => setSearchText(e.target.value)}
                             onPressEnter={() => handleSearch(confirm)}
                             className={styles['input-description-search']}
-
                         />
                         <Space>
                             <Button
@@ -104,7 +117,6 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
                                 className={styles['reset-button']}
                             >
                                 {commonTranslations('rulesListPage.search')}
-
                             </Button>
                             <Button
                                 onClick={() => {
@@ -113,13 +125,16 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
                                     confirm();
                                     setNetworkMaps(data);
                                 }}
-                                size="small" style={{ width: 90 }}>
+                                size="small"
+                                style={{ width: 90 }}
+                            >
                                 {commonTranslations('rulesListPage.reset')}
                             </Button>
                         </Space>
                     </div>
                 ),
             },
+
             {
                 title: commonTranslations('rulesListPage.table.state'),
                 dataIndex: 'state',
@@ -149,10 +164,31 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
                 key: 'action',
                 render: (_, record) => (
                     <Space size="middle">
-                        {canEdit && <Link className='text-blue-500' href={`/network-map/${record._key}/edit`} type='link'>{commonTranslations('rulesListPage.table.modify')} </Link>}
+                        {canEdit && 
+                            record.ownerId?.toLowerCase() === (typeof window !== 'undefined'
+                                ? localStorage.getItem('config_svc_username')?.toLowerCase()
+                                : '') && (
+                            
+                                <Link className="text-blue-500" href={`/network-map/${record._key}/edit`} type="link">
+                                    {commonTranslations('rulesListPage.table.modify')}
+                                </Link>
+                            
+                        )}
+
+                        
+
+
+                        {canReview && (
+                            <>
+                                <Link className="text-green-600" href={`/network-map/${record._key}/review`} type="link">
+                                    Review
+                                </Link>
+                            </>
+                        )}
                     </Space>
                 ),
             },
+
         ];
     }, [commonTranslations, data, searchText, canEdit])
     return (

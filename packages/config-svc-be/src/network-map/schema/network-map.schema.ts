@@ -12,6 +12,8 @@ export const networkMapSchema: { schema: SchemaOptions; computedValues: any } =
         properties: {
           _key: { type: 'string' },
           active: { type: 'boolean' },
+          name: { type: 'string' },
+          description: { type: 'string' },
           cfg: { type: 'string' },
           state: {
             type: 'string',
@@ -69,8 +71,8 @@ export const networkMapSchema: { schema: SchemaOptions; computedValues: any } =
           },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
-          updatedBy: { type: 'string' },
-          approverId: { type: 'string' },
+          modifiedBy: { type: 'string' },
+          approverBy: { type: 'string' },
           ownerId: { type: 'string' },
           originatedId: { type: ['null', 'string'], default: null },
           edited: { type: 'boolean', default: false },

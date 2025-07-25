@@ -6,9 +6,13 @@ import { ArangoDatabaseService } from '../arango-database/arango-database.servic
 import { PrivilegeService } from '../privilege/privilege.service';
 import { RuleService } from '../rule/rule.service';
 import { AuthModule } from '../auth/auth.module';
+import { UserMappingModule } from '../user-mapping/user-mapping.module'; // <--- IMPORT THIS LINE
 
 @Module({
-  imports: [AuthModule],
+  imports: [
+    AuthModule,
+    UserMappingModule, // <--- ADD THIS LINE
+  ],
   controllers: [RuleConfigController],
   providers: [
     RuleConfigService,

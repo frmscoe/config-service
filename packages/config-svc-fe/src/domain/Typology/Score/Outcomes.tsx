@@ -1,6 +1,6 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
 import { FileDoneOutlined } from "@ant-design/icons"
-import { Empty, Input, Typography } from "antd"
+import { Empty, Input, Typography, Modal } from "antd"
 import React from "react";
 import { useEffect } from "react"
 import { useCommonTranslations } from "~/hooks";
@@ -20,6 +20,7 @@ export interface OutComeProps {
     selectedOutcome: null | string;
     setSelectedOutcomeIndex: (index: string | null) => void;
     selectedOutcomes: any[];
+    selectedRule: null | string;
 
 }
 export const Outcomes: React.FunctionComponent<OutComeProps> = ({
@@ -28,17 +29,32 @@ export const Outcomes: React.FunctionComponent<OutComeProps> = ({
     setOutcomeOptions,
     setSelectedOutcomeIndex,
     selectedOutcomes,
+    selectedRule,
 }) => {
     const {t} = useCommonTranslations();
+    console.log("Received Outcome Props:", { outcomes, outComeOptions, selectedOutcomes });
+
 
 
     const selectedOutcomeIds = React.useMemo(() => {
         return selectedOutcomes.map((o) => `${o.type}-${o.ruleId}-${o.subRuleRef}`);
     }, [selectedOutcomes]);
 
+    
+
     useEffect(() => {
-        setOutcomeOptions([...outcomes]);
-    }, [outcomes]);
+        if (!selectedRule) {
+            setOutcomeOptions(outcomes);
+        } else {
+            const filtered = outcomes.filter((o) => {
+                const cleanRuleId = o.ruleId?.split('/')?.pop(); // ← extract raw key
+                return cleanRuleId === selectedRule;
+            });
+            setOutcomeOptions(filtered);
+        }
+    }, [outcomes, selectedRule]);
+
+
 
     const handleSearch = (val: any) => {
         if (val.trim().length) {
@@ -51,6 +67,22 @@ export const Outcomes: React.FunctionComponent<OutComeProps> = ({
     }
 
     const onDrag = (e: DragEvent, outcome:any) => {
+        const ruleSelected = document.querySelector('[data-testid^="rule-item-"][style*="2px solid"]');
+
+        if (!ruleSelected) {
+            e.preventDefault();
+
+            Modal.error({
+                title: "No Rule Selected",
+                content: "Please select a rule in the Rules Section before dragging an outcome to the canvas.",
+                okButtonProps: {
+                    style: { backgroundColor: "#FF4D4F", color: "white" }
+                }
+            });
+
+            return;
+        }
+
         e?.dataTransfer?.setData('id', outcome.subRuleRef);
         e?.dataTransfer?.setData('type', 'outcome');
         e?.dataTransfer?.setData('data', JSON.stringify(outcome));
@@ -69,7 +101,7 @@ export const Outcomes: React.FunctionComponent<OutComeProps> = ({
         {!outComeOptions.length ? <Empty /> : null}
 
         {
-            (sortAlphabetically(outComeOptions, 'name')).map((outcome: any, index) => {
+            (sortAlphabetically(outComeOptions, 'subRuleRef')).map((outcome: any, index) => {
                 if(selectedOutcomeIds.includes(`${outcome.type}-${outcome.ruleId}-${outcome.subRuleRef}`)) {
                     return null;
                 }

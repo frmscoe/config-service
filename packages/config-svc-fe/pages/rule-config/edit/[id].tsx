@@ -10,7 +10,7 @@ const RuleConfigEdit = () => {
   return (
     <>
       <Head>
-        <title>Tazama - Configuration Service</title>
+        <title>LexTego - Configuration Service</title>
       </Head>
       <h1>Editing Rule Configuration: {id}</h1>
     </>

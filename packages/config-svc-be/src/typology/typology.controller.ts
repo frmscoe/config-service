@@ -16,6 +16,7 @@ import {
 import { TypologyService } from './typology.service';
 import { CreateTypologyDto } from './dto/create-typology.dto';
 import { UpdateTypologyDto } from './dto/update-typology.dto';
+import { TransitionTypologyDto } from './dto/transition-typology.dto'; // Corrected IMPORT for transition DTO
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -54,7 +55,7 @@ export class TypologyController {
 
   @Get()
   @Roles(TypologyPrivilege.GET_TYPOLOGIES)
-  @ApiOperation({ summary: 'Retrieve all typologies' })
+  @ApiOperation({ summary: 'Retrieve all typologies with pagination' })
   @ApiQuery({ name: 'page', type: 'number', required: false, example: 1 })
   @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
   @ApiOkResponse({
@@ -95,14 +96,39 @@ export class TypologyController {
   update(
     @Param('id') id: string,
     @Body() updateTypologyDto: UpdateTypologyDto,
-    @Request() req,
-  ) {
-    return this.typologyService.duplicateTypology(id, updateTypologyDto, req);
+  ): Promise<Typology> {
+    return this.typologyService.update(id, updateTypologyDto);
   }
 
-  @Delete(':id')
+  // NEW DEDICATED ENDPOINT FOR STATE TRANSITIONS
+  @Patch(':id/transition')
+  @Roles(TypologyPrivilege.UPDATE_TYPOLOGY) // Using existing update privilege
+  @ApiOperation({ summary: 'Transition the state of a typology' })
+  @ApiOkResponse({
+    description: 'The typology state has been successfully transitioned.',
+    type: Typology,
+  })
+  transition(
+    @Param('id') id: string,
+    @Body() transitionTypologyDto: TransitionTypologyDto,
+    @Request() req, // Assuming you need the request object for updatedBy
+  ) {
+    return this.typologyService.transitionTypologyState(
+      id,
+      transitionTypologyDto.state,
+      req,
+    );
+  }
+
   @ApiExcludeEndpoint()
+  @Delete(':id')
+  @Roles(TypologyPrivilege.DELETE_TYPOLOGY)
+  @ApiOperation({ summary: 'Delete a typology' })
+  @ApiOkResponse({
+    description: 'The typology has been successfully deleted.',
+    type: Typology,
+  })
   remove(@Param('id') id: string) {
-    return this.typologyService.remove(+id);
+    return this.typologyService.remove(id);
   }
 }

@@ -20,12 +20,13 @@ export class LoginResponseDto {
   @ApiProperty({
     example: 'eyJhbGciOiJSUzI.....Refresh_token.....',
     description: 'Refresh token used to obtain a new access token',
+    nullable: true // <--- IMPORTANT: Added for Swagger documentation
   })
-  refresh_token: string;
+  refresh_token: string | null; // <--- IMPORTANT: Changed to allow null
 
-  @ApiProperty({ example: 1800 })
-  refresh_expires_in: number;
+  @ApiProperty({ example: 1800, nullable: true }) // <--- IMPORTANT: Added for Swagger documentation
+  refresh_expires_in: number | null; // <--- IMPORTANT: Changed to allow null
 
-  @ApiProperty({ example: 'ID_TOKEN_HERE', description: 'ID token for OpenID Connect' })
-  id_token: string;
+  @ApiProperty({ example: 'ID_TOKEN_HERE', description: 'ID token for OpenID Connect', nullable: true }) // <--- IMPORTANT: Added for Swagger documentation
+  id_token: string | null; // <--- IMPORTANT: Changed to allow null
 }

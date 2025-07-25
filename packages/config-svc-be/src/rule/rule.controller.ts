@@ -18,6 +18,7 @@ import { RuleService } from './rule.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { CreateRuleAndRuleConfigDto } from './dto/create-rule-and-rule-config.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
+import { UpdateRuleStateDto } from './dto/update-rule-state.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
@@ -56,22 +57,7 @@ export class RuleController {
     return this.ruleService.create(createRuleDto, req);
   }
 
-  // @Get()
-  // @Roles(RulePrivileges.GET_RULES)
-  // @ApiOperation({ summary: 'Retrieve all rules' })
-  // @ApiQuery({ name: 'page', type: 'number', required: false, example: 1 })
-  // @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
-  // @ApiOkResponse({
-  //   description: 'List of rules',
-  //   type: Rule,
-  //   isArray: true,
-  // })
-  // findAll(
-  //   @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-  //   @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  // ) {
-  //   return this.ruleService.findAll({ page, limit });
-  // }
+  
   @Get()
   @Roles(RulePrivileges.GET_RULES)
   @ApiOperation({ summary: 'Retrieve all rules with optional filters' })
@@ -136,24 +122,7 @@ export class RuleController {
     return this.ruleService.findRuleConfigs({ page, limit });
   }
 
-  // @Get('/rule-and-its-configs/:name')
-  // @Roles(RulePrivileges.GET_RULE_RULE_CONFIG)
-  // @ApiOperation({
-  //   summary: 'Retrieve a rule and its configurations by rule name',
-  // })
-  // @ApiParam({
-  //   name: 'name',
-  //   type: 'string',
-  //   required: true,
-  //   description: 'The name of the rule to retrieve configurations for',
-  // })
-  // @ApiOkResponse({
-  //   description: 'Rule and its configurations',
-  //   type: RuleWithConfig,
-  // })
-  // findRuleConfigsByName(@Param('name') name: string) {
-  //   return this.ruleService.findRuleConfigsByName(name);
-  // }
+  
   @Get('/rule-and-its-configs/:name')
   @Roles(RulePrivileges.GET_RULE_RULE_CONFIG)
   @ApiOperation({ summary: 'Retrieve a rule and its configurations by rule name' })
@@ -202,6 +171,23 @@ export class RuleController {
   ) {
     return this.ruleService.duplicateRule(id, updateRuleDto, req);
   }
+
+  
+  @Patch(':id/transition')
+  @ApiOperation({ summary: 'Transition rule state' })
+  @ApiOkResponse({
+    description: 'The rule state has been updated successfully',
+    type: Rule,
+  })
+  transitionRule(
+    @Param('id') id: string,
+    @Body() updateRuleDto: UpdateRuleStateDto,
+    @Request() req,
+  ) {
+    return this.ruleService.updateStateOnly(id, updateRuleDto.state, req);
+  }
+
+
 
   @Delete(':id')
   @Roles(RulePrivileges.DELETE_RULE)

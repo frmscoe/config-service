@@ -44,6 +44,7 @@ interface Props {
   fetchTypology: () => void;
   error: string;
   onOpenTypologyView: () => void;
+  handleSave: () => void;
 
 }
 export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps & IRemovedProps & ReactFlowProps> = ({ rules, loadingRules, ...props }) => {
@@ -51,11 +52,7 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
 
   const items: CollapseProps['items'] = useMemo(() => {
     return [
-      // {
-      //   key: '1',
-      //   label: t('typologyScorePage.conditions'),
-      //   children: <Conditions onDrop={props.onDrop} />
-      // },
+      
       {
         key: '2',
         label: t('typologyScorePage.rules'),
@@ -65,10 +62,11 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
           {...props} 
           />,
       },
+      
       {
         key: '3',
         label: t('typologyScorePage.outcomes'),
-        children: <Outcomes {...props} />
+        children: <Outcomes {...props} selectedRule={props.selectedRule} />
       },
       {
         key: '4',
@@ -101,8 +99,12 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
     <div className='pr-2' style={{ minHeight: '80vh' }}>
       <div className='flex justify-end w-full mb-2 gap-2'>
       <Button onClick={props.onOpenTypologyView}>{t('typologyScorePage.openTypologyView')}</Button>
-      <Button>{t('typologyScorePage.keepInDrafts')}</Button>
-      <Button className='bg-green-500 text-white'>{t('save')}</Button>
+      {/*<Button>{t('typologyScorePage.keepInDrafts')}</Button>*/}
+      {/*<Button className='bg-green-500 text-white'>{t('save')}</Button>*/}
+      <Button className='bg-green-500 text-white' onClick={props.handleSave}>
+        {t('save')}
+      </Button>
+
       </div>
       <Row className='h-full w-full'>
         <Col span={5}>

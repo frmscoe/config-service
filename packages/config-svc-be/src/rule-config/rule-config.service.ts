@@ -16,87 +16,88 @@ import { v4 as uuidv4 } from 'uuid';
 import { StateEnum } from '../rule/schema/rule.schema';
 import { RuleService } from '../rule/rule.service';
 import { Rule } from '../rule/entities/rule.entity';
+// REMOVED: import { PrivilegeService } from '../privilege/privilege.service'; // NOT needed here for direct checks
+// REMOVED: import { RuleConfigPrivilege } from './privilege.constant'; // NOT needed here for direct checks
 
 @Injectable()
 export class RuleConfigService {
   constructor(
     private readonly arangoDatabaseService: ArangoDatabaseService,
     private readonly ruleService: RuleService,
+    // REMOVED: private readonly privilegeService: PrivilegeService, // NOT injected here
   ) {}
 
   async create(createRuleConfigDto: CreateRuleConfigDto, req: Request) {
     const db = this.arangoDatabaseService.getDatabase();
     const collection = db.collection(RULE_CONFIG_COLLECTION);
 
-    // Ensure the associated rule exists before creating a rule config
     const ruleExists: Rule = await this.ruleService.findOne(
       createRuleConfigDto.ruleId,
     );
     if (!ruleExists) {
       throw new BadRequestException(
-        `No rule found with ID ${createRuleConfigDto.ruleId}.`,
+        `No rule found with ID ${createRuleConfigDto.ruleId}`,
       );
     }
 
-    const newRuleConfig = {
-      ...createRuleConfigDto,
+    const generatedKey = uuidv4();
+    const newRuleConfig: RuleConfig = {
+      _key: generatedKey,
+      _id: `${RULE_CONFIG_COLLECTION}/${generatedKey}`,
+      cfg: createRuleConfigDto.cfg,
+      desc: createRuleConfigDto.desc,
+      ruleId: createRuleConfigDto.ruleId,
+      config: createRuleConfigDto.config || {},
       ownerId: req['user'].username,
-      _key: uuidv4(),
       state: StateEnum['01_DRAFT'],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      updatedBy: req['user'].username,
+      originatedID: generatedKey,
     };
 
     try {
-      return await collection.save(newRuleConfig);
-    } catch (error) {
-      throw new BadRequestException(
-        `Failed to create rule config: ${error.message}`,
-      );
+      const result = await collection.save(newRuleConfig);
+      return result.new;
+    } catch (e) {
+      throw new InternalServerErrorException(e.message);
     }
   }
 
-  async findAll(options: {
-    page: number;
-    limit: number;
-  }): Promise<{ count: number; data: RuleConfig[] }> {
-    const { limit, page } = options;
+  async findAll(page: number, limit: number) {
     const db = this.arangoDatabaseService.getDatabase();
-    const offset = (page - 1) * limit;
+    const aql = `
+      FOR doc IN ${RULE_CONFIG_COLLECTION}
+      SORT doc.createdAt DESC
+      LIMIT ${(page - 1) * limit}, ${limit}
+      RETURN doc
+    `;
+    const cursor = await db.query(aql);
+    // FIX: Use .all() instead of .toArray() for ArangoDB cursor
+    const ruleConfigs = await cursor.all();
 
-    const query = `
-    LET result = (
-        FOR config IN @@collection
-        FILTER config.edited != @edited
-        SORT config.createdAt ASC
-        LIMIT @offset, @limit
-        RETURN config
-    )
-    LET count = LENGTH(result)
-    RETURN { count, data: result }
-  `;
 
-    const bindVars = {
-      '@collection': RULE_CONFIG_COLLECTION,
-      edited: true,
-      offset: offset,
-      limit: limit,
-    };
+    const countAql = `
+      RETURN LENGTH(${RULE_CONFIG_COLLECTION})
+    `;
+    const countCursor = await db.query(countAql);
+    const totalCount = (await countCursor.next()) as number;
 
-    try {
-      const cursor = await db.query(query, bindVars);
-      return await cursor.next();
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `Failed to retrieve rule configurations: ${e.message}`,
-      );
-    }
+    return { data: ruleConfigs, count: totalCount };
   }
 
   async findOne(id: string): Promise<RuleConfig> {
-    const db = this.arangoDatabaseService.getDatabase();
+    const database = this.arangoDatabaseService.getDatabase();
     try {
-      return await db.collection(RULE_CONFIG_COLLECTION).document(id);
+      const ruleConfig = await database
+        .collection(RULE_CONFIG_COLLECTION)
+        .document(id);
+      return ruleConfig;
     } catch (e) {
-      throw new NotFoundException(`No rule configuration found with ID ${id}`);
+      if (e.message.includes('not found')) {
+        throw new NotFoundException(`Rule config with id ${id} not found`);
+      }
+      throw new InternalServerErrorException(e.message);
     }
   }
 
@@ -107,94 +108,151 @@ export class RuleConfigService {
   ): Promise<RuleConfig> {
     const db = this.arangoDatabaseService.getDatabase();
     const collection = db.collection(RULE_CONFIG_COLLECTION);
+    const existingRuleConfig: RuleConfig = await this.findOne(id);
 
-    // Fetch the existing rule configuration to duplicate
-    const existingRuleConfig = await this.findOne(id);
-    if (!existingRuleConfig) {
-      throw new NotFoundException(`No rule configuration found with ID ${id}.`);
-    }
-
-    // Check for existing rule configurations with the same originatedID
-    const cursor = await db.query(
-      `
-      FOR ruleConfig IN @@collection
-      FILTER ruleConfig.originatedID == @id
-      RETURN ruleConfig
-    `,
-      { '@collection': RULE_CONFIG_COLLECTION, id: id },
-    );
-    const childRuleConfigs: RuleConfig[] = await cursor.all();
-
-    // If a child configuration already exists, throw an exception
-    if (childRuleConfigs.length > 0) {
+    if (
+      existingRuleConfig.state === StateEnum['90_APPROVED'] ||
+      existingRuleConfig.state === StateEnum['91_RETIRED'] ||
+      existingRuleConfig.state === StateEnum['92_DISABLED']
+    ) {
       throw new ForbiddenException(
-        `Could not update rule config with id ${id}, rule config is already updated`,
+        `Cannot create a new version for rule config with id ${id} as it's in a terminal/non-editable state.`,
       );
     }
 
-    // Prepare the new rule configuration data
-    const { cfg, desc, ruleId, config } = existingRuleConfig;
-
+    const generatedKey = uuidv4();
     const newRuleConfig: RuleConfig = {
-      cfg,
-      desc,
-      ruleId,
-      config,
-      ...updateRuleConfigDto,
-      _key: uuidv4(),
-      originatedID: id,
+      ...existingRuleConfig,
+      _key: generatedKey,
+      _id: `${RULE_CONFIG_COLLECTION}/${generatedKey}`,
+      cfg: updateRuleConfigDto.cfg || existingRuleConfig.cfg,
+      desc: updateRuleConfigDto.desc || existingRuleConfig.desc,
+      config: updateRuleConfigDto.config || existingRuleConfig.config,
       state: StateEnum['01_DRAFT'],
-      ownerId: req['user'].username,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       updatedBy: req['user'].username,
+      originatedID: existingRuleConfig.originatedID,
     };
 
-    // Save the new rule configuration in the database
     try {
-      const ruleConfig = await collection.save(newRuleConfig, {
-        returnNew: true,
-      });
-      await this.update(id, { edited: true });
-      return ruleConfig.new;
+      const result = await collection.save(newRuleConfig);
+      return result.new;
     } catch (e) {
+      throw new InternalServerErrorException(e.message);
+    }
+  }
+
+  // NEW METHOD: For transitioning the state of an existing rule config
+  async transitionRuleConfigState(
+    id: string,
+    newState: StateEnum,
+    req: Request,
+  ): Promise<RuleConfig> {
+    const db = this.arangoDatabaseService.getDatabase();
+    const collection = db.collection(RULE_CONFIG_COLLECTION);
+    const existingRuleConfig: RuleConfig = await this.findOne(id);
+
+    const currentUserName = req['user'].username;
+    const currentState = existingRuleConfig.state;
+
+    // 1. Check if the state is already the requested state
+    if (currentState === newState) {
       throw new BadRequestException(
-        `Failed to duplicate rule configuration: ${e.message}`,
+        `Rule config with id ${id} is already in state ${newState}`,
+      );
+    }
+
+    // 2. Implement your state machine transition logic here.
+    // Privilege check is handled by the @Roles decorator in the controller.
+
+    let allowedTransition = false;
+    switch (currentState) {
+      case StateEnum['01_DRAFT']:
+        if (newState === StateEnum['10_PENDING_REVIEW'] || newState === StateEnum['90_ABANDONED']) {
+          allowedTransition = true;
+        }
+        break;
+      case StateEnum['10_PENDING_REVIEW']:
+        // From PENDING_REVIEW, can go to APPROVED or back to DRAFT
+        if (newState === StateEnum['20_APPROVED'] || newState === StateEnum['01_DRAFT']) {
+          allowedTransition = true;
+        }
+        break;
+      case StateEnum['20_APPROVED']:
+        // From APPROVED, can go to FINAL_APPROVED, RETIRED, or DISABLED
+        if (newState === StateEnum['30_DEPLOYED'] || newState === StateEnum['90_APPROVED'] || newState === StateEnum['91_RETIRED'] || newState === StateEnum['92_DISABLED']) {
+            allowedTransition = true;
+        }
+        break;
+      case StateEnum['30_DEPLOYED']:
+        if (newState == StateEnum['32_RETIRED']){
+          allowedTransition = true
+        }
+        break;
+      case StateEnum['32_RETIRED']:
+        if (newState == StateEnum['91_ARCHIVED']){
+          allowedTransition = true
+        }
+        break;
+      // These are terminal states; no further transitions allowed from them normally.
+      case StateEnum['90_APPROVED']:
+      case StateEnum['91_RETIRED']:
+      case StateEnum['92_DISABLED']:
+      case StateEnum['93_MARKED_FOR_DELETION']:
+        throw new ForbiddenException(
+          `Rule config with id ${id} is in a final state (${currentState}) and cannot be transitioned.`,
+        );
+      default:
+        // Any other unsupported transition
+        throw new ForbiddenException(
+          `Transition from ${currentState} to ${newState} is not a valid predefined transition.`,
+        );
+    }
+
+    if (!allowedTransition) {
+        throw new ForbiddenException(
+            `Transition from ${currentState} to ${newState} is not a permitted transition.`
+        );
+    }
+
+    // If all checks pass: update the existing document
+    try {
+      const result = await collection.update(id, {
+        state: newState,
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUserName,
+      });
+      return result.new;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `Failed to update rule config state: ${e.message}`,
       );
     }
   }
 
-  async update(
-    id: string,
-    updateRuleConfigDto: UpdateRuleConfigDto,
-  ): Promise<RuleConfig> {
-    const db = this.arangoDatabaseService.getDatabase();
-
-    // Check if the rule configuration exists
-    const exists = await db
+  async update(id: string, updateRuleConfigDto: UpdateRuleConfigDto) {
+    const database = this.arangoDatabaseService.getDatabase();
+    const ruleConfigExists = await database
       .collection(RULE_CONFIG_COLLECTION)
       .documentExists(id);
-    if (!exists) {
-      throw new NotFoundException(
-        `Rule configuration with ID ${id} not found.`,
-      );
+
+    if (!ruleConfigExists) {
+      throw new NotFoundException(`Rule config with id ${id} not found`);
     }
 
-    // Perform the update operation
-    const result = await db
-      .collection(RULE_CONFIG_COLLECTION)
-      .update(id, updateRuleConfigDto, { returnNew: true });
-    if (!result) {
-      throw new InternalServerErrorException(
-        'Failed to update rule configuration.',
-      );
+    try {
+      const result = await database
+        .collection(RULE_CONFIG_COLLECTION)
+        .update(id, updateRuleConfigDto);
+      return result.new;
+    } catch (e) {
+      throw new BadRequestException(e.message);
     }
-
-    return result.new;
   }
 
   async remove(id: string, req: Request) {
     const database = this.arangoDatabaseService.getDatabase();
-
-    // check if the rule exists
     const existingRuleConfig = await this.findOne(id);
     if (existingRuleConfig.state === StateEnum['93_MARKED_FOR_DELETION']) {
       throw new BadRequestException(
@@ -202,7 +260,6 @@ export class RuleConfigService {
       );
     }
 
-    // Save the rule to the database
     try {
       await database.collection(RULE_CONFIG_COLLECTION).update(id, {
         ...existingRuleConfig,
@@ -217,8 +274,6 @@ export class RuleConfigService {
 
   async disableRuleConfig(id: string, req: Request): Promise<RuleConfig> {
     const db = this.arangoDatabaseService.getDatabase();
-
-    // check if the rule exists
     const existingRuleConfig = await this.findOne(id);
     if (existingRuleConfig.state === StateEnum['92_DISABLED']) {
       throw new BadRequestException(
@@ -226,7 +281,6 @@ export class RuleConfigService {
       );
     }
 
-    // Save the updated rule to the database
     try {
       await db.collection(RULE_CONFIG_COLLECTION).update(id, {
         ...existingRuleConfig,

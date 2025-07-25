@@ -24,12 +24,17 @@ export class RuleService {
   async create(createRuleDto: CreateRuleDto, req: Request) {
     const db = this.arangoDatabaseService.getDatabase();
     const collection = db.collection(RULE_COLLECTION);
+    const now = new Date().toISOString(); // Get current timestamp
+    const username = req['user'].username; // Get username from request
 
     const newRule = {
       ...createRuleDto,
-      ownerId: req['user'].username,
+      ownerId: username,
       _key: uuidv4(),
       state: StateEnum['01_DRAFT'],
+      createdAt: now, // Set creation timestamp
+      updatedAt: now, // Set initial update timestamp
+      updatedBy: username, // Set initial updater
     };
 
     try {
@@ -43,15 +48,20 @@ export class RuleService {
     const db = this.arangoDatabaseService.getDatabase();
     const ruleCollection = db.collection(RULE_COLLECTION);
     const ruleConfigCollection = db.collection(RULE_CONFIG_COLLECTION);
+    const now = new Date().toISOString(); // Get current timestamp
+    const username = req['user'].username; // Get username from request
 
     const newRule = {
       cfg: createRuleAndRuleConfigDto.rule_cfg,
       name: createRuleAndRuleConfigDto.name,
       desc: createRuleAndRuleConfigDto.rule_desc,
       dataType: createRuleAndRuleConfigDto.dataType,
-      ownerId: req['user'].username,
+      ownerId: username,
       _key: uuidv4(),
       state: StateEnum['01_DRAFT'],
+      createdAt: now, // Set creation timestamp
+      updatedAt: now, // Set initial update timestamp
+      updatedBy: username, // Set initial updater
       }
     const newRuleConfig = {
       cfg: createRuleAndRuleConfigDto.rule_config_cfg,
@@ -77,42 +87,7 @@ export class RuleService {
     }
   }
 
-  // async findAll(options: {
-  //   page: number;
-  //   limit: number;
-  // }): Promise<{ count: number; rules: Rule[] }> {
-  //   const { limit, page } = options;
-  //   const db = this.arangoDatabaseService.getDatabase();
-  //   const skip = (page - 1) * limit;
-
-  //   const query = `
-  //   LET count = LENGTH(FOR doc IN @@collection FILTER doc.edited != @edited RETURN doc)
-  //   LET rules = (
-  //       FOR rule IN @@collection
-  //       FILTER rule.edited != @edited
-  //       SORT rule.createdAt ASC
-  //       LIMIT @skip, @limit
-  //       RETURN rule
-  //   )
-  //   RETURN { count, rules }
-  // `;
-
-  //   const bindVars = {
-  //     '@collection': RULE_COLLECTION,
-  //     edited: true,
-  //     skip: skip,
-  //     limit: limit,
-  //   };
-
-  //   try {
-  //     const cursor = await db.query(query, bindVars);
-  //     return await cursor.next();
-  //   } catch (e) {
-  //     throw new InternalServerErrorException(
-  //       `Failed to retrieve rules: ${e.message}`,
-  //     );
-  //   }
-  // }
+  
 
   async findAll(options: {
     page: number;
@@ -217,41 +192,7 @@ export class RuleService {
     }
   }
 
-  // async findRuleConfigsByName(ruleName: string): Promise<RuleWithConfig> {
-  //   const db = this.arangoDatabaseService.getDatabase();
-  //   const query = `
-  //   FOR rule IN @@collection
-  //   FILTER rule.name == @name
-  //   LET configurations = (
-  //     FOR config IN @@configCollection
-  //     FILTER config.ruleId == rule._id
-  //     RETURN MERGE(config, {
-  //       config: {
-  //         parameters: config.parameters,
-  //         exitConditions: config.exitConditions,
-  //         bands: config.bands,
-  //         cases: config.cases
-  //       }
-  //     })
-  //   )
-  //   RETURN MERGE(rule, { ruleConfigs: configurations })
-  // `;
-
-  //   const bindVars = {
-  //     '@collection': RULE_COLLECTION,
-  //     '@configCollection': RULE_CONFIG_COLLECTION,
-  //     name: ruleName,
-  //   };
-
-  //   try {
-  //     const cursor = await db.query(query, bindVars);
-  //     return await cursor.next();
-  //   } catch (e) {
-  //     throw new InternalServerErrorException(
-  //       `Failed to retrieve configurations for rule named ${ruleName}: ${e.message}`,
-  //     );
-  //   }
-  // }
+  
 
     async findRuleConfigsByName(ruleName: string): Promise<{ rule: RuleConfig; ruleConfigs: RuleConfig[] }> {
     const db = this.arangoDatabaseService.getDatabase();
@@ -317,6 +258,7 @@ export class RuleService {
   ): Promise<Rule> {
     const db = this.arangoDatabaseService.getDatabase();
     const collection = db.collection(RULE_COLLECTION);
+    const username = req['user'].username; // Get username from request
 
     // check if the rule exists
     const existingRule = await this.findOne(id);
@@ -331,6 +273,7 @@ export class RuleService {
 
     const uuid = uuidv4();
     const { _key, _id, _rev, ...rest } = existingRule;
+    const now = new Date().toISOString(); // Get current timestamp
 
     // save rule to the database
     try {
@@ -339,9 +282,11 @@ export class RuleService {
         ...updateRuleDto,
         _key: uuid,
         originatedID: id,
-        updatedBy: req['user'].username,
+        updatedBy: username, // Set updater
+        createdAt: now, // Set creation timestamp for duplicated rule
+        updatedAt: now, // Set update timestamp for duplicated rule
       });
-      await this.update(id, { edited: true });
+      await this.update(id, { edited: true }); // This update call will also set updatedAt for the original rule
       return this.findOne(rule._id);
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -351,9 +296,16 @@ export class RuleService {
   async update(id: string, updateRuleDto: any): Promise<Rule> {
     try {
       const db = this.arangoDatabaseService.getDatabase();
+      const now = new Date().toISOString(); // Get current timestamp
+      // Note: 'req' is not passed to this method, so 'updatedBy' cannot be set directly here.
+      // If 'updatedBy' is required for all updates, 'req' needs to be passed from the controller.
       const rule = await db
         .collection(RULE_COLLECTION)
-        .update(id, updateRuleDto, { returnNew: true });
+        .update(id, {
+            ...updateRuleDto,
+            updatedAt: now, // Update timestamp
+            // updatedBy: req['user'].username, // Uncomment and pass 'req' if needed
+        }, { returnNew: true });
       return rule.new;
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -362,6 +314,7 @@ export class RuleService {
 
   async remove(id: string, req: Request) {
     const db = this.arangoDatabaseService.getDatabase();
+    const username = req['user'].username; // Get username from request
 
     // check if the rule exists
     const existingRule = await this.findOne(id);
@@ -376,7 +329,8 @@ export class RuleService {
       await db.collection(RULE_COLLECTION).update(id, {
         ...existingRule,
         state: StateEnum['93_MARKED_FOR_DELETION'],
-        updatedBy: req['user'].username,
+        updatedBy: username, // Set updater
+        updatedAt: new Date().toISOString(), // Consider adding updatedAt here too if state change counts as update
       });
       return;
     } catch (e) {
@@ -386,6 +340,7 @@ export class RuleService {
 
   async disableRule(id: string, req: Request): Promise<Rule> {
     const db = this.arangoDatabaseService.getDatabase();
+    const username = req['user'].username; // Get username from request
 
     // check if the rule exists
     const existingRule = await this.findOne(id);
@@ -398,11 +353,35 @@ export class RuleService {
       await db.collection(RULE_COLLECTION).update(id, {
         ...existingRule,
         state: StateEnum['92_DISABLED'],
-        updatedBy: req['user'].username,
+        updatedBy: username, // Set updater
+        updatedAt: new Date().toISOString(), // Consider adding updatedAt here too
       });
       return await this.findOne(id);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
   }
+
+  async updateStateOnly(id: string, newState: string, req: Request) {
+    const db = this.arangoDatabaseService.getDatabase();
+    const collection = db.collection(RULE_COLLECTION);
+    const username = req['user'].username; // Get username from request
+
+    const existing = await collection.document(id).catch(() => {
+      throw new NotFoundException(`Rule with ID ${id} not found`);
+    });
+
+    try {
+      await collection.update(id, {
+        state: newState,
+        updatedBy: username, // Already correctly sets updatedBy
+        updatedAt: new Date().toISOString(), // Already correctly sets updatedAt
+      });
+
+      return await collection.document(id);
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
 }

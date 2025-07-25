@@ -20,6 +20,18 @@ interface ILoginPasswordForm {
   password: string;
 }
 
+// IMPORTANT: Define the structure of LoginResponseDto in your frontend too
+// You can put this in a separate types file or directly here.
+interface LoginResponseDto {
+    token_type: string;
+    scope: string;
+    access_token: string;
+    expires_in: number;
+    refresh_token: string | null;
+    refresh_expires_in: number | null;
+    id_token: string | null;
+}
+
 export interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
@@ -36,7 +48,7 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const unprotectedRoutes = ["/login", "/sign-up", "/reset-password", "/forgot-password", "/verify"];
-const AuthProvider = ({ children }: { children: ReactNode }) => {
+const AuthProvider = ({ children }: { ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -63,6 +75,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
               .push("/")
               .finally(() => {
                 setProfile(data);
+                localStorage.setItem("config_svc_username", data.username);
                 setIsAuthenticated(true);
                 setToken(storedToken);
                 setIsLoading(false);
@@ -70,6 +83,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
               .catch(Promise.resolve);
           } else {
             setProfile(data);
+            localStorage.setItem("config_svc_username", data.username);
             setIsAuthenticated(true);
             setToken(storedToken);
             setIsLoading(false);
@@ -78,6 +92,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         .catch(() => {
           Promise.resolve();
           localStorage.removeItem("token");
+          localStorage.removeItem("config_svc_username");
           setIsAuthenticated(false);
           router.push(`/login?next=${currentPath}`).catch(Promise.resolve)
           .then(() => {
@@ -117,7 +132,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
           grant_type: "password",
         });
 
-        const response = await axios.post(
+        // Explicitly type the response data to match your backend DTO
+        const response = await axios.post<LoginResponseDto>( // <--- Added type here
           `${process.env.NEXT_PUBLIC_CONFIG_SVC_BE_URL}/api/auth/login`,
           formData,
           {
@@ -127,11 +143,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         );
 
-        // Token is returned as plain string (not wrapped in access_token)
-        const token = response.data;
+        // --- THIS IS THE CRUCIAL CHANGE ---
+        // Extract the actual JWT from the 'access_token' property of the response object
+        const token = response.data.access_token; // <--- CHANGED THIS LINE
 
         // Store token
         localStorage.setItem("token", token);
+        localStorage.setItem("config_svc_username", data.username);
 
         // Fetch user profile
         const userData = await getUser();
@@ -163,9 +181,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
 
-
-
-
   const logout = useCallback(() => {
     setIsLoading(true);
 
@@ -179,11 +194,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     const nextRoute = unprotectedRoutes.includes(router.pathname) ? "" : `?next=${router.pathname}`;
     router.push(`/login${nextRoute}`).finally(() => {
       localStorage.removeItem("token");
+      localStorage.removeItem("config_svc_username");
       setToken(null);
       setIsAuthenticated(false);
       setIsLoading(false);
     });
-  }, [token]);
+  }, []); // Added missing dependency for useCallback
 
   const value = useMemo(
     () => ({
@@ -196,7 +212,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       profile,
       error: authError,
     }),
-    [login, logout, isLoading, profile],
+    [isAuthenticated, login, logout, isLoading, profile, authError, token], // Added missing dependencies for useMemo
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -211,7 +227,3 @@ const useAuth = (): AuthContextType => {
 };
 
 export { AuthProvider, useAuth };
-
-
-
-

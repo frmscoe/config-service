@@ -2,11 +2,23 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { UserMappingModule } from '../user-mapping/user-mapping.module';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { PrivilegeModule } from '../privilege/privilege.module'; 
 
 @Module({
-  exports: [AuthService],
-  imports: [],
+  imports: [
+    UserMappingModule,
+    PrivilegeModule, 
+  ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [
+    AuthService,
+    JwtAuthGuard,
+  ],
+  exports: [
+    AuthService,
+    JwtAuthGuard,
+  ],
 })
 export class AuthModule {}

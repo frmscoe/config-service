@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { PrivilegeModule } from './privilege/privilege.module';
+// Removed: import { ExitConditionsSeeder } from './exit-conditions/exit-conditions.seeder'; // No longer needed here
 
 const mandatoryEnvironmentVariables = [
   'DATABASE_HOST',
@@ -32,6 +33,9 @@ async function bootstrap() {
   // initialize privileges
   const privilegeModule = app.select(PrivilegeModule);
   // await privilegeModule.get(PrivilegeModule).seedPrivileges();
+  // Removed: Seeder setup. It will now be handled automatically by NestJS lifecycle.
+  // const seeder = app.get(ExitConditionsSeeder);
+  // await seeder.seed();
 
   // api prefixing. Ensures all routes start with /api, except the root (/).
   app.setGlobalPrefix('api', { exclude: [''] });

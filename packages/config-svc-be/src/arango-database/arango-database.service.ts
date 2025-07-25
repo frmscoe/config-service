@@ -1,6 +1,6 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
 import 'dotenv-defaults/config';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Database } from 'arangojs';
 import { databaseConfig, systemDatabaseConfig } from './database.config';
 import { RULE_COLLECTION, ruleSchema } from '../rule/schema/rule.schema';
@@ -16,9 +16,22 @@ import {
   NETWORK_MAP_COLLECTION,
   networkMapSchema,
 } from '../network-map/schema/network-map.schema';
+import { USER_EMAIL_MAPPING_COLLECTION, userEmailMappingSchema } from '../user-mapping/user-email-mapping.schema';
+// --- NEW IMPORTS FOR EXIT CONDITIONS ---
+import { EXIT_CONDITIONS_COLLECTION, exitConditionSchema } from '../exit-conditions/schema/exit-condition.schema';
+import { USER_EXIT_DEFAULTS_COLLECTION, userExitDefaultSchema } from '../exit-conditions/schema/user-exit-default.schema';
+
+
+// --- NEW INTERFACE FOR COLLECTION CONFIG ---
+export interface ArangoDbCollectionConfig {
+  name: string;
+  schema: any; // The actual schema object for ArangoDB validation
+  ensureUniqueIndex?: { field: string; collectionName: string }[];
+}
+
 
 @Injectable()
-export class ArangoDatabaseService {
+export class ArangoDatabaseService implements OnModuleInit {
   private readonly logger = new Logger(ArangoDatabaseService.name);
   private readonly database: Database;
   private readonly systemDatabase: Database;
@@ -28,7 +41,11 @@ export class ArangoDatabaseService {
     this.systemDatabase = new Database(systemDatabaseConfig);
   }
 
-  getDatabase() {
+  async onModuleInit() {
+    await this.initializeDatabase();
+  }
+
+  getDatabase(): Database {
     return this.database;
   }
 
@@ -42,7 +59,7 @@ export class ArangoDatabaseService {
         `Error initializing database: ${error.message}`,
         error.stack,
       );
-      throw error; // Rethrow the error to prevent the application from starting
+      throw error;
     }
   }
 
@@ -65,30 +82,48 @@ export class ArangoDatabaseService {
   }
 
   private async initializeCollections() {
-    const collections = [
-      { name: RULE_COLLECTION, options: ruleSchema },
-      { name: RULE_CONFIG_COLLECTION, options: ruleConfigSchema },
-      { name: TYPOLOGY_COLLECTION, options: typologySchema },
-      { name: NETWORK_MAP_COLLECTION, options: networkMapSchema },
+    const collections: ArangoDbCollectionConfig[] = [ // Use the new interface
+      { name: RULE_COLLECTION, schema: ruleSchema.schema },
+      { name: RULE_CONFIG_COLLECTION, schema: ruleConfigSchema.schema },
+      { name: TYPOLOGY_COLLECTION, schema: typologySchema.schema },
+      { name: NETWORK_MAP_COLLECTION, schema: networkMapSchema.schema },
+      {
+        name: USER_EMAIL_MAPPING_COLLECTION,
+        schema: userEmailMappingSchema.schema,
+        ensureUniqueIndex: [{ field: 'clientId', collectionName: USER_EMAIL_MAPPING_COLLECTION }]
+      },
+      // --- ADD NEW COLLECTIONS HERE ---
+      { name: EXIT_CONDITIONS_COLLECTION, schema: exitConditionSchema, // Note: Assuming .rule is the top-level schema as in your existing schemas
+        ensureUniqueIndex: [{ field: 'id', collectionName: EXIT_CONDITIONS_COLLECTION }]
+      },
+      { name: USER_EXIT_DEFAULTS_COLLECTION, schema: userExitDefaultSchema, // Note: Assuming .rule is the top-level schema
+        ensureUniqueIndex: [{ field: 'ownerId', collectionName: USER_EXIT_DEFAULTS_COLLECTION }]
+      },
     ];
 
-    // Iterate over the collection names and create them if they don't exist
-    for (const { name, options } of collections) {
-      if (!(await this.collectionExists(name))) {
-        this.logger.log(`Creating collection '${name}'...`);
-        await this.createCollection(name, options);
+    for (const config of collections) { // Iterate using the config object
+      if (!(await this.collectionExists(config.name))) {
+        this.logger.log(`Creating collection '${config.name}'...`);
+        await this.createCollection(config.name, config.schema);
       } else {
-        this.logger.log(`Collection '${name}' already exists.`);
+        this.logger.log(`Collection '${config.name}' already exists.`);
       }
-      await this.updateCollectionSchema(name, options.schema);
+      // Update schema.
+      await this.updateCollectionSchema(config.name, config.schema);
+
+      // Ensure unique indexes if specified in the config
+      if (config.ensureUniqueIndex) {
+        for (const indexConfig of config.ensureUniqueIndex) {
+          await this.ensureUniqueIndex(indexConfig.collectionName, indexConfig.field);
+        }
+      }
     }
   }
 
-  private async createCollection(name: string, options: any) {
+  private async createCollection(name: string, schema: any) {
     try {
       await this.database.createCollection(name, {
-        schema: options.schema,
-        computedValues: options.computedValues,
+        schema: schema,
       });
       this.logger.log(`Collection '${name}' created.`);
     } catch (error) {
@@ -118,6 +153,31 @@ export class ArangoDatabaseService {
         `Error updating schema of collection '${collectionName}': ${error.message}`,
         error.stack,
       );
+      throw error;
+    }
+  }
+
+  private async ensureUniqueIndex(collectionName: string, field: string): Promise<void> {
+    try {
+      const collection = this.database.collection(collectionName);
+      const indexes = await collection.indexes();
+      const indexExists = indexes.some(
+        (index: any) =>
+          index.fields && index.fields.includes(field) && index.unique
+      );
+
+      if (!indexExists) {
+        await collection.ensureIndex({
+          type: 'persistent',
+          fields: [field],
+          unique: true,
+        });
+        this.logger.log(`Unique index on '${field}' created for collection '${collectionName}'.`);
+      } else {
+        this.logger.log(`Unique index on '${field}' already exists for collection '${collectionName}'.`);
+      }
+    } catch (error) {
+      this.logger.error(`Error ensuring unique index on '${field}' for collection '${collectionName}': ${error.message}`, error.stack);
       throw error;
     }
   }

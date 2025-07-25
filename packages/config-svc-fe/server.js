@@ -4,7 +4,7 @@ const { readFileSync } = require("fs");
 const next = require("next");
 require("dotenv").config({ path: ".env.local" });
 
-const port = parseInt(process.env.PORT, 10) || 3000; // Use PORT from .env.local or default to 3000
+const port = parseInt(process.env.PORT, 10) || 4000; // Use PORT from .env.local or default to 3000
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();

@@ -60,10 +60,6 @@ const CreateRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props })
 
     const isDuplicate = await checkRuleDuplicate(data.name, version);
     if (isDuplicate) {
-      // Modal.warning({
-      //   title: 'Duplicate Rule Detected',
-      //   content: 'A rule with the same name and version already exists. Please choose a different name or version.',
-      // });
       Modal.warning({
           title: 'Duplicate Rule Detected',
           content: 'A rule with the same name and version already exists. Please choose a different name or version.',
