@@ -104,6 +104,43 @@ export class NetworkMapService {
     }
   }
 
+  // async findOneByName(name: string): Promise<NetworkMap> {
+  //   const db = this.arangoDatabaseService.getDatabase();
+
+  //   try {
+  //     // Query the collection to find the rule by name
+  //     const cursor = await db.query(`FOR rule IN ${NETWORK_MAP_COLLECTION} FILTER network_map.name == @name RETURN network_map`, { name });
+  //     const result = await cursor.all() 
+
+
+
+  //     return result;
+  //   } catch (e) {
+  //     throw new InternalServerErrorException(e.message);
+  //   }
+  // }
+
+  async findOneByName(name: string): Promise<NetworkMap> {
+    const db = this.arangoDatabaseService.getDatabase();
+    try {
+      const cursor = await db.query(`
+        FOR network_map IN ${NETWORK_MAP_COLLECTION}
+        FILTER network_map.name == @name
+        RETURN network_map
+      `, { name });
+
+      const result = await cursor.next(); // Get a single item, not an array
+      if (!result) throw new NotFoundException(`Network map with name "${name}" not found`);
+
+      return result;
+    } catch (e) {
+      // throw new InternalServerErrorException(e.message);
+      throw new NotFoundException(`Network Map with name "${name}" not found`);
+    }
+  }
+
+
+
   async duplicateNetworkMap(
     id: string,
     updateNetworkMapDto: UpdateNetworkMapDto,
@@ -267,6 +304,35 @@ async transitionNetworkMapState(
     throw new InternalServerErrorException(e.message || 'Transition failed.');
   }
 }
+
+async addTypologyToNetworkMap(
+    networkMapId: string,
+    typologyId: string,
+    req: Request,
+  ): Promise<any> {
+    const db = this.arangoDatabaseService.getDatabase();
+
+    const edgeCollectionName = 'network_map_typology_edges';
+
+    try {
+      const resultCursor = await db.query(aql`
+        INSERT {
+          _from: ${networkMapId},
+          _to: ${typologyId},
+          createdAt: ${new Date().toISOString()},
+          createdBy: ${req['user']?.username || 'system'}
+        } INTO ${db.collection(edgeCollectionName)}
+        RETURN NEW
+      `);
+
+      const inserted = await resultCursor.next();
+      return inserted;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to link typology to network map: ${error.message}`,
+      );
+    }
+  }
 
 
 

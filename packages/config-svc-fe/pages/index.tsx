@@ -1,4 +1,3 @@
-// <!-- SPDX-License-Identifier: Apache-2.0 -->
 import { useState, useEffect } from "react";
 import { DownOutlined, UpOutlined, SettingOutlined } from "@ant-design/icons";
 // Import the new service function alongside the existing ones
@@ -32,8 +31,7 @@ const Button = ({ children, variant = "solid", className = "", ...props }) => {
       : "bg-blue-600 text-white hover:bg-blue-700";
   return (
     <button className={`px-4 py-2 rounded-md text-sm font-medium ${baseStyle} ${className}`} {...props}>
-      {children}
-    </button>
+      {children}</button>
   );
 };
 
@@ -162,52 +160,8 @@ const Dashboard = () => {
     }
   };
 
-  // renderCard function (no change)
-  // const renderCard = (title: string, key: keyof DashboardAllData, color: string) => (
-  //   <Card className={`p-4 w-full max-w-xs border-l-4 ${color}`}>
-  //     <div className="flex justify-between items-center">
-  //       <div>
-  //         <h3 className="text-lg font-semibold">{title}</h3>
-  //         <p className="text-2xl font-bold">{dashboardData[key].total}</p>
-  //       </div>
-  //       <button onClick={() => toggleExpand(key)}>
-  //         {expanded[key] ? <UpOutlined /> : <DownOutlined />}
-  //       </button>
-  //     </div>
-  //     {expanded[key] && (
-  //       <div className="mt-3 text-sm">
-  //         <p>Draft: {dashboardData[key].draft}</p>
-  //         <p>Pending Review: {dashboardData[key].pendingReview}</p>
-  //       </div>
-  //     )}
-  //   </Card>
-  // );
-  // const renderCard = (title: string, key: keyof DashboardAllData, color: string) => (
-  //   <Card className={`p-4 w-full max-w-xs border-l-4 ${color}`}>
-  //     <div className="flex justify-between items-center">
-  //       <div>
-  //         <h3 className="text-lg font-semibold">{title}</h3>
-  //         <p className="text-2xl font-bold">{dashboardData[key].total}</p>
-  //       </div>
-  //       <button onClick={() => toggleExpand(key)} data-testid={`${key}-expand-button`}> {/* Add data-testid here */}
-  //         {expanded[key] ? <UpOutlined /> : <DownOutlined />}
-  //       </button>
-  //     </div>
-  //     {expanded[key] && (
-  //       <div className="mt-3 text-sm">
-  //         <p>Draft: {dashboardData[key].draft}</p>
-  //         <p>Pending Review: {dashboardData[key].pendingReview}</p>
-  //       </div>
-  //     )}
-  //   </Card>
-  // );
-
   const renderCard = (title: string, key: keyof DashboardAllData, color: string) => (
-    <div
-      className="cursor-pointer"
-      onClick={() => router.push(`/${routeMap[key]}`)}
-      data-testid={`${key}-card`}
-    >
+    <div data-testid={`${key}-card`}>
       <Card className={`p-4 w-full max-w-xs border-l-4 ${color}`}>
         <div className="flex justify-between items-center">
           <div>
@@ -226,8 +180,18 @@ const Dashboard = () => {
         </div>
         {expanded[key] && (
           <div className="mt-3 text-sm">
-            <p>Draft: {dashboardData[key].draft}</p>
-            <p>Pending Review: {dashboardData[key].pendingReview}</p>
+            <p
+              className="cursor-pointer hover:underline"
+              onClick={() => router.push(`/${routeMap[key]}`)} // Route to base path
+            >
+              Draft: {dashboardData[key].draft}
+            </p>
+            <p
+              className="cursor-pointer hover:underline"
+              onClick={() => router.push(`/${routeMap[key]}`)} // Route to base path
+            >
+              Pending Review: {dashboardData[key].pendingReview}
+            </p>
           </div>
         )}
       </Card>

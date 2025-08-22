@@ -30,4 +30,17 @@ export class PrivilegeService {
       throw new UnauthorizedException('Failed to validate privileges');
     }
   }
+
+  async getUserPrivileges(token: string): Promise<string[]> {
+    try {
+      const result = await validateTokenAndClaims(token, []);
+      return Object.entries(result)
+        .filter(([_, hasAccess]) => hasAccess)
+        .map(([privilege]) => privilege);
+    } catch (error) {
+      throw new UnauthorizedException('Failed to fetch user privileges');
+    }
+  }
+
+
 }

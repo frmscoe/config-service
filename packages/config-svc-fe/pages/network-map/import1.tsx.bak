@@ -1,0 +1,851 @@
+import React, { useState } from 'react';
+import { Upload, message as antMessage, Select, Button, Modal, Spin, Radio } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { Api } from '~/client';
+import usePrivileges from '~/hooks/usePrivileges';
+import AccessDeniedPage from '~/components/common/AccessDenied';
+import { useCommonTranslations } from '~/hooks';
+
+
+const { Option } = Select;
+const { Dragger } = Upload;
+
+const lightBlueButtonStyle = {
+  backgroundColor: '#add8e6',
+  borderColor: '#add8e6',
+  color: '#000',
+};
+
+const cancelButtonStyle = {
+  backgroundColor: '#ff4d4f',
+  borderColor: '#ff4d4f',
+  color: '#fff',
+};
+
+const ImportNetWorkMap: React.FC = () => {
+  const [jsonContent, setJsonContent] = useState<any>(null);
+  const [modalMessage, setModalMessage] = useState<string | null>(null);
+  const [dataType, setDataType] = useState<string>('CURRENCY');
+  const [showDataTypeSelection, setShowDataTypeSelection] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isIntermediateModalVisible, setIsIntermediateModalVisible] = useState<boolean>(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState<boolean>(false);
+  const [isVersionModalVisible, setIsVersionModalVisible] = useState<boolean>(false);
+  const [ruleExists, setRuleExists] = useState<boolean>(false);
+  const [configExists, setConfigExists] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [versionUpdateType, setVersionUpdateType] = useState<string>('patch');
+  const [ruleCreated, setRuleCreated] = useState<boolean>(false);
+  const [existingRuleVersion, setExistingRuleVersion] = useState<string | null>(null);
+  const [existingRuleId, setExistingRuleId] = useState<string | null>(null);
+  const { canImportRule } = usePrivileges();
+  const { t } = useCommonTranslations();
+  const [band, setband] = useState([]);
+  const [cases, setcases] = useState([]);
+  const [exitConditions, setExitConditions] = useState([]);
+  const [isSavingModalVisible, setIsSavingModalVisible] = useState(false);
+  const [isCreatingConfigVisible, setIsCreatingConfigVisible] = useState(false);
+  // Add state for parameters
+  const [parameters, setParameters] = useState([]);
+
+
+
+  // const handleFileUpload = (file: any) => {
+  //   const reader = new FileReader();
+  //   reader.onload = () => {
+  //     try {
+  //       const fileContent = JSON.parse(reader.result as string);
+  //       setJsonContent(fileContent);
+
+  //       const bandsFromJson = fileContent.config?.bands || [];
+  //       const casesFromJson = fileContent.config?.cases || [];
+  //       const exitConditionsFromJson = fileContent.config?.exitConditions || [];
+  //       const parametersFromJson = fileContent.config?.parameters || [];
+
+  //       setband(bandsFromJson);
+  //       setcases(casesFromJson);
+  //       setExitConditions(exitConditionsFromJson);
+  //       setParameters(parametersFromJson);
+
+  //       checkForExistingNetworkMap(fileContent); // 🔍 This will be your next function
+  //     } catch (error) {
+  //       console.error('Error parsing JSON:', error);
+  //       showErrorModal(t('importNetworkMapPage.errorParsingJson'));
+  //     }
+  //   };
+  //   reader.readAsText(file);
+  //   return false;
+  // };
+
+  const handleFileUpload = (file: any) => {
+    const reader = new FileReader();
+
+    reader.onload = async () => {
+      try {
+        const parsed = JSON.parse(reader.result as string);
+        console.log("Parsed Network Map JSON:", parsed);
+
+        setJsonContent(parsed); // Save parsed content for further use
+
+        // Start the full import flow
+        await processNetworkMapImport(parsed);
+
+      } catch (error) {
+        console.error("Error parsing network map JSON:", error);
+        setModalMessage(t("importNetworkMapPage.errorParsingJson"));
+        setIsErrorModalVisible(true);
+      }
+    };
+
+    reader.readAsText(file);
+    return false; // prevent default upload
+  };
+
+//   const processNetworkMapImport = async (json: any) => {
+//   try {
+//     setLoading(true);
+
+//     const networkMapName = json?.name?.trim();
+//     const typologyFromJson = json?.typology;
+//     const rulesFromJson = json?.typology?.rules || [];
+
+//     if (!networkMapName || !typologyFromJson || rulesFromJson.length === 0) {
+//       throw new Error("Invalid network map JSON structure");
+//     }
+
+//     // 1. Check if network map exists
+//     const netMapCheck = await Api.get(`/network-map/name/${encodeURIComponent(networkMapName)}`);
+//     if (netMapCheck?.data && netMapCheck.data._id) {
+//       setModalMessage(t("importNetworkMapPage.networkMapExists"));
+//       setIsErrorModalVisible(true);
+//       return;
+//     }
+
+//     // 2. Check or create typology
+//     let typologyId: string;
+//     try {
+//       const typologyCheck = await Api.get(`/typology/name/${encodeURIComponent(typologyFromJson.name.trim())}`);
+//       typologyId = typologyCheck.data._id;
+//     } catch (err: any) {
+//       if (err.response?.status === 404) {
+//         // 3. Check or create rules before creating the typology
+//         const ruleIds: string[] = [];
+
+//         for (const rule of rulesFromJson) {
+//           try {
+//             const ruleCheck = await Api.get(`/rule/name/${encodeURIComponent(rule.name.trim())}`);
+//             ruleIds.push(ruleCheck.data[0]._id); // Assuming .data is an array
+//           } catch (ruleErr: any) {
+//             if (ruleErr.response?.status === 404) {
+//               const ruleRes = await Api.post(`/rule`, {
+//                 name: rule.name,
+//                 cfg: rule.cfg,
+//                 dataType: rule.dataType || 'CURRENCY',
+//                 rule_desc: rule.desc || '',
+//               });
+//               ruleIds.push(ruleRes.data._id);
+//             } else {
+//               throw ruleErr;
+//             }
+//           }
+//         }
+
+//         // 4. Now create typology
+//         const typologyRes = await Api.post(`/typology`, {
+//           name: typologyFromJson.name,
+//           cfg: typologyFromJson.cfg,
+//           threshold: typologyFromJson.threshold || 50,
+//           expression: typologyFromJson.expression,
+//           rules: ruleIds,
+//         });
+//         typologyId = typologyRes.data._id;
+//       } else {
+//         throw err;
+//       }
+//     }
+
+//     // 5. Create network map
+//     const networkMapRes = await Api.post(`/network-map`, {
+//       name: networkMapName,
+//       desc: json.desc || '',
+//       typologyId,
+//       messages: json.messages,
+//     });
+
+//     setModalMessage(t("importNetworkMapPage.importSuccess"));
+//     setIsModalVisible(true);
+//   } catch (error: any) {
+//     console.error("Error during network map import:", error);
+//     setModalMessage(error?.response?.data?.message || t("importNetworkMapPage.importFailed"));
+//     setIsErrorModalVisible(true);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+// const processNetworkMapImport = async (json: any) => {
+//   try {
+//     setLoading(true);
+
+//     const message = json.messages?.[0];
+//     const networkMapName = message?.id?.split('@')[0]?.trim();
+//     const cfg = message?.cfg;
+//     const eventId = message?.txTp?.replace(/\./g, "_");
+
+//     if (!networkMapName || !cfg || !eventId) {
+//       throw new Error("Invalid network map JSON structure");
+//     }
+
+//     // Step 1: Check if Network Map already exists
+//     // try {
+//     //   await Api.get(`/network-map/name/${encodeURIComponent(networkMapName)}`);
+//     //   setModalMessage(t("importNetworkMapPage.networkMapExists"));
+//     //   setIsErrorModalVisible(true);
+//     //   return;
+//     // } catch (netErr: any) {
+//     //   if (netErr.response?.status !== 404) throw netErr;
+//     // }
+//     const { exists } = await checkForExistingNetworkMap(json);
+
+//           if (exists) {
+//             setModalMessage(t("importNetworkMapPage.networkMapExists"));
+//             setIsErrorModalVisible(true);
+//             return;
+//           }
+
+//     const typologyPayloads = [];
+
+//     // Step 2: Loop through each channel > typology
+//     for (const channel of message.channels || []) {
+//       for (const typ of channel.typologies || []) {
+//         const typologyName = typ.id.split('@')[0];
+//         const typologyCfg = typ.cfg;
+
+//         let typologyId: string;
+//         const ruleIds: string[] = [];
+
+//         // Step 3: Process Rules
+//         for (const rule of typ.rules || []) {
+//           const ruleName = rule.id.split('@')[0];
+//           const ruleCfg = rule.cfg;
+
+//           try {
+//             const res = await Api.get(`/rule/name/${encodeURIComponent(ruleName)}`);
+//             ruleIds.push(res.data?.[0]?._id);
+//           } catch (ruleErr: any) {
+//             if (ruleErr.response?.status === 404) {
+//               const newRule = await Api.post('/rule', {
+//                 name: ruleName,
+//                 cfg: ruleCfg,
+//                 dataType: 'CURRENCY', // default
+//                 rule_desc: ''
+//               });
+//               ruleIds.push(newRule.data._id);
+//             } else {
+//               throw ruleErr;
+//             }
+//           }
+//         }
+
+//         // Step 4: Process Typology
+//         try {
+//           const typologyRes = await Api.get(`/typology/name/${encodeURIComponent(typologyName)}`);
+//           typologyId = typologyRes.data._id;
+//         } catch (typErr: any) {
+//           if (typErr.response?.status === 404) {
+//             const newTypology = await Api.post('/typology', {
+//               name: typologyName,
+//               cfg: typologyCfg,
+//               threshold: 50,
+//               expression: typ.expression || {},
+//               rules: ruleIds,
+//             });
+//             typologyId = newTypology.data._id;
+//           } else {
+//             throw typErr;
+//           }
+//         }
+
+//         typologyPayloads.push({
+//           id: typologyId,
+//           name: typologyName,
+//           cfg: typologyCfg,
+//           active: false,
+//           rulesWithConfigs: [],
+//         });
+//       }
+//     }
+
+//     // Step 5: Create the Network Map
+//     const finalPayload = {
+//       name: networkMapName,
+//       cfg,
+//       description: json.description || '',
+//       source: "user_created",
+//       state: "01_DRAFT",
+//       active: false,
+//       events: [
+//         {
+//           eventId,
+//           typologies: typologyPayloads
+//         }
+//       ],
+//       ownerId: "admin@domain.com", // or fetch dynamically
+//     };
+
+//     await Api.post('/network-map', finalPayload);
+
+//     setModalMessage(t("importNetworkMapPage.importSuccess"));
+//     setIsModalVisible(true);
+
+//   } catch (error: any) {
+//     console.error("Network map import error:", error);
+//     setModalMessage(error?.response?.data?.message || t("importNetworkMapPage.importFailed"));
+//     setIsErrorModalVisible(true);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+// const processNetworkMapImport = async (json: any) => {
+//   try {
+//     console.log("🚀 Starting network map import...");
+//     setLoading(true);
+
+//     const message = json.messages?.[0];
+//     const networkMapName = message?.id?.split('@')[0]?.trim();
+//     const cfg = message?.cfg;
+//     const eventId = message?.txTp?.replace(/\./g, "_");
+
+//     if (!networkMapName || !cfg || !eventId) {
+//       console.error("❌ Missing required network map info:", { networkMapName, cfg, eventId });
+//       throw new Error("Invalid network map JSON structure");
+//     }
+
+//     console.log("✅ Extracted map info:", { networkMapName, cfg, eventId });
+
+//     // Step 1: Check if Network Map already exists
+//     const { exists } = await checkForExistingNetworkMap(json);
+
+//     if (exists) {
+//       console.warn(`⚠️ Network map "${networkMapName}" already exists`);
+//       setModalMessage(t("importNetworkMapPage.networkMapExists"));
+//       setIsErrorModalVisible(true);
+//       return;
+//     }
+
+//     const typologyPayloads = [];
+
+//     // Step 2: Process each typology in channels
+//     for (const channel of message.channels || []) {
+//       for (const typ of channel.typologies || []) {
+//         const typologyName = typ.id.split('@')[0];
+//         const typologyCfg = typ.cfg;
+//         const ruleIds: string[] = [];
+//         let typologyId: string;
+
+//         // Step 3: Handle rules (Create if they don’t exist)
+//         for (const rule of typ.rules || []) {
+//           const ruleName = rule.id.split('@')[0];
+//           const ruleCfg = rule.cfg;
+
+//           try {
+//             const res = await Api.get(`/rule/name/${encodeURIComponent(ruleName)}`);
+//             const id = res.data?.[0]?._id;
+//             ruleIds.push(id);
+//           } catch (ruleErr: any) {
+//             if (ruleErr.response?.status === 404) {
+//               const newRule = await Api.post('/rule', {
+//                 name: ruleName,
+//                 cfg: ruleCfg,
+//                 // dataType: 'CURRENCY',
+//                 rule_desc: '',
+//               });
+//               ruleIds.push(newRule.data._id);
+//             } else {
+//               throw ruleErr;
+//             }
+//           }
+//         }
+
+//         // Step 4: Handle typology (Fetch or create, and update with missing rules)
+//         try {
+//           const typologyRes = await Api.get(`/typology/name/${encodeURIComponent(typologyName)}`);
+//           typologyId = typologyRes.data._id;
+//           const existingRuleIds = typologyRes.data.rules || [];
+
+//           // Identify missing rules
+//           const missingRuleIds = ruleIds.filter((id) => !existingRuleIds.includes(id));
+
+//           if (missingRuleIds.length > 0) {
+//             const updatedRules = [...new Set([...existingRuleIds, ...missingRuleIds])];
+//             await Api.put(`/typology/${typologyId}`, {
+//               rules: updatedRules,
+//             });
+//             console.log(`🔁 Updated typology "${typologyName}" with new rules.`);
+//           } else {
+//             console.log(`✅ Typology "${typologyName}" already contains all rules.`);
+//           }
+//         } catch (typErr: any) {
+//           if (typErr.response?.status === 404) {
+//             const newTypology = await Api.post('/typology', {
+//               name: typologyName,
+//               cfg: typologyCfg,
+//               threshold: 50,
+//               expression: typ.expression || {},
+//               rules: ruleIds,
+//             });
+//             typologyId = newTypology.data._id;
+//           } else {
+//             throw typErr;
+//           }
+//         }
+
+//         typologyPayloads.push({
+//           id: typologyId,
+//           name: typologyName,
+//           cfg: typologyCfg,
+//           active: false,
+//           rulesWithConfigs: [],
+//         });
+//       }
+//     }
+
+
+//     // Step 5: Final payload for network map
+//     // const finalPayload = {
+//     //   name: networkMapName,
+//     //   cfg,
+//     //   description: json.description || '',
+//     //   source: "user_created",
+//     //   state: "01_DRAFT",
+//     //   active: false,
+//     //   events: [
+//     //     {
+//     //       eventId,
+//     //       typologies: typologyPayloads,
+//     //     },
+//     //   ],
+//     //   ownerId: "admin@domain.com",
+//     // };
+//     // const finalPayload = {
+//     //   name: `${networkMapName} Network Map`,              // e.g., "004 Network Map"
+//     //   description: 'Imported from file',                  // optional description
+//     //   active: true,                                       // or false, depending on your flow
+//     //   cfg: cfg,                                           // e.g., "1.0.0"
+//     //   state: '01_DRAFT',
+//     //   source: 'user_created',
+//     //   events: [
+//     //     {
+//     //       eventId: parsedEventId,                         // e.g., "pacs_002_001_12"
+//     //       typologies: [
+//     //         {
+//     //           id: `${typologyName}@${cfg}`,               // e.g., "001@1.0.0"
+//     //           name: typologyName,                         // e.g., "001"
+//     //           cfg: cfg,                                   // "1.0.0"
+//     //           active: false,
+//     //           rulesWithConfigs: [
+//     //             {
+//     //               rule: {
+//     //                 _id: rule._id,
+//     //                 _key: rule._key,
+//     //                 name: rule.name,
+//     //                 cfg: rule.cfg
+//     //               },
+//     //               ruleConfigs: []                         // ← EMPTY ARRAY as requested
+//     //             }
+//     //           ]
+//     //         }
+//     //       ]
+//     //     }
+//     //   ]
+//     // };
+
+//     // Step 3: Create the Network Map
+//     const finalPayload = {
+//       name: `${networkMapName} Network Map`,       // e.g., "004 Network Map"
+//       cfg: cfg,                                    // e.g., "1.0.0"
+//       description: json.description || 'Imported from JSON',
+//       source: 'user_created',
+//       state: '01_DRAFT',
+//       active: false,
+//       events: [
+//         {
+//           eventId,
+//           typologies: typologyPayloads,            // Includes ID, name, cfg, etc.
+//         },
+//       ],
+//       ownerId: 'admin@domain.com', // Replace or fetch dynamically if needed
+//     };
+
+//     console.log("📦 Final network map payload:", finalPayload);
+
+//     const result = await Api.post('/network-map', finalPayload);
+//     console.log("✅ Network map created successfully:", result.data);
+
+//     setModalMessage(t("importNetworkMapPage.importSuccess"));
+//     setIsModalVisible(true);
+
+
+
+
+//     // console.log("📦 Final network map payload:", finalPayload);
+
+//     // const result = await Api.post('/network-map', finalPayload);
+//     // console.log("✅ Network map created successfully:", result.data);
+
+//     // setModalMessage(t("importNetworkMapPage.importSuccess"));
+//     // setIsModalVisible(true);
+
+//   } catch (error: any) {
+//     console.error("🔥 Error during network map import:", error);
+//     setModalMessage(error?.response?.data?.message || t("importNetworkMapPage.importFailed"));
+//     setIsErrorModalVisible(true);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+  const processNetworkMapImport = async (json: any) => {
+  try {
+    console.log("🚀 Starting network map import...");
+    setLoading(true);
+
+    const message = json.messages?.[0];
+    const networkMapName = message?.id?.split('@')[0]?.trim();
+    const cfg = message?.cfg;
+    const eventId = message?.txTp?.replace(/\./g, "_");
+
+    if (!networkMapName || !cfg || !eventId) {
+      console.error("❌ Missing required network map info:", { networkMapName, cfg, eventId });
+      throw new Error("Invalid network map JSON structure");
+    }
+
+    console.log("✅ Extracted map info:", { networkMapName, cfg, eventId });
+
+    // Step 1: Check if Network Map already exists
+    const { exists } = await checkForExistingNetworkMap(json);
+
+    if (exists) {
+      console.warn(`⚠️ Network map "${networkMapName}" already exists`);
+      setModalMessage(t("importNetworkMapPage.networkMapExists"));
+      setIsErrorModalVisible(true);
+      return;
+    }
+
+    const typologyPayloads = [];
+
+    // Step 2: Process each typology in channels
+    for (const channel of message.channels || []) {
+      for (const typ of channel.typologies || []) {
+        const typologyName = typ.id.split('@')[0];
+        const typologyCfg = typ.cfg;
+        let typologyId: string;
+
+        const rulesWithConfigsArray: any[] = []; // Array to hold constructed rulesWithConfigs objects
+
+        // Step 3: Handle rules (Create if they don’t exist)
+        for (const rule of typ.rules || []) {
+          const ruleName = rule.id.split('@')[0];
+          const ruleCfg = rule.cfg;
+          let ruleId: string; // To store the _id of the rule
+
+          try {
+            const res = await Api.get(`/rule/name/${encodeURIComponent(ruleName)}`);
+            ruleId = res.data?.[0]?._id; // Get existing rule ID
+          } catch (ruleErr: any) {
+            if (ruleErr.response?.status === 404) {
+              const newRule = await Api.post('/rule', {
+                name: ruleName,
+                cfg: ruleCfg,
+                // dataType: 'CURRENCY', // You might need to derive this or set a default
+                rule_desc: '',
+              });
+              ruleId = newRule.data._id; // Get newly created rule ID
+            } else {
+              throw ruleErr;
+            }
+          }
+
+          // Construct the ruleConfigs for the current rule
+          // This part depends on how ruleConfigs are represented in your input JSON.
+          // For now, let's assume they are directly available on the 'rule' object from the import JSON,
+          // or you need to generate placeholder configs if not present.
+          const currentRuleConfigs = (rule.ruleConfigs || []).map((rc: any) => ({
+            _id: rc._id || `rule_config/${crypto.randomUUID()}`, // Generate if missing
+            _key: rc._key || crypto.randomUUID(),
+            cfg: rc.cfg,
+            // Add other fields expected by your backend for ruleConfigs
+          }));
+
+
+          // Add the constructed ruleWithConfigs object to the array
+          rulesWithConfigsArray.push({
+            rule: {
+              _id: ruleId,
+              _key: ruleId.split('/')[1], // Assuming _id is like "rule/uuid"
+              name: ruleName,
+              cfg: ruleCfg,
+            },
+            ruleConfigs: currentRuleConfigs, // Use the constructed ruleConfigs
+          });
+        }
+
+        // Step 4: Handle typology (Fetch or create, and update with missing rules)
+        try {
+          const typologyRes = await Api.get(`/typology/name/${encodeURIComponent(typologyName)}`);
+          typologyId = typologyRes.data._id;
+          const existingRuleIds = typologyRes.data.rules || [];
+
+          // Identify missing rules from the current import
+          const incomingRuleIdsForTypology = rulesWithConfigsArray.map(item => item.rule._id);
+          const missingRuleIds = incomingRuleIdsForTypology.filter((id) => !existingRuleIds.includes(id));
+
+          if (missingRuleIds.length > 0) {
+            const updatedRules = [...new Set([...existingRuleIds, ...missingRuleIds])];
+            await Api.put(`/typology/${typologyId}`, {
+              rules: updatedRules,
+            });
+            console.log(`🔁 Updated typology "${typologyName}" with new rules.`);
+          } else {
+            console.log(`✅ Typology "${typologyName}" already contains all rules.`);
+          }
+        } catch (typErr: any) {
+          if (typErr.response?.status === 404) {
+            const newTypology = await Api.post('/typology', {
+              name: typologyName,
+              cfg: typologyCfg,
+              threshold: typ.threshold || 50, // Use existing if available
+              expression: typ.expression || {},
+              rules: rulesWithConfigsArray.map(item => item.rule._id), // Only send rule IDs to typology creation
+            });
+            typologyId = newTypology.data._id;
+          } else {
+            throw typErr;
+          }
+        }
+
+        // Add the typology payload with the correctly structured rulesWithConfigs
+        typologyPayloads.push({
+          id: `${typologyName}@${typologyCfg}`, // Matches the curl example's 'id' format
+          name: typologyName,
+          cfg: typologyCfg,
+          active: false,
+          rulesWithConfigs: rulesWithConfigsArray, // This is the crucial change
+        });
+      }
+    }
+
+    console.log("Typology Payload", typologyPayloads);
+    const now = new Date().toISOString();
+    // Step 5: Final payload for network map
+    const finalPayload = {
+      name: `${networkMapName} Network Map`,
+      cfg: cfg,
+      description: 'Imported from File',
+      source: 'user_created',
+      state: '01_DRAFT',
+      active: false,
+      createdAt: now,
+      updatedAt: now,
+      events: [
+        {
+          eventId,
+          typologies: typologyPayloads,
+        },
+      ],
+      // ownerId: 'admin@domain.com',
+    };
+
+    // const payload = {
+    //     active: false,
+    //     name: formData.name,
+    //     description: formData.description,
+    //     cfg: version,
+    //     source: "user_created",
+    //     createdAt: now,
+    //     updatedAt: now,
+    //     modifiedBy: "",
+    //     ownerId: "",
+    //     state: "01_DRAFT",
+    //     events: [
+    //       {
+    //         eventId: eventNode.id,
+    //         typologies: typologiesPayload
+    //       }
+    //     ]
+    //   };
+
+    console.log("📦 Final network map payload:", finalPayload);
+
+    // const result = await Api.post('/network-map', finalPayload);
+    try {
+      const result = await Api.post('/network-map', finalPayload);
+      console.log("✅ Network map created successfully:", result.data);
+    } catch (error: any) {
+      console.error("❌ Network map creation failed:", {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+        config: error?.config,
+      });
+      throw error;
+    }
+
+    // console.log("✅ Network map created successfully:", result.data);
+
+    setModalMessage(t("importNetworkMapPage.importSuccess"));
+    setIsModalVisible(true);
+
+  } catch (error: any) {
+    console.error("🔥 Error during network map import:", error);
+    setModalMessage(error?.response?.data?.message || t("importNetworkMapPage.importFailed"));
+    setIsErrorModalVisible(true);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+  const showErrorModal = (content: string) => {
+    setModalMessage(content);
+    setIsErrorModalVisible(true);
+  };
+
+
+  // const checkForExistingNetworkMap = async (fileContent: any) => {
+  //   setLoading(true);
+  //   try {
+  //     const mapName = fileContent.messages?.[0]?.id?.split('@')[0]?.trim();
+  //     const cfg = fileContent.messages?.[0]?.cfg;
+
+  //     if (!mapName) {
+  //       showErrorModal(t('importNetworkMapPage.invalidNetworkMapName'));
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     if (!cfg) {
+  //       showErrorModal(t('importNetworkMapPage.invalidConfig'));
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     const response = await Api.get(`/network-map/name/${encodeURIComponent(mapName)}`);
+
+  //     if (response.data && response.data._key) {
+  //       setNetworkMapExists(true);
+  //       setExistingNetworkMapVersion(response.data.cfg || cfg); // fallback to file cfg
+  //       setExistingNetworkMapId(response.data._id);
+  //       setModalMessage(t('importNetworkMapPage.existingNetworkMapFound'));
+  //       setIsModalVisible(true);
+  //     } else {
+  //       setNetworkMapExists(false);
+  //       setModalMessage(t('importNetworkMapPage.noExistingNetworkMapFound'));
+  //       setIsModalVisible(true);
+  //     }
+  //   } catch (error: any) {
+  //     if (error.response?.status === 404) {
+  //       setNetworkMapExists(false);
+  //       setModalMessage(t('importNetworkMapPage.noExistingNetworkMapFound'));
+  //       setIsModalVisible(true);
+  //     } else {
+  //       console.error('Error checking for existing network map:', error);
+  //       showErrorModal(error?.response?.data?.message || t('importNetworkMapPage.errorCheckingNetworkMap'));
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+const checkForExistingNetworkMap = async (fileContent: any): Promise<{ exists: boolean; id?: string; version?: string }> => {
+  try {
+    const mapName = fileContent.messages?.[0]?.id?.split('@')[0]?.trim();
+    const cfg = fileContent.messages?.[0]?.cfg;
+
+    if (!mapName) {
+      throw new Error(t('importNetworkMapPage.invalidNetworkMapName'));
+    }
+
+    if (!cfg) {
+      throw new Error(t('importNetworkMapPage.invalidConfig'));
+    }
+
+    const response = await Api.get(`/network-map/name/${encodeURIComponent(mapName)}`);
+
+    if (response.data && response.data._key) {
+      return {
+        exists: true,
+        id: response.data._id,
+        version: response.data.cfg || cfg,
+      };
+    }
+
+    return { exists: false };
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return { exists: false }; // Not found = good, proceed to create
+    }
+
+    console.error('Error checking for existing network map:', error);
+    throw new Error(error?.response?.data?.message || t('importNetworkMapPage.errorCheckingNetworkMap'));
+  }
+};
+
+
+
+const handleCancel = () => {
+  setIsErrorModalVisible(false);
+  setIsModalVisible(false);
+  setIsSavingModalVisible(false);
+  setModalMessage(null);
+};
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+    setRuleCreated(false);
+    setModalMessage(null);
+  };
+
+  if (!canImportRule) {
+    return <AccessDeniedPage />;
+  }
+
+  return (
+  <div className="import-rule-config">
+    <h1>{t('importNetworkMapPage.ImportRuleConfigTitle')}</h1>
+
+    <Dragger beforeUpload={handleFileUpload} showUploadList={false}>
+      <p className="ant-upload-drag-icon">
+        <InboxOutlined />
+      </p>
+      <p className="ant-upload-text">{t('importNetworkMapPage.uploadPrompt')}</p>
+      <p className="ant-upload-hint">{t('importNetworkMapPage.uploadHint')}</p>
+    </Dragger>
+
+    {loading && <Spin size="large" />}
+
+    <Modal
+      title={t('importNetworkMapPage.ruleCreatedSuccess')}
+      open={isModalVisible && ruleCreated}
+      onCancel={handleOk}
+      footer={[
+        <Button key="ok" type="primary" style={lightBlueButtonStyle} onClick={handleOk}>
+          {t('importNetworkMapPage.OK')}
+        </Button>,
+      ]}
+    >
+      <p>{modalMessage}</p>
+    </Modal>
+  </div>
+);
+};
+
+export default ImportNetWorkMap;
+
+
+

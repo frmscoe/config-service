@@ -3,7 +3,7 @@ export const uniqueArray = (arr: any, key: string) => {
     const uniqueSet = new Set();
     const uniqueObjects: any[] = [];
 
-    arr.forEach((obj: any) => {
+    (Array.isArray(arr) ? arr : []).forEach((obj: any) => {
         const stringifiedObj = obj[key]
         if (!uniqueSet.has(stringifiedObj)) {
             uniqueSet.add(stringifiedObj);

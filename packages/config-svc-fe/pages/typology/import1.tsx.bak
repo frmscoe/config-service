@@ -1,0 +1,410 @@
+import React, { useState } from 'react';
+import { Upload, message as antMessage, Select, Button, Modal, Spin, Radio } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { Api } from '~/client';
+import usePrivileges from '~/hooks/usePrivileges';
+import AccessDeniedPage from '~/components/common/AccessDenied';
+import { useCommonTranslations } from '~/hooks';
+
+
+const { Option } = Select;
+const { Dragger } = Upload;
+
+const lightBlueButtonStyle = {
+  backgroundColor: '#add8e6',
+  borderColor: '#add8e6',
+  color: '#000',
+};
+
+const cancelButtonStyle = {
+  backgroundColor: '#ff4d4f',
+  borderColor: '#ff4d4f',
+  color: '#fff',
+};
+
+const ImportTypology: React.FC = () => {
+  const [jsonContent, setJsonContent] = useState<any>(null);
+  const [modalMessage, setModalMessage] = useState<string | null>(null);
+  const [dataType, setDataType] = useState<string>('CURRENCY');
+  const [showDataTypeSelection, setShowDataTypeSelection] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isIntermediateModalVisible, setIsIntermediateModalVisible] = useState<boolean>(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState<boolean>(false);
+  const [isVersionModalVisible, setIsVersionModalVisible] = useState<boolean>(false);
+  const [ruleExists, setRuleExists] = useState<boolean>(false);
+  const [configExists, setConfigExists] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [versionUpdateType, setVersionUpdateType] = useState<string>('patch');
+  const [ruleCreated, setRuleCreated] = useState<boolean>(false);
+  const [existingRuleVersion, setExistingRuleVersion] = useState<string | null>(null);
+  const [existingRuleId, setExistingRuleId] = useState<string | null>(null);
+  const { canImportRule } = usePrivileges();
+  const { t } = useCommonTranslations();
+  const [band, setband] = useState([]);
+  const [cases, setcases] = useState([]);
+  const [exitConditions, setExitConditions] = useState([]);
+  const [isSavingModalVisible, setIsSavingModalVisible] = useState(false);
+  const [isCreatingConfigVisible, setIsCreatingConfigVisible] = useState(false);
+  // Add state for parameters
+  const [parameters, setParameters] = useState([]);
+
+
+  
+
+//   const handleFileUpload = async (file: any) => {
+//   const reader = new FileReader();
+
+//   reader.onload = async () => {
+//     try {
+//       const json = JSON.parse(reader.result as string);
+//       const { typology_name, id, cfg, threshold, rules, expression } = json;
+
+//       if (!typology_name || !id || !cfg || !threshold || !rules || !expression) {
+//         showErrorModal("Invalid Typology JSON file.");
+//         return;
+//       }
+
+//       const [name] = id.split("@");
+//       const desc = typology_name;
+
+//       const score = { threshold, rules, expression };
+
+//       let typologyId = null;
+
+//       try {
+//         const existingTypologyRes = await Api.get(`/typology/name/${encodeURIComponent(name)}`);
+//         typologyId = existingTypologyRes?.data?._id;
+//         console.log(`Typology "${name}" already exists with ID: ${typologyId}`);
+//       } catch (err: any) {
+//         if (err?.response?.status === 404) {
+//           console.warn(`Typology "${name}" not found. Creating new typology...`);
+//         } else {
+//           showErrorModal(err?.response?.data?.message || "Error checking typology existence.");
+//           return;
+//         }
+//       }
+
+//       if (!typologyId) {
+//         const createRes = await Api.post("/typology", {
+//           name,
+//           cfg,
+//           desc,
+//           typologyCategoryUUID: [],
+//           rules_rule_configs: [], // empty for now; will be patched after
+//           referenceId: null,
+//           score: {}, // placeholder
+//         });
+//         typologyId = createRes?.data?._id;
+//         console.log(`Typology "${name}" created with ID: ${typologyId}`);
+//       }
+
+
+//       // Extract unique rule names from score.rules
+//       const ruleNames = [...new Set(rules.map((r: any) => r.id.split('@')[0]))];
+
+//       const rules_rule_configs: { ruleId: string; ruleConfigId: string[] }[] = [];
+
+//       for (const ruleName of ruleNames) {
+//         let ruleId: string | null = null;
+
+//         try {
+//           const res = await Api.get(`/rule/${encodeURIComponent(ruleName)}`);
+//           ruleId = res?.data?._id || null;
+//         } catch (err) {
+//           console.warn(`Rule "${ruleName}" not found. Creating...`);
+//         }
+
+//         if (!ruleId) {
+//           const createRes = await Api.post(`/rule`, {
+//             name: ruleName,
+//             cfg: cfg,
+//             expression: null,
+//             tags: [],
+//           });
+//           ruleId = createRes?.data?._id;
+//         }
+
+//         if (ruleId) {
+//           rules_rule_configs.push({
+//             ruleId,
+//             ruleConfigId: [],
+//           });
+//         }
+//       }
+
+//       const payload = {
+//         name,
+//         cfg,
+//         desc,
+//         typologyCategoryUUID: [],
+//         rules_rule_configs,
+//         referenceId: null,
+//         score,
+//       };
+
+//       await Api.post("/typology", payload);
+//       showSuccessModal(`Typology "${name}" imported successfully.`);
+//     } catch (err: any) {
+//       console.error("Typology Import Error:", err);
+//       showErrorModal(err?.response?.data?.message || "Failed to import typology.");
+//     }
+//   };
+
+//   reader.readAsText(file);
+//   return false;
+// };
+
+
+const handleFileUpload = async (file: any) => {
+	console.log("File selected:", file);
+  const reader = new FileReader();
+
+  reader.onload = async () => {
+  	console.log("FileReader triggered");
+    try {
+      const json = JSON.parse(reader.result as string);
+      console.log("Parsed JSON:", json);
+
+      const { typology_name, id, cfg, threshold, rules, expression } = json;
+
+      // Basic validation
+      if (!typology_name || !id || !cfg || !threshold || !rules || !expression) {
+        showErrorModal("Invalid Typology JSON file.");
+        return;
+      }
+
+      const [name] = id.split('@'); // e.g. "010@1.0.0" → "010"
+      const desc = typology_name;
+      const score = { threshold, rules, expression };
+
+      setLoading(true);
+
+      // 1. Check if typology already exists
+      // Step 1: Check if typology exists
+		try {
+		  console.log("Checking if typology exists:", name);
+		  const existingTypologyRes = await Api.get(`/typology/name/${encodeURIComponent(name)}`);
+		  console.log("Typology exists with ID:", existingTypologyRes?.data?._id);
+		  if (existingTypologyRes?.data?._id) {
+		    showErrorModal(`A typology with the name "${name}" already exists.`);
+		    setLoading(false);
+		    return;
+		  }
+		} catch (err: any) {
+		  if (err?.response?.status !== 404) {
+			  console.error("Error during typology existence check:", err.response?.data || err.message);
+			  showErrorModal(err?.response?.data?.message || "Error checking typology existence.");
+			  setLoading(false);
+			  return;
+			}
+
+		  console.log("Typology does not exist. Proceeding...");
+		}
+
+
+      // 2. Resolve rule IDs
+      const ruleNames = [...new Set(rules.map((r: any) => r.id.split('@')[0]))];
+      const rules_rule_configs: { ruleId: string; ruleConfigId: string[] }[] = [];
+
+      for (const ruleName of ruleNames) {
+		  let ruleId: string | null = null;
+		  console.log("Processing rule:", ruleName);
+
+		  try {
+		    const res = await Api.get(`/rule/${encodeURIComponent(ruleName)}`);
+		    ruleId = res?.data?._id || null;
+		    console.log(`Rule "${ruleName}" exists with ID: ${ruleId}`);
+		  } catch (err) {
+		    console.warn(`Rule "${ruleName}" not found. Creating...`);
+		  }
+
+		  // if (!ruleId) {
+		  //   try {
+		  //     const createRes = await Api.post(`/rule`, {
+		  //       name: ruleName,
+		  //       cfg,
+		  //       expression: null,
+		  //       tags: [],
+		  //     });
+		  //     ruleId = createRes?.data?._id;
+		  //     console.log(`Created rule "${ruleName}" with ID: ${ruleId}`);
+		  //   } catch (err) {
+		  //     console.error(`Failed to create rule "${ruleName}":`, err);
+		  //     showErrorModal(`Failed to create rule "${ruleName}".`);
+		  //     setLoading(false);
+		  //     return;
+		  //   }
+		  // }
+		  if (!ruleId) {
+			  try {
+			    const createRes = await Api.post(`/rule`, {
+			      name: ruleName,
+			      cfg,
+			      // dataType: "NUMERIC", // or extract from JSON if dynamic
+			      desc: `Imported via Typology`, // or customize per rule
+			      // source: "USER_CREATED"
+			    });
+
+			    ruleId = createRes?.data?._id;
+			    console.log(`Created rule "${ruleName}" with ID: ${ruleId}`);
+			  } catch (err: any) {
+			    console.error(`Failed to create rule "${ruleName}":`, err?.response?.data || err.message);
+			    showErrorModal(
+			      `Failed to create rule "${ruleName}": ${
+			        err?.response?.data?.message || 'Unknown error'
+			      }`
+			    );
+			    setLoading(false);
+			    return;
+			  }
+			}
+
+
+		  if (!ruleId) {
+		    showErrorModal(`Failed to resolve or create rule "${ruleName}".`);
+		    setLoading(false);
+		    return;
+		  }
+
+		  rules_rule_configs.push({
+		    ruleId,
+		    ruleConfigId: [],
+		  });
+		}
+
+
+      // 3. Create the typology
+      const payload = {
+        name,
+        cfg,
+        desc,
+        typologyCategoryUUID: [],
+        rules_rule_configs,
+        referenceId: null,
+        // score,
+      };
+
+      console.log("Creating typology with payload:", payload);
+
+		await Api.post("/typology", payload);
+
+		console.log(`Typology "${name}" created successfully.`);
+
+
+      setLoading(false);
+      showSuccessModal(`Typology "${name}" imported successfully.`);
+    } catch (err: any) {
+      console.error("Typology Import Error:", err);
+      setLoading(false);
+      showErrorModal(err?.response?.data?.message || "Failed to import typology.");
+    }
+    reader.onerror = (err) => {
+	  console.error("FileReader failed:", err);
+	  showErrorModal("Could not read the file.");
+	};
+
+  };
+
+  reader.readAsText(file);
+  return false;
+};
+
+const showErrorModal = (content: string) => {
+  setModalMessage(content);
+  setIsErrorModalVisible(true);
+};
+
+const showSuccessModal = (content: string) => {
+  setModalMessage(content);
+  setRuleCreated(true);
+  setIsModalVisible(true);
+};
+
+
+
+  // const showErrorModal = (content: string) => {
+  //   setModalMessage(content);
+  //   setIsErrorModalVisible(true);
+  // };
+
+  
+  const checkForExistingTypology = async (fileContent: any): Promise<{ exists: boolean; id?: string; version?: string }> => {
+    try {
+      const typology = fileContent.typology;
+      const typologyName = String(typology?.name || '').trim();
+
+      if (!typologyName) {
+        throw new Error('Invalid typology name.');
+      }
+
+      if (!typology?.cfg) {
+        throw new Error('Invalid typology config.');
+      }
+
+      const response = await Api.get(`/typology/name/${encodeURIComponent(typologyName)}`);
+
+      if (response.data && response.data._key) {
+        return {
+          exists: true,
+          id: response.data._id,
+          version: response.data.cfg,
+        };
+      }
+
+      return { exists: false };
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        return { exists: false }; // Not found = proceed
+      }
+
+      console.error('Error checking for existing typology:', error);
+      throw new Error(error?.response?.data?.message || 'Error checking typology');
+    }
+  };
+
+  const handleOk = () => {
+	  setIsModalVisible(false);
+	  setRuleCreated(false);
+	  setModalMessage(null);
+	};
+
+
+
+  if (!canImportRule) {
+    return <AccessDeniedPage />;
+  }
+
+  return (
+  <div className="import-rule-config">
+    <h1>{t('importTypologyPage.ImportRuleConfigTitle')}</h1>
+
+    <Dragger beforeUpload={handleFileUpload} showUploadList={false}>
+      <p className="ant-upload-drag-icon">
+        <InboxOutlined />
+      </p>
+      <p className="ant-upload-text">{t('importTypologyPage.uploadPrompt')}</p>
+      <p className="ant-upload-hint">{t('importTypologyPage.uploadHint')}</p>
+    </Dragger>
+
+    {loading && <Spin size="large" />}
+
+    <Modal
+      title={t('importTypologyPage.ruleCreatedSuccess')}
+      open={isModalVisible && ruleCreated}
+      onCancel={handleOk}
+      footer={[
+        <Button key="ok" type="primary" style={lightBlueButtonStyle} onClick={handleOk}>
+          {t('importTypologyPage.OK')}
+        </Button>,
+      ]}
+    >
+      <p>{modalMessage}</p>
+    </Modal>
+  </div>
+);
+};
+
+export default ImportTypology;
+
+

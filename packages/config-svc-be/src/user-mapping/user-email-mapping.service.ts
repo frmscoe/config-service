@@ -61,4 +61,24 @@ export class UserEmailMappingService {
       return null; // Return null on error
     }
   }
+
+  /**
+   * Validates the format of an email address.
+   */
+  validateEmailFormat(email: string): boolean {
+    if (!email) return false;
+
+    // Reject if email has leading/trailing spaces
+    if (email !== email.trim()) return false;
+
+    // Reject consecutive dots or commas
+    if (email.includes('..') || email.includes(',') || /\s/.test(email)) return false;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+
+
+
 }

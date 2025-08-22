@@ -24,3 +24,16 @@ export const transitionTypologyState = (id: string, newState: StateEnum) => {
     // If Api's baseURL is '/api/typology/', then this becomes '/api/typology/:id/transition'
     return Api.patch<ITypology>(`/${id}/transition`, { state: newState }); // Changed line
 }
+
+
+// Fetch rule metadata by ID (without 'rule/' prefix)
+export const getRuleById = async (id: string) => {
+  const encodedId = encodeURIComponent(id);
+  return Api.get(`/rule/${encodedId}`);
+};
+
+// Fetch rule config metadata by ID (without 'rule_config/' prefix)
+export const getRuleConfigById = async (id: string) => {
+  const encodedId = encodeURIComponent(id);
+  return Api.get(`/rule-config/${encodedId}`);
+};

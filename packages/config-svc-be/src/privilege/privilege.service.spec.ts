@@ -1,74 +1,108 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
-import { Test, TestingModule } from '@nestjs/testing';
-import { PrivilegeService } from './privilege.service';
 import { UnauthorizedException } from '@nestjs/common';
+import { PrivilegeService } from './privilege.service';
 
-// Mock the validateTokenAndClaims function from the auth-lib
+// Mock the auth-lib module
 jest.mock('@tazama-lf/auth-lib', () => ({
   validateTokenAndClaims: jest.fn(),
 }));
 
+// Import the mocked function
 import { validateTokenAndClaims } from '@tazama-lf/auth-lib';
+const mockedValidateTokenAndClaims = validateTokenAndClaims as jest.Mock;
 
 describe('PrivilegeService', () => {
   let service: PrivilegeService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [PrivilegeService],
-    }).compile();
-
-    service = module.get<PrivilegeService>(PrivilegeService);
+  beforeEach(() => {
+    service = new PrivilegeService();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should return valid true if all required privileges are present', async () => {
-    const mockToken = 'mock-token';
-    const requiredPrivileges = ['SECURITY_GET_RULES', 'SECURITY_CREATE_RULE'];
+  describe('validateTokenAndClaims', () => {
+    const mockToken = 'fake-token';
+    const requiredPrivileges = ['PRIV_1', 'PRIV_2'];
 
-    (validateTokenAndClaims as jest.Mock).mockResolvedValue({
-      SECURITY_GET_RULES: true,
-      SECURITY_CREATE_RULE: true,
+    // ACL-003a
+    it('should return valid: true if user has all required privileges', async () => {
+      mockedValidateTokenAndClaims.mockResolvedValue({
+        PRIV_1: true,
+        PRIV_2: true,
+      });
+
+      const result = await service.validateTokenAndClaims(
+        mockToken,
+        requiredPrivileges
+      );
+
+      expect(result.valid).toBe(true);
+      expect(result.result).toEqual({ PRIV_1: true, PRIV_2: true });
     });
 
-    const result = await service.validateTokenAndClaims(mockToken, requiredPrivileges);
+    // ACL-003b
+    it('should return valid: false if user lacks some privileges', async () => {
+      mockedValidateTokenAndClaims.mockResolvedValue({
+        PRIV_1: true,
+        PRIV_2: false,
+      });
 
-    expect(result.valid).toBe(true);
-    expect(result.result).toEqual({
-      SECURITY_GET_RULES: true,
-      SECURITY_CREATE_RULE: true,
+      const result = await service.validateTokenAndClaims(
+        mockToken,
+        requiredPrivileges
+      );
+
+      expect(result.valid).toBe(false);
+      expect(result.result).toEqual({ PRIV_1: true, PRIV_2: false });
+    });
+
+    // ACL-003c
+    it('should throw UnauthorizedException if validation fails', async () => {
+      mockedValidateTokenAndClaims.mockRejectedValue(new Error('Token error'));
+
+      await expect(
+        service.validateTokenAndClaims(mockToken, requiredPrivileges)
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
-  it('should return valid false if not all required privileges are present', async () => {
-    const mockToken = 'mock-token';
-    const requiredPrivileges = ['SECURITY_GET_RULES', 'SECURITY_CREATE_RULE'];
+  describe('getUserPrivileges', () => {
+    const mockToken = 'test-token';
 
-    (validateTokenAndClaims as jest.Mock).mockResolvedValue({
-      SECURITY_GET_RULES: true,
-      SECURITY_CREATE_RULE: false,
+    it('should return an array of granted privileges', async () => {
+      mockedValidateTokenAndClaims.mockResolvedValue({
+        PRIV_VIEW: true,
+        PRIV_EDIT: true,
+        PRIV_DELETE: false,
+      });
+
+      const privileges = await service.getUserPrivileges(mockToken);
+
+      expect(privileges).toEqual(['PRIV_VIEW', 'PRIV_EDIT']);
     });
 
-    const result = await service.validateTokenAndClaims(mockToken, requiredPrivileges);
+    // ACL-004a
+    it('should return an empty array if no privileges granted', async () => {
+      mockedValidateTokenAndClaims.mockResolvedValue({
+        PRIV_VIEW: false,
+        PRIV_EDIT: false,
+      });
 
-    expect(result.valid).toBe(false);
-    expect(result.result).toEqual({
-      SECURITY_GET_RULES: true,
-      SECURITY_CREATE_RULE: false,
+      const privileges = await service.getUserPrivileges(mockToken);
+
+      expect(privileges).toEqual([]);
+    });
+
+    // ACL-004b
+    it('should throw UnauthorizedException if validation fails', async () => {
+      mockedValidateTokenAndClaims.mockRejectedValue(new Error('Token error'));
+
+      await expect(service.getUserPrivileges(mockToken)).rejects.toThrow(
+        UnauthorizedException
+      );
     });
   });
 
-  it('should throw UnauthorizedException if the token is invalid or validation fails', async () => {
-    const mockToken = 'invalid-token';
-    const requiredPrivileges = ['SOME_PRIVILEGE'];
-
-    (validateTokenAndClaims as jest.Mock).mockRejectedValue(new Error('Token validation failed'));
-
-    await expect(service.validateTokenAndClaims(mockToken, requiredPrivileges)).rejects.toThrow(
-      UnauthorizedException
-    );
-  });
 });

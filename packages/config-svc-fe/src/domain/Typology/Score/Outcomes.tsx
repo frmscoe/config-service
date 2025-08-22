@@ -42,17 +42,17 @@ export const Outcomes: React.FunctionComponent<OutComeProps> = ({
 
     
 
-    useEffect(() => {
-        if (!selectedRule) {
-            setOutcomeOptions(outcomes);
-        } else {
-            const filtered = outcomes.filter((o) => {
-                const cleanRuleId = o.ruleId?.split('/')?.pop(); // ← extract raw key
-                return cleanRuleId === selectedRule;
-            });
-            setOutcomeOptions(filtered);
-        }
-    }, [outcomes, selectedRule]);
+    // useEffect(() => {
+    //     if (!selectedRule) {
+    //         setOutcomeOptions(outcomes);
+    //     } else {
+    //         const filtered = outcomes.filter((o) => {
+    //             const cleanRuleId = o.ruleId?.split('/')?.pop(); // ← extract raw key
+    //             return cleanRuleId === selectedRule;
+    //         });
+    //         setOutcomeOptions(filtered);
+    //     }
+    // }, [outcomes, selectedRule]);
 
 
 

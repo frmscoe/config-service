@@ -31,7 +31,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.3.0",
     "@tazama-lf/auth-lib": "^1.0.0",
-    "@tazama-lf/frms-coe-lib": "^5.0.0",
+    "@tazama-lf/frms-coe-lib": "^5.1.1",
     "arangojs": "^8.8.1",
     "axios": "^1.8.1",
     "class-transformer": "^0.5.1",
@@ -89,7 +89,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   },
   "engines": {
     "node": ">=20.10.0"

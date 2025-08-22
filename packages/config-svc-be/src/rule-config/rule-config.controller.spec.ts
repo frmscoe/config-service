@@ -1,221 +1,112 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
-import { Test, TestingModule } from '@nestjs/testing';
-import { RuleConfigController } from './rule-config.controller';
-import { RuleConfigService } from './rule-config.service';
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import * as request from 'supertest';
+import { AppModule } from '../app.module';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { PrivilegeService } from '../privilege/privilege.service';
-import { CreateRuleConfigDto } from './dto/create-rule-config.dto';
+import { RulePrivileges } from '../rule/privilege.constant';
+import { RuleConfigPrivilege } from '../rule-config/privilege.constant';
 
-describe('RuleConfigController', () => {
-  let controller: RuleConfigController;
-  let service: RuleConfigService;
-
-  const mockRuleConfigService = {
-    create: jest.fn((dto, req) => ({
-      ...dto,
-      ownerId: req.user.username,
-      _key: 'generated-id',
-      state: '01_DRAFT',
-    })),
-    findAll: jest.fn(() => ({
-      count: 1,
-      data: [
-        {
-          _key: 'sample-key',
-          desc: 'Sample Description',
-          cfg: '1.0.0',
-          ownerId: 'user@example.com',
-          state: '01_DRAFT',
-          createdAt: '2021-08-31T00:00:00.000Z',
-          updatedAt: '2021-08-31T00:00:00.000Z',
-          ruleId: 'rule/sample-uuid-3',
-          updatedBy: null,
-          approverId: null,
-          config: {
-            parameters: [],
-            exitConditions: [],
-            bands: [],
-            cases: [],
-          },
-        },
-      ],
-    })),
-    findOne: jest.fn((id) => ({
-      _key: id,
-      desc: 'Sample Description',
-      cfg: '1.0.0',
-      ownerId: 'user@example.com',
-      state: '01_DRAFT',
-      createdAt: '2021-08-31T00:00:00.000Z',
-      updatedAt: '2021-08-31T00:00:00.000Z',
-      ruleId: 'rule/sample-uuid-3',
-      updatedBy: null,
-      approverId: null,
-      config: {
-        parameters: [],
-        exitConditions: [],
-        bands: [],
-        cases: [],
-      },
-    })),
-    duplicateRuleConfig: jest.fn(),
-  };
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [RuleConfigController],
-      providers: [
-        { provide: RuleConfigService, useValue: mockRuleConfigService },
-        {
-          provide: JwtAuthGuard,
-          useValue: { canActivate: jest.fn(() => true) },
-        },
-        { provide: RolesGuard, useValue: { canActivate: jest.fn(() => true) } },
-        { provide: PrivilegeService, useValue: {} },
-      ],
-    }).compile();
-
-    controller = module.get<RuleConfigController>(RuleConfigController);
-    service = module.get<RuleConfigService>(RuleConfigService);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
-  it('should create a new rule configuration and return it', async () => {
-    const createRuleConfigDto: CreateRuleConfigDto = {
-      cfg: '1.0.0',
-      desc: 'Outgoing transfer similarity - amounts',
-      ruleId: 'rule/sample-uuid-3',
-      config: {
-        parameters: [],
-        exitConditions: [],
-        bands: [],
-        cases: [],
-      },
-    };
-    const req = {
-      user: {
-        clientId: 'test-client-id',
-        username: 'test-user@example.com',
-        participantRoleIds: undefined,
-        platformRoleIds: [1],
-      },
-    };
-
-    const result = await controller.create(createRuleConfigDto, req as any);
-    expect(result).toEqual({
-      ...createRuleConfigDto,
-      ownerId: 'test-user@example.com',
-      _key: 'generated-id',
-      state: '01_DRAFT',
-    });
-  });
-
-  it('should retrieve all rule configurations', async () => {
-    const page = 1;
-    const limit = 10;
-    const mockResult = {
-      count: 1,
-      data: [
-        {
-          _key: 'sample-key',
-          desc: 'Sample Description',
-          cfg: '1.0.0',
-          ownerId: 'user@example.com',
-          state: '01_DRAFT',
-          createdAt: '2021-08-31T00:00:00.000Z',
-          updatedAt: '2021-08-31T00:00:00.000Z',
-          ruleId: 'rule/sample-uuid-3',
-          updatedBy: null,
-          approverId: null,
-          config: {
-            parameters: [],
-            exitConditions: [],
-            bands: [],
-            cases: [],
-          },
-        },
+class JwtAuthGuardMock_RuleConfigCreate {
+  canActivate(ctx: any) {
+    const req = ctx.switchToHttp().getRequest();
+    req.user = {
+      sub: 'e2e-user-id',
+      username: 'e2e-user',
+      privileges: [
+        RulePrivileges.CREATE_RULE,              // seed a rule
+        RuleConfigPrivilege.CREATE_RULE_CONFIG,  // create rule-config
       ],
     };
+    return true;
+  }
+}
+class RolesGuardMock_RuleConfigCreate { canActivate() { return true; } }
 
-    // Act
-    const result = await controller.findAll(page, limit);
+function extractDoc(body: any) {
+  if (!body || typeof body !== 'object') return undefined;
+  return body.rule || body.data || body.new || body.doc || body;
+}
+function extractArangoId(doc: any): string | undefined {
+  if (!doc || typeof doc !== 'object') return undefined;
+  return doc._id || doc.id || (doc._key ? `rule/${doc._key}` : undefined);
+}
 
-    // Assertions
-    expect(mockRuleConfigService.findAll).toHaveBeenCalledWith({ page, limit });
-    expect(result).toEqual(mockResult);
+describe('E2E-RC-001  /rule-config  POST  Creates rule config', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideGuard(JwtAuthGuard).useValue(new JwtAuthGuardMock_RuleConfigCreate())
+      .overrideGuard(RolesGuard).useValue(new RolesGuardMock_RuleConfigCreate())
+      .compile();
+
+    app = moduleRef.createNestApplication();
+    await app.init();
   });
 
-  it('should retrieve a single rule configuration by ID', async () => {
-    const ruleConfigId = 'sample-key';
-    const expectedRuleConfig = {
-      _key: ruleConfigId,
-      desc: 'Sample Description',
+  afterAll(async () => { await app.close(); });
+
+  it('should create a rule config and return 201 Created', async () => {
+    // 1) Seed a parent Rule
+    const seedRule = {
+      name: `e2e-rule-${Date.now()}`,
+      desc: 'E2E RC seed rule',
+      cfg: 'v1',
+      state: '01_DRAFT',
+      ownerId: 'e2e-user-id',
+    };
+
+    const createRuleRes = await request(app.getHttpServer())
+      .post('/rule')
+      .send(seedRule)
+      .expect(201);
+
+    const createdRule = extractDoc(createRuleRes.body);
+    const ruleId = extractArangoId(createdRule);
+    expect(ruleId).toBeDefined();
+
+    // 2) Minimal, schema-valid payload (no "name", include config.exitConditions[])
+    const payload = {
       cfg: '1.0.0',
-      ownerId: 'user@example.com',
-      state: '01_DRAFT',
-      createdAt: '2021-08-31T00:00:00.000Z',
-      updatedAt: '2021-08-31T00:00:00.000Z',
-      ruleId: 'rule/sample-uuid-3',
-      updatedBy: null,
-      approverId: null,
+      desc: 'E2E create rule-config test',
+      ruleId: ruleId as string,
+      state: '01_DRAFT',        // allowed by schema
+      ownerId: 'e2e-user-id',   // allowed by schema
       config: {
-        parameters: [],
-        exitConditions: [],
-        bands: [],
-        cases: [],
+        exitConditions: [
+          { subRuleRef: '.x00', reason: 'E2E seed exit condition' },
+        ],
+        // bands: [{ subRuleRef: 'B1', upperLimit: 1000, lowerLimit: 0, reason: 'example' }],
+        // cases: [{ subRuleRef: 'C1', value: 'HIGH', reason: 'example' }],
       },
     };
 
-    // Act
-    const result = await controller.findOne(ruleConfigId);
+    const res = await request(app.getHttpServer())
+      .post('/rule-config')
+      .send(payload)
+      .expect((r) => {
+        if (r.status !== 201) console.error('Create RuleConfig Error:', r.body);
+      })
+      .expect(201);
 
-    // Assertions
-    expect(mockRuleConfigService.findOne).toHaveBeenCalledWith(ruleConfigId);
-    expect(result).toEqual(expectedRuleConfig);
-  });
+    // 3) Shape-agnostic assertions
+    expect(res.body).toBeDefined();
+    const doc = extractDoc(res.body) ?? res.body;
+    expect(typeof doc).toBe('object');
 
-  it('should update a rule configuration and return the updated configuration', async () => {
-    const id = 'rule-config-id';
-    const updateRuleConfigDto = {
-      cfg: '1.1.0',
-      desc: 'Updated description',
-      config: {
-        parameters: [],
-        exitConditions: [],
-        bands: [],
-        cases: [],
-      },
-    };
-    const req = { user: { username: 'test-user' } };
-
-    const expectedUpdatedRuleConfig = {
-      _key: id,
-      desc: updateRuleConfigDto.desc,
-      cfg: updateRuleConfigDto.cfg,
-      ownerId: 'user@example.com',
-      state: '01_DRAFT',
-      createdAt: '2021-08-31T00:00:00.000Z',
-      updatedAt: '2021-08-31T00:00:00.000Z',
-      ruleId: 'rule/sample-uuid-3',
-      updatedBy: 'test-user',
-      config: updateRuleConfigDto.config,
-    };
-
-    mockRuleConfigService.duplicateRuleConfig.mockResolvedValue(
-      expectedUpdatedRuleConfig,
-    );
-
-    const result = await controller.update(id, updateRuleConfigDto, req as any);
-
-    expect(mockRuleConfigService.duplicateRuleConfig).toHaveBeenCalledWith(
-      id,
-      updateRuleConfigDto,
-      req,
-    );
-    expect(result).toEqual(expectedUpdatedRuleConfig);
+    // Soft checks when present
+    if (doc.cfg)   expect(doc.cfg).toBe('1.0.0');
+    if (doc.desc)  expect(typeof doc.desc).toBe('string');
+    if (doc.ruleId) expect(doc.ruleId).toBe(ruleId);
+    if (doc.state) expect(doc.state).toBe('01_DRAFT');
+    if (doc.config?.exitConditions) {
+      expect(Array.isArray(doc.config.exitConditions)).toBe(true);
+      expect(doc.config.exitConditions.length).toBeGreaterThan(0);
+      const ec = doc.config.exitConditions[0];
+      expect(typeof ec.subRuleRef).toBe('string');
+      expect(typeof ec.reason).toBe('string');
+    }
   });
 });

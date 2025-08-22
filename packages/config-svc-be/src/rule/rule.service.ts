@@ -27,6 +27,16 @@ export class RuleService {
     const now = new Date().toISOString(); // Get current timestamp
     const username = req['user'].username; // Get username from request
 
+    // Check for existing rule with same name and cfg
+    const existing = await collection.firstExample({
+      name: createRuleDto.name,
+      cfg: createRuleDto.cfg,
+    }).catch(() => null); // Avoid crash if none exists
+
+    if (existing) {
+      throw new BadRequestException('Rule already exists');
+    }
+
     const newRule = {
       ...createRuleDto,
       ownerId: username,
@@ -383,5 +393,62 @@ export class RuleService {
       throw new BadRequestException(e.message);
     }
   }
+
+  /**
+   * Parses a rule identifier of the format "ruleId@version".
+   * @param compositeId - The composite ID string
+   * @returns An object with ruleId and version
+   */
+  parseRuleId(compositeId: string): { ruleId: string; version: string } {
+    if (!compositeId.includes('@')) {
+      throw new BadRequestException('Invalid composite rule ID format');
+    }
+
+    const [ruleId, version] = compositeId.split('@');
+
+    if (!ruleId || !version) {
+      throw new BadRequestException('Both rule ID and version must be present');
+    }
+
+    return { ruleId, version };
+  }
+
+
+  /**
+   * Bumps the version string (e.g., "1.2.3") by incrementing minor or patch version.
+   * @param currentVersion - The current version string
+   * @param level - "minor" or "patch"
+   */
+  bumpVersion(currentVersion: string, level: 'minor' | 'patch'): string {
+    const parts = currentVersion.split('.').map(Number);
+    if (parts.length !== 3) {
+      throw new BadRequestException(`Invalid version format: ${currentVersion}`);
+    }
+
+    if (level === 'minor') {
+      parts[1] += 1; // bump minor
+      parts[2] = 0;  // reset patch
+    } else if (level === 'patch') {
+      parts[2] += 1;
+    } else {
+      throw new BadRequestException(`Unsupported bump level: ${level}`);
+    }
+
+    return parts.join('.');
+  }
+
+  /**
+   * Validates whether the provided ID is a valid UUID.
+   * @param id - UUID string
+   */
+  validateRuleUUID(id: string): void {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+    if (!uuidRegex.test(id)) {
+      throw new BadRequestException(`Invalid UUID format: ${id}`);
+    }
+  }
+
 
 }

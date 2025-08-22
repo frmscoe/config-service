@@ -4,7 +4,7 @@ import { Button, Descriptions, Space, Card, Alert, message, Typography } from 'a
 import { useRouter } from 'next/router';
 import { useCommonTranslations } from '~/hooks';
 import usePrivileges from '~/hooks/usePrivileges';
-import { transitionTypologyState } from './service'; // Correct service import
+import { transitionTypologyState, getRuleById, getRuleConfigById } from './service'; // Correct service import
 import { ITypology } from '../types'; // Correct ITypology import from shared types
 import { StateEnum } from '../types'; // Correct StateEnum import from shared types
 import { canTransition } from '../../../../machine/guards'; // Correct guards path
@@ -27,17 +27,107 @@ export const ReviewTypology: React.FunctionComponent<ReviewTypologyProps> = ({ t
     const { privileges } = usePrivileges();
     const [username, setUsername] = useState<string>('');
 
+    const [ruleDetailsMap, setRuleDetailsMap] = useState<Record<string, { name: string; cfg: string }>>({});
+    const [ruleConfigDetailsMap, setRuleConfigDetailsMap] = useState<Record<string, { name: string; cfg: string }>>({});
+
+
     useEffect(() => {
       const stored = localStorage.getItem('config_svc_username');
       if (stored) setUsername(stored.toLowerCase());
     }, []);
 
+    useEffect(() => {
+      const fetchRuleDetails = async () => {
+        const newRuleDetails: Record<string, { name: string; cfg: string }> = {};
+        const newRuleConfigDetails: Record<string, { name: string; cfg: string }> = {};
+
+        const seenRules = new Set();
+        const seenConfigs = new Set();
+
+        for (const item of typology.rules_rule_configs || []) {
+          const ruleId = item.ruleId?.replace('rule/', '');
+          if (ruleId && !seenRules.has(ruleId)) {
+            seenRules.add(ruleId);
+            try {
+              const { data } = await getRuleById(ruleId);
+              newRuleDetails[ruleId] = { name: data.name, cfg: data.cfg };
+            } catch (e) {
+              console.warn(`Failed to fetch rule ${ruleId}`);
+            }
+          }
+
+          for (const configIdRaw of item.ruleConfigId || []) {
+            const configId = configIdRaw?.replace('rule_config/', '');
+            if (configId && !seenConfigs.has(configId)) {
+              seenConfigs.add(configId);
+              try {
+                const { data } = await getRuleConfigById(configId);
+                newRuleConfigDetails[configId] = { name: data.name, cfg: data.cfg };
+              } catch (e) {
+                console.warn(`Failed to fetch rule config ${configId}`);
+              }
+            }
+          }
+        }
+
+        setRuleDetailsMap(newRuleDetails);
+        setRuleConfigDetailsMap(newRuleConfigDetails);
+      };
+
+      if (typology) {
+        fetchRuleDetails();
+      }
+    }, [typology]);
+
     
+
+    // const handleTransition = useCallback(async (eventType: string) => {
+    //   if (!typology || !typology._id || !typology.state) {
+    //     console.error("Missing typology ID or state.");
+    //     message.error(commonTranslations('typologyReviewPage.missingTypologyIdError') || "Typology ID and state are required.");
+    //     return;
+    //   }
+
+    //   // Dynamically get the next state from the state machine
+    //   const nextState = nextStateMap[typology.state]?.[eventType] as StateEnum | undefined;
+
+    //   if (!nextState) {
+    //     message.error(
+    //       `Invalid transition: ${typology.state} + ${eventType}` ||
+    //       commonTranslations('typologyReviewPage.invalidTransition')
+    //     );
+    //     return;
+    //   }
+
+    //   setIsTransitioning(true);
+    //   try {
+    //     await transitionTypologyState(typology._id, nextState);
+    //     message.success(commonTranslations('typologyReviewPage.transitionSuccess') || 'Transition successful');
+
+    //     if (nextState === StateEnum['90_ABANDONED'] || nextState === StateEnum['91_ARCHIVED']) {
+    //       router.push('/typology'); // redirect on terminal states
+    //     } else {
+    //       fetchTypology(); // refresh the page
+    //     }
+    //   } catch (e: any) {
+    //     console.error('Transition error:', e);
+    //     message.error(e?.response?.data?.message || commonTranslations('typologyReviewPage.transitionError'));
+    //   } finally {
+    //     setIsTransitioning(false);
+    //   }
+    // }, [typology, fetchTypology, commonTranslations]);
 
     const handleTransition = useCallback(async (eventType: string) => {
       if (!typology || !typology._id || !typology.state) {
         console.error("Missing typology ID or state.");
         message.error(commonTranslations('typologyReviewPage.missingTypologyIdError') || "Typology ID and state are required.");
+        return;
+      }
+
+      // ❗️Prevent submission/approval if score is missing
+      const requiresScore = ['SUBMIT_REVIEW', 'APPROVE'];
+      if (requiresScore.includes(eventType) && (!typology.score || !typology.score.rules?.length)) {
+        message.warning("You must score the typology before submitting it for review or approval.");
         return;
       }
 
@@ -69,6 +159,7 @@ export const ReviewTypology: React.FunctionComponent<ReviewTypologyProps> = ({ t
         setIsTransitioning(false);
       }
     }, [typology, fetchTypology, commonTranslations]);
+
 
 
     const { state } = typology;
@@ -162,13 +253,29 @@ export const ReviewTypology: React.FunctionComponent<ReviewTypologyProps> = ({ t
                         typology.rules_rule_configs.map((ruleConfigEntry, index) => (
                             <Descriptions.Item key={index} label={`Rule ${index + 1}`}>
                                 <Space direction="vertical">
-                                    <Typography.Text strong>{commonTranslations('typologyReviewPage.ruleId')}:</Typography.Text> {ruleConfigEntry.ruleId}
+                                    {/*<Typography.Text strong>{commonTranslations('typologyReviewPage.ruleId')}:</Typography.Text> {ruleConfigEntry.ruleId}*/}
+                                    <Typography.Text strong>{commonTranslations('typologyReviewPage.ruleId')}:</Typography.Text>{' '}
+                                    {(() => {
+                                      const ruleId = ruleConfigEntry.ruleId.replace('rule/', '');
+                                      const rule = ruleDetailsMap[ruleId];
+                                      return rule ? `${rule.name} (v${rule.cfg})` : ruleConfigEntry.ruleId;
+                                    })()}
+
                                     {ruleConfigEntry.ruleConfigId && ruleConfigEntry.ruleConfigId.length > 0 && (
                                         <>
                                             <Typography.Text strong>{commonTranslations('typologyReviewPage.ruleConfigs')}:</Typography.Text>
                                             <ul style={{ paddingLeft: '20px' }}>
-                                                {ruleConfigEntry.ruleConfigId.map((configId, cfgIndex) => (
-                                                    <li key={cfgIndex}>{configId}</li>
+                                                {ruleConfigEntry.ruleConfigId.map((configIdRaw, cfgIndex) => (
+                                                    // <li key={cfgIndex}>{configId}</li>
+                                                    <li key={cfgIndex}>
+                                                      {(() => {
+                                                        const configText = 'Rule Config';
+                                                        const configId = configIdRaw.replace('rule_config/', '');
+                                                        const config = ruleConfigDetailsMap[configId];
+                                                        return config ? `${configText} (v${config.cfg})` : configIdRaw;
+                                                      })()}
+                                                    </li>
+
                                                 ))}
                                             </ul>
                                         </>
@@ -181,6 +288,47 @@ export const ReviewTypology: React.FunctionComponent<ReviewTypologyProps> = ({ t
                     )}
                 </Descriptions>
             </Card>
+
+            {typology.score && (
+              <Card title={commonTranslations('typologyReviewPage.scoreTitle') || 'Score'}>
+                {/* Score Table */}
+                <Descriptions bordered column={1}>
+                  <Descriptions.Item label={commonTranslations('typologyReviewPage.ruleScores') || 'Rule Scores'}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ border: '1px solid #ddd', padding: '8px' }}>Rule</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px' }}>Version</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px' }}>Outcome</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px' }}>Score</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {typology.score.rules.map((r, idx) => {
+                          const [ruleName, version] = r.id.split('@');
+                          return (
+                            <tr key={idx}>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{ruleName}</td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{version || r.cfg}</td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{r.ref}</td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{r.true}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </Descriptions.Item>
+
+                  {/* Expression */}
+                  <Descriptions.Item label={commonTranslations('typologyReviewPage.scoreExpression') || 'Expression'}>
+                    {typology.score.expression?.terms
+                      ?.map((term: any) => `${term.id.split('@')[0]}@${term.cfg}`)
+                      .join(` ${typology.score.expression.operator} `)}
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+            )}
+
 
 
             <Space size="middle" style={{ marginTop: 20 }}>

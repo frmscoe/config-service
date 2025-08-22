@@ -46,6 +46,7 @@ const List: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
         }
     }, [searchText, data]);
 
+
     const handleReset = useCallback(
         (clearFilters: () => void) => {
             clearFilters();
@@ -57,42 +58,85 @@ const List: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
 
     const columns: TableColumnsType<ITypology> = useMemo(() => {
         return [
+            // {
+            //     title: commonTranslations('typologyListPage.table.name'),
+            //     dataIndex: 'name',
+            //     showSorterTooltip: { target: 'full-header' },
+            //     sorter: (a: ITypology, b: ITypology) => a.name.localeCompare(b.name),
+            //     filters: uniqueArray(data.map(t => t.name)).map(name => ({ text: name, value: name })),
+            //     onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
+            //     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+            //         <div style={{ padding: 8 }}>
+            //             <Input
+            //                 placeholder={commonTranslations('typologyListPage.table.searchName')}
+            //                 value={selectedKeys[0]}
+            //                 onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            //                 onPressEnter={() => handleSearch(confirm)}
+            //                 style={{ marginBottom: 8, display: 'block' }}
+            //             />
+            //             <Space>
+            //                 <Button
+            //                     type="primary"
+            //                     onClick={() => handleSearch(confirm)}
+            //                     icon={<i className="fa-solid fa-magnifying-glass" />}
+            //                     size="small"
+            //                     style={{ width: 90 }}
+            //                 >
+            //                     {commonTranslations('typologyListPage.search')}
+            //                 </Button>
+            //                 <Button onClick={() => clearFilters && handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+            //                     {commonTranslations('typologyListPage.reset')}
+            //                 </Button>
+            //             </Space>
+            //         </div>
+            //     ),
+            //     filterIcon: (filtered: boolean) => (
+            //         <i className="fa-solid fa-magnifying-glass" style={{ color: filtered ? '#1890ff' : undefined }} />
+            //     ),
+            // },
             {
-                title: commonTranslations('typologyListPage.table.name'),
-                dataIndex: 'name',
-                showSorterTooltip: { target: 'full-header' },
-                sorter: (a: ITypology, b: ITypology) => a.name.localeCompare(b.name),
-                filters: uniqueArray(data.map(t => t.name)).map(name => ({ text: name, value: name })),
-                onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
-                filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-                    <div style={{ padding: 8 }}>
-                        <Input
-                            placeholder={commonTranslations('typologyListPage.table.searchName')}
-                            value={selectedKeys[0]}
-                            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-                            onPressEnter={() => handleSearch(confirm)}
-                            style={{ marginBottom: 8, display: 'block' }}
-                        />
-                        <Space>
-                            <Button
-                                type="primary"
-                                onClick={() => handleSearch(confirm)}
-                                icon={<i className="fa-solid fa-magnifying-glass" />}
-                                size="small"
-                                style={{ width: 90 }}
-                            >
-                                {commonTranslations('typologyListPage.search')}
-                            </Button>
-                            <Button onClick={() => clearFilters && handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-                                {commonTranslations('typologyListPage.reset')}
-                            </Button>
-                        </Space>
-                    </div>
-                ),
-                filterIcon: (filtered: boolean) => (
-                    <i className="fa-solid fa-magnifying-glass" style={{ color: filtered ? '#1890ff' : undefined }} />
-                ),
+              title: commonTranslations('typologyListPage.table.name'),
+              dataIndex: 'name',
+              sorter: (a: ITypology, b: ITypology) => a.name.localeCompare(b.name),
+              filterDropdown: ({ confirm, clearFilters }) => (
+                <div style={{ padding: 8 }}>
+                  <Input
+                    placeholder={commonTranslations('typologyListPage.table.searchName')}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onPressEnter={() => {
+                      handleSearch(confirm);
+                    }}
+                    style={{ marginBottom: 8, display: 'block' }}
+                  />
+                  <Space>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        handleSearch(confirm);
+                      }}
+                      size="small"
+                      style={{ backgroundColor: '#2358BE', color: '#fff', border: 'none' }}
+                    >
+                      {commonTranslations('typologyListPage.search')}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setSearchText('');
+                        clearFilters();
+                        confirm();
+                        setTypologies(data);
+                      }}
+                      size="small"
+                    >
+                      {commonTranslations('typologyListPage.reset')}
+                    </Button>
+                  </Space>
+                </div>
+              ),
+              // No need for filterIcon — let Ant Design use its default
             },
+
             {
                 title: commonTranslations('typologyListPage.table.version'),
                 dataIndex: 'cfg',
@@ -101,47 +145,91 @@ const List: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                 filters: uniqueArray(data.map(t => t.cfg)).map(cfg => ({ text: cfg, value: cfg })),
                 onFilter: (value, record) => record.cfg.toLowerCase().includes(value as string),
             },
+            // {
+            //     title: commonTranslations('typologyListPage.table.description'),
+            //     dataIndex: 'desc',
+            //     defaultSortOrder: 'descend',
+            //     sorter: (a: ITypology, b: ITypology) => a.desc.localeCompare(b.desc),
+            //     onFilter: (value, record) => record.desc.toLowerCase().includes(value as string),
+            //     filterDropdown: ({ confirm, clearFilters }: any) => (
+            //         <div style={{ padding: 8 }}>
+            //             <Input
+            //                 placeholder={commonTranslations('typologyListPage.searchDescription')}
+            //                 value={searchText}
+            //                 onChange={(e) => setSearchText(e.target.value)}
+            //                 onPressEnter={() => handleSearch(confirm)}
+            //                 className={styles['input-description-search']}
+            //             />
+            //             <Space>
+            //                 <Button
+            //                     type="primary"
+            //                     onClick={() => handleSearch(confirm)}
+            //                     size="small"
+            //                     className={styles['reset-button']}
+            //                 >
+            //                     {commonTranslations('typologyListPage.search')}
+            //                 </Button>
+            //                 <Button
+            //                     onClick={() => {
+            //                         setSearchText('');
+            //                         clearFilters();
+            //                         confirm();
+            //                         setTypologies(data);
+            //                     }}
+            //                     size="small" style={{ width: 90 }}>
+            //                     {commonTranslations('typologyListPage.reset')}
+            //                 </Button>
+            //             </Space>
+            //         </div>
+            //     ),
+            //     filterIcon: (filtered: boolean) => (
+            //         <i className="fa-solid fa-magnifying-glass" style={{ color: filtered ? '#1890ff' : undefined }} />
+            //     ),
+            // },
             {
-                title: commonTranslations('typologyListPage.table.description'),
-                dataIndex: 'desc',
-                defaultSortOrder: 'descend',
-                sorter: (a: ITypology, b: ITypology) => a.desc.localeCompare(b.desc),
-                onFilter: (value, record) => record.desc.toLowerCase().includes(value as string),
-                filterDropdown: ({ confirm, clearFilters }: any) => (
-                    <div style={{ padding: 8 }}>
-                        <Input
-                            placeholder={commonTranslations('typologyListPage.searchDescription')}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            onPressEnter={() => handleSearch(confirm)}
-                            className={styles['input-description-search']}
-                        />
-                        <Space>
-                            <Button
-                                type="primary"
-                                onClick={() => handleSearch(confirm)}
-                                size="small"
-                                className={styles['reset-button']}
-                            >
-                                {commonTranslations('typologyListPage.search')}
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    setSearchText('');
-                                    clearFilters();
-                                    confirm();
-                                    setTypologies(data);
-                                }}
-                                size="small" style={{ width: 90 }}>
-                                {commonTranslations('typologyListPage.reset')}
-                            </Button>
-                        </Space>
-                    </div>
-                ),
-                filterIcon: (filtered: boolean) => (
-                    <i className="fa-solid fa-magnifying-glass" style={{ color: filtered ? '#1890ff' : undefined }} />
-                ),
+              title: commonTranslations('typologyListPage.table.description'),
+              dataIndex: 'desc',
+              defaultSortOrder: 'descend',
+              sorter: (a: ITypology, b: ITypology) => a.desc.localeCompare(b.desc),
+              filterDropdown: ({ confirm, clearFilters }) => (
+                <div style={{ padding: 8 }}>
+                  <Input
+                    placeholder={commonTranslations('typologyListPage.searchDescription')}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onPressEnter={() => {
+                      handleSearch(confirm);
+                    }}
+                    style={{ marginBottom: 8, display: 'block' }}
+                  />
+                  <Space>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        handleSearch(confirm);
+                      }}
+                      size="small"
+                      style={{ backgroundColor: '#2358BE', color: '#fff', border: 'none' }}
+                    >
+                      {commonTranslations('typologyListPage.search')}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setSearchText('');
+                        clearFilters();
+                        confirm();
+                        setTypologies(data);
+                      }}
+                      size="small"
+                    >
+                      {commonTranslations('typologyListPage.reset')}
+                    </Button>
+                  </Space>
+                </div>
+              ),
+              // Removed filterIcon so Ant Design shows the default
             },
+
             {
                 title: commonTranslations('typologyListPage.table.state'),
                 dataIndex: 'state',
@@ -200,7 +288,7 @@ const List: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                         
                         
 
-                        {canUpdateTypology &&
+                        {/*{canUpdateTypology &&
                           record.ownerId?.toLowerCase() ===
                             (typeof window !== 'undefined'
                               ? localStorage.getItem('config_svc_username')?.toLowerCase()
@@ -208,7 +296,18 @@ const List: React.FunctionComponent<Props> = ({ loading, error, retry, data, tot
                             <Link href={`/typology/${record._key}/score`} className='text-blue-500'>
                                 Score
                             </Link>
+                        )}*/}
+                        {canUpdateTypology &&
+                          record.ownerId?.toLowerCase() ===
+                            (typeof window !== 'undefined'
+                              ? localStorage.getItem('config_svc_username')?.toLowerCase()
+                              : '') &&
+                          record.state !== '20_APPROVED' && (
+                            <Link href={`/typology/${record._key}/score`} className='text-blue-500'>
+                                Score
+                            </Link>
                         )}
+
 
 
                     </Space>

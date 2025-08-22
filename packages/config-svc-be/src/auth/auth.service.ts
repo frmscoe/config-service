@@ -143,4 +143,23 @@ export class AuthService {
       ...user, // This spread ensures other properties from JwtAuthGuard's 'user' are included if AuthDto supports them
     } as AuthDto; // Type assertion as AuthDto might have more or less strict properties
   }
+
+  
+
+  async validateUser(username: string, password: string): Promise<{ username: string } | null> {
+    try {
+      const response = await this.login({
+        username,
+        password,
+        client_id: 'internal', // Provide default or mock values
+        client_secret: 'internal_secret',
+        grant_type: 'password',
+      });
+      return { username };
+    } catch {
+      return null;
+    }
+  }
+
+
 }

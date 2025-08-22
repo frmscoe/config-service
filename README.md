@@ -1,4 +1,4 @@
-#<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 # TMS Configuration Service Documentation [Draft]
 
 ## Introduction  
@@ -677,6 +677,8 @@ PORT=4000 # this specifies the port the frontend is running
 NEXT_PUBLIC_CONFIG_SVC_BE_URL=http://localhost:3007 # this is the config_svc_be URL
 NEXT_PUBLIC_SECURITY_BC_CLIENT_ID=auth-lib-client # this is the keycloak client ID
 NEXT_PUBLIC_SECURITY_BC_SECRET=auth-lib-client-test-secret # this is the keycloak client secret
+
+NEXT_PUBLIC_SECURITY_FETCH_LIMIT=100 #this is for setting the total number of artifates that are fetched
 ```
 
 > Warning :exclamation: You must set your IP instead of local host, if you are running a remote machine.

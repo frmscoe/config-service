@@ -86,6 +86,17 @@ export class NetworkMapController {
     return this.networkMapService.findOne(id);
   }
 
+  @Get('name/:name')
+  @Roles(NetworkMapPrivilege.GET_NETWORK_MAP)
+  @ApiOperation({ summary: 'Retrieve a network map by Name' })
+  @ApiOkResponse({
+    description: 'The network map has been successfully retrieved.',
+    type: NetworkMap,
+  })
+  findOneByName(@Param('name') name: string): Promise<NetworkMap> {
+    return this.networkMapService.findOneByName(name);
+  }
+
 
   @Patch(':id')
   @Roles(NetworkMapPrivilege.UPDATE_NETWORK_MAP)

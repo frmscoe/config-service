@@ -7,7 +7,10 @@ export const getSidebarItems = (commonTranslations: TFunction) => [
   {
     text: commonTranslations("typologies"),
     icon: "image",
-    children: [{ text: commonTranslations("typologyDetails"), icon: "image", url: "/typology" }],
+    children: [
+      { text: commonTranslations("typologyDetails"), icon: "image", url: "/typology" },
+      { text: commonTranslations("import"), icon: "image", url: "/typology/import" },
+    ],
   },
   {
     text: commonTranslations("rules"),
@@ -19,7 +22,13 @@ export const getSidebarItems = (commonTranslations: TFunction) => [
     ],
   },
   // { text: commonTranslations("ruleConfig"), icon: 'person', url: '/rule-config' },
-  { text: commonTranslations("networkMap"), icon: "setting", url: "/network-map" },
+  { text: commonTranslations("networkMap"), 
+    icon: "setting",
+    children: [
+      { text: commonTranslations("networkMapDetails"), icon: "setting", url: "/network-map" },
+      { text: commonTranslations("import"), icon: "image", url: "/network-map/import" },
+    ], 
+  },
   { text: commonTranslations("deployment"), icon: "setting", url: "/deployment" },
   { text: commonTranslations("settings"), icon: "setting", url: "/settings" },
 ];
