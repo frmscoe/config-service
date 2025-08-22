@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 
+// SPDX-License-Identifier: Apache-2.0
 import { Test, TestingModule } from '@nestjs/testing';
 import { RuleConfigService } from './rule-config.service';
 import { ArangoDatabaseService } from '../arango-database/arango-database.service';

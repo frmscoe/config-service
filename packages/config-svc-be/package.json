@@ -2,7 +2,7 @@
   "name": "config-svc-be",
   "version": "0.0.1",
   "description": "",
-  "author": "Ome Chukwuemeka",
+  "author": "Ome Chukwuemeka <ome.chukwuemeka@lextego.com",
   "private": true,
   "lextego": {
     "publish_to_dockerhub": true
@@ -31,7 +31,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.3.0",
     "@tazama-lf/auth-lib": "^1.0.0",
-    "@tazama-lf/frms-coe-lib": "^5.1.1",
+    "@tazama-lf/frms-coe-lib": "^5.0.0",
     "arangojs": "^8.8.1",
     "axios": "^1.8.1",
     "class-transformer": "^0.5.1",
