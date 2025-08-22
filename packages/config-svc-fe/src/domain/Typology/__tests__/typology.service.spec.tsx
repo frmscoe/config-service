@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 
+// SPDX-License-Identifier: Apache-2.0
 // EDGE-012 — Typology: '+' operator appears when scores are dragged to canvas
 
 // silence noisy logs just for this file

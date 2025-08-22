@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0 
+// SPDX-License-Identifier: Apache-2.0
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { Tabs,Table, Button, Space, message } from "antd";
