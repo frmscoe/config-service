@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Set update schedule for GitHub Actions and npm dependencies
+version: 2
+updates:
+  # Update GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Update npm dependencies for config-svc-be
+  - package-ecosystem: "npm"
+    directory: "/packages/config-svc-be"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+    assignees:
+      - "scott45"
+
+  # Update npm dependencies for config-svc-fe
+  - package-ecosystem: "npm"
+    directory: "/packages/config-svc-fe"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "frontend"
+    assignees:
+      - "scott45"
