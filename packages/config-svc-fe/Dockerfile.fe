@@ -1,0 +1,36 @@
+# Use Node.js 20 as the base image
+FROM node:20
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY packages/config-svc-fe/package*.json ./
+
+# Install nvm and set Node.js version
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
+    && export NVM_DIR="$HOME/.nvm" \
+    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+    && nvm install 20 \
+    && nvm use 20
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the frontend code
+COPY packages/config-svc-fe ./
+
+# Generate SSL certificates in certificates directory
+RUN openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 \
+    -keyout certificates/localhost.key \
+    -out certificates/localhost.crt \
+    -subj "/CN=localhost"
+
+# Copy .env file
+COPY packages/config-svc-fe/.env ./
+
+# Expose the frontend port
+EXPOSE 4000
+
+# Start the development server
+CMD ["npm", "run", "dev"]
