@@ -7,7 +7,7 @@ import { Api } from "~/client"
  * @param limit 
  * @returns {data: any[], count: number}
  */
-export const getRules = ({page = 1, limit = 10 }) => {
+export const getRules = ({page = 1, limit = process.env.NEXT_PUBLIC_SECURITY_FETCH_LIMIT }) => {
     return Api.get('/rule', {
         params: {
             page,

@@ -17,6 +17,7 @@ export const deCommon = {
   dashboard: "Armaturenbrett",
   typologyBuilder: "Typologie-Builder",
   networkMap: "Netzwerkkarte",
+  networkMapDetails: "Netzwerkplan-Details",
   deployment: "Export",
   logout: "Ausloggen",
   create: "Erstellen",
@@ -522,7 +523,11 @@ export const deCommon = {
     "updatedAt": "Aktualisiert Am",
     "updatedBy": "Aktualisiert Von",
     "rulesTitle": "Regeln",
-    "ruleId": "Regel-ID"
+    "ruleId": "Regel-ID",
+    "ruleConfigs": "Regelkonfiguration",
+    "scoreTitle": "Typologie-Bewertung",
+    "ruleScores": "Regelbewertungen",
+    "scoreExpression": "Ausdruck",
   },
 
   networkMapReviewPage: {

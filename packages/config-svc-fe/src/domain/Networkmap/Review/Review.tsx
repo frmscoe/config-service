@@ -34,6 +34,42 @@ export const Review: React.FunctionComponent<ReviewNetworkMapProps> = ({ network
       if (stored) setUsername(stored.toLowerCase());
     }, []);
 
+    // const handleTransition = useCallback(async (eventType: string) => {
+    //   if (!networkMap || !networkMap._id || !networkMap.state) {
+    //     console.error("Missing networkMap ID or state.");
+    //     message.error(commonTranslations('networkMapReviewPage.missingNetworkMapIdError') || "NetworkMap ID and state are required.");
+    //     return;
+    //   }
+
+    //   // Dynamically get the next state from the state machine
+    //   const nextState = nextStateMap[networkMap.state]?.[eventType] as StateEnum | undefined;
+
+    //   if (!nextState) {
+    //     message.error(
+    //       `Invalid transition: ${networkMap.state} + ${eventType}` ||
+    //       commonTranslations('networkMapReviewPage.invalidTransition')
+    //     );
+    //     return;
+    //   }
+
+    //   setIsTransitioning(true);
+    //   try {
+    //     await transitionNetworkMapState(networkMap._id, nextState);
+    //     message.success(commonTranslations('networkMapReviewPage.transitionSuccess') || 'Transition successful');
+
+    //     if (nextState === StateEnum['90_ABANDONED'] || nextState === StateEnum['91_ARCHIVED']) {
+    //       router.push('/network-map'); // redirect on terminal states
+    //     } else {
+    //       fetchNetworkMap(); // refresh the page
+    //     }
+    //   } catch (e: any) {
+    //     console.error('Transition error:', e);
+    //     message.error(e?.response?.data?.message || commonTranslations('networkMapReviewPage.transitionError'));
+    //   } finally {
+    //     setIsTransitioning(false);
+    //   }
+    // }, [networkMap, fetchNetworkMap, commonTranslations]);
+
     const handleTransition = useCallback(async (eventType: string) => {
       if (!networkMap || !networkMap._id || !networkMap.state) {
         console.error("Missing networkMap ID or state.");
@@ -41,7 +77,6 @@ export const Review: React.FunctionComponent<ReviewNetworkMapProps> = ({ network
         return;
       }
 
-      // Dynamically get the next state from the state machine
       const nextState = nextStateMap[networkMap.state]?.[eventType] as StateEnum | undefined;
 
       if (!nextState) {
@@ -56,12 +91,9 @@ export const Review: React.FunctionComponent<ReviewNetworkMapProps> = ({ network
       try {
         await transitionNetworkMapState(networkMap._id, nextState);
         message.success(commonTranslations('networkMapReviewPage.transitionSuccess') || 'Transition successful');
-
-        if (nextState === StateEnum['90_ABANDONED'] || nextState === StateEnum['91_ARCHIVED']) {
-          router.push('/network-map'); // redirect on terminal states
-        } else {
-          fetchNetworkMap(); // refresh the page
-        }
+        
+        // Always redirect after successful transition
+        router.push('/network-map');
       } catch (e: any) {
         console.error('Transition error:', e);
         message.error(e?.response?.data?.message || commonTranslations('networkMapReviewPage.transitionError'));
@@ -69,6 +101,7 @@ export const Review: React.FunctionComponent<ReviewNetworkMapProps> = ({ network
         setIsTransitioning(false);
       }
     }, [networkMap, fetchNetworkMap, commonTranslations]);
+
 
 
     const { state } = networkMap;
@@ -200,7 +233,7 @@ export const Review: React.FunctionComponent<ReviewNetworkMapProps> = ({ network
                           <Typography.Text strong>CFG:</Typography.Text> {t.cfg}
                           <Typography.Text strong>State:</Typography.Text> {t.state}
                           <Typography.Text strong>Description:</Typography.Text> {t.desc}
-                          {t.rules_rule_configs?.length ? (
+                          {/*{t.rules_rule_configs?.length ? (
                             <>
                               <Typography.Text strong>Rules:</Typography.Text>
                               <ul>
@@ -218,7 +251,33 @@ export const Review: React.FunctionComponent<ReviewNetworkMapProps> = ({ network
                             </>
                           ) : (
                             <Typography.Text>No rules found</Typography.Text>
+                          )}*/}
+                          {t.rulesWithConfigs?.length ? (
+                            <>
+                              <Typography.Text strong>Rules:</Typography.Text>
+                              <ul>
+                                {t.rulesWithConfigs.map((ruleWrapper, ri) => (
+                                  ruleWrapper?.rule ? (
+                                    <li key={ri}>
+                                      <b>{ruleWrapper.rule.name} (cfg: {ruleWrapper.rule.cfg})</b>
+                                      {ruleWrapper.ruleConfigs?.length ? (
+                                        <ul>
+                                          {ruleWrapper.ruleConfigs.map((cfg, cfi) => (
+                                            <li key={cfi}>{cfg.cfg}</li>
+                                          ))}
+                                        </ul>
+                                      ) : (
+                                        <div>No rule configs</div>
+                                      )}
+                                    </li>
+                                  ) : null
+                                ))}
+                              </ul>
+                            </>
+                          ) : (
+                            <Typography.Text>No rules found</Typography.Text>
                           )}
+
                         </Space>
                       </Descriptions.Item>
                     ))

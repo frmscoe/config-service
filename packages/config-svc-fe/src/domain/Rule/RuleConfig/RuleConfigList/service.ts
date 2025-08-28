@@ -8,7 +8,7 @@ import { Api } from "~/client"
  * @param limit 
  * @returns {data: IRuleConfig[], count: number}
  */
-export const getRules = ({page = 1, limit = 10 }) => {
+export const getRules = ({page = 1, limit = process.env.NEXT_PUBLIC_SECURITY_FETCH_LIMIT }) => {
     return Api.get('/rule-config', {
         params: {
             page,
@@ -17,7 +17,7 @@ export const getRules = ({page = 1, limit = 10 }) => {
     });
 }
 
-export const getRulesWithConfigs = ({page = 1, limit = 10 }) => {
+export const getRulesWithConfigs = ({page = 1, limit = process.env.NEXT_PUBLIC_SECURITY_FETCH_LIMIT }) => {
     return Api.get('/rule/rule-config', {
         params: {
             page,

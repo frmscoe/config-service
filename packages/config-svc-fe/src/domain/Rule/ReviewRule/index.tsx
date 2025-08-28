@@ -41,10 +41,12 @@ const ReviewPage = () => {
     fetchRule();
   }, [fetchRule]);
 
-  const canReview = rule && canTransition(privileges, 'RULE', rule.state, 'REVIEW');
+  // const canReview = rule && canTransition(privileges, 'RULE', rule.state, 'REVIEW');
+  const canReview = privileges.includes('SECURITY_GET_RULE');
+  // const canReview = true;
 
 
-  if (rule && !canReview) {
+  if (!canReview) {
     return <AccessDeniedPage />;
   }
 

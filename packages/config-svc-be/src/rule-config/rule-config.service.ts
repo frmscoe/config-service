@@ -40,6 +40,24 @@ export class RuleConfigService {
       );
     }
 
+    // if (
+    //   !createRuleConfigDto.config?.bands?.length &&
+    //   !createRuleConfigDto.config?.cases?.length
+    // ) {
+    //   throw new BadRequestException(
+    //     'Config must contain at least one band or one case',
+    //   );
+    // }
+    const hasBands = Array.isArray(createRuleConfigDto.config?.bands) && createRuleConfigDto.config?.bands.length > 0;
+    const hasCases = Array.isArray(createRuleConfigDto.config?.cases) && createRuleConfigDto.config?.cases.length > 0;
+    const hasExits = Array.isArray(createRuleConfigDto.config?.exitConditions) && createRuleConfigDto.config?.exitConditions.length > 0;
+
+    if (!hasBands && !hasCases && !hasExits) {
+      throw new BadRequestException('Config must contain at least one band, case, or exit condition');
+    }
+
+
+    await this.checkDuplicateConfig(createRuleConfigDto.ruleId, createRuleConfigDto.cfg);
     const generatedKey = uuidv4();
     const newRuleConfig: RuleConfig = {
       _key: generatedKey,
@@ -142,6 +160,25 @@ export class RuleConfigService {
       throw new InternalServerErrorException(e.message);
     }
   }
+
+  async checkDuplicateConfig(ruleId: string, cfg: string): Promise<void> {
+    const db = this.arangoDatabaseService.getDatabase();
+
+    const aql = `
+      FOR rc IN ${RULE_CONFIG_COLLECTION}
+        FILTER rc.ruleId == @ruleId AND rc.cfg == @cfg
+        LIMIT 1
+        RETURN rc
+    `;
+
+    const cursor = await db.query(aql, { ruleId, cfg });
+    const existing = await cursor.next();
+
+    if (existing) {
+      throw new BadRequestException('Configuration already exists');
+    }
+  }
+
 
   // NEW METHOD: For transitioning the state of an existing rule config
   async transitionRuleConfigState(
@@ -292,4 +329,54 @@ export class RuleConfigService {
       throw new BadRequestException(e.message);
     }
   }
+
+  parseRuleConfigId(raw: string): { id: string; version: string } {
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed.id || !parsed.version) {
+        throw new Error('Missing id or version');
+      }
+      return { id: parsed.id, version: parsed.version };
+    } catch (e) {
+      throw new BadRequestException('Invalid rule config reference format');
+    }
+  }
+
+  validateMetadataFields(metadata: Record<string, any>): Record<string, any> {
+    if (!metadata || typeof metadata !== 'object') {
+      throw new BadRequestException('Metadata must be a valid object');
+    }
+
+    const reservedKeys = ['_id', '_key', 'createdAt', 'updatedAt', 'ownerId'];
+
+    for (const key of reservedKeys) {
+      if (key in metadata) {
+        throw new BadRequestException(`Metadata key "${key}" is reserved`);
+      }
+    }
+
+    return metadata;
+  }
+
+  validateRuleConfigJson(json: string): Record<string, any> {
+    let parsed: Record<string, any>;
+
+    try {
+      parsed = JSON.parse(json);
+    } catch (e) {
+      throw new BadRequestException('Invalid JSON format');
+    }
+
+    const hasBands = Array.isArray(parsed.bands) && parsed.bands.length > 0;
+    const hasCases = Array.isArray(parsed.cases) && parsed.cases.length > 0;
+
+    if (!hasBands && !hasCases) {
+      throw new BadRequestException('Config must have at least one band or one case');
+    }
+
+    return parsed;
+  }
+
+
+
 }

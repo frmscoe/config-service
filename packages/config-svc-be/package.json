@@ -2,7 +2,7 @@
   "name": "config-svc-be",
   "version": "0.0.1",
   "description": "",
-  "author": "Ome Chukwuemeka",
+  "author": "Ome Chukwuemeka <ome.chukwuemeka@lextego.com",
   "private": true,
   "lextego": {
     "publish_to_dockerhub": true
@@ -89,7 +89,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   },
   "engines": {
     "node": ">=20.10.0"

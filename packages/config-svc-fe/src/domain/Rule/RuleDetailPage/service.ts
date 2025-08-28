@@ -21,7 +21,7 @@ export interface IRule {
 
 export const getRules = ({
   page = 1,
-  limit = 10,
+  limit = process.env.NEXT_PUBLIC_SECURITY_FETCH_LIMIT,
   desc,
   name,
   cfg,

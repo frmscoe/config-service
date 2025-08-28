@@ -5,9 +5,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ArangoDatabaseService } from 'src/arango-database/arango-database.service';
-import { PrivilegeService } from 'src/privilege/privilege.service';
-import { UserEmailMappingService } from 'src/user-mapping/user-email-mapping.service';
+import { ArangoDatabaseService } from '../arango-database/arango-database.service';
+import { PrivilegeService } from '../privilege/privilege.service';
+import { UserEmailMappingService } from '../user-mapping/user-email-mapping.service';
 import { CreateExitConditionDto } from './dto/create-exit-condition.dto';
 import { ExitConditionResponseDto } from './dto/exit-condition-response.dto'; // Import the new DTO
 import { UpdateExitConditionDto } from './dto/update-exit-condition.dto'; // make sure this import exists

@@ -16,6 +16,7 @@ export const esCommon = {
     dashboard: "Dashboard",
     typologyBuilder: "Typology Builder",
     networkMap: "Network Map",
+    networkMapDetails: "Detalles del mapa de red",
     deployment: "Exportación",
     logout: "Logout",
     create: "Create",
@@ -522,7 +523,11 @@ export const esCommon = {
     "updatedAt": "Actualizado El",
     "updatedBy": "Actualizado Por",
     "rulesTitle": "Reglas",
-    "ruleId": "ID de Regla"
+    "ruleId": "ID de Regla",
+    "ruleConfigs": "Configuración de regla",
+      "scoreTitle": "Puntuación de tipología",
+      "ruleScores": "Puntuaciones de reglas",
+      "scoreExpression": "Expresión",
   },
 
   networkMapReviewPage: {

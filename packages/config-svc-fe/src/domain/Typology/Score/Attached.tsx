@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { sortAlphabetically } from "~/utils";
 import { useCommonTranslations } from "~/hooks";
 import { RuleWithConfig } from "./service";
+import { getOutcomeLabelFromType } from "./helpers";
+
+
 
 export interface IRulesAttached {
     rules: RuleWithConfig[];
@@ -26,10 +29,18 @@ export const RulesAttached: React.FunctionComponent<IRulesAttached> = ({ rules, 
         }
     }
 
+    // const renderOutcome: any = useCallback((rule: any) => {
+    //     const outcome = outcomes.find((o) => o.ruleId === rule?.rule?._key);
+    //     return outcome
+    // }, [outcomes])
     const renderOutcome: any = useCallback((rule: any) => {
-        const outcome = outcomes.find((o) => o.ruleId === rule?.rule?._key);
-        return outcome
-    }, [outcomes])
+      const match = outcomes.find((o) => o.ruleId === rule?.rule?._key);
+      if (!match) {
+        console.warn('No matching outcome for ruleId:', rule?.rule?._key);
+      }
+      return match;
+    }, [outcomes]);
+
 
     return <div className="mt-1">
         <Input data-testid="rules-attached-search" onChange={(e) => handleSearch(e?.target?.value)} placeholder={t('typologyCreatePage.searchRules')} className="mb-2 border-none shadow-none focus:ring-0" />
@@ -40,9 +51,11 @@ export const RulesAttached: React.FunctionComponent<IRulesAttached> = ({ rules, 
         {
             (sortAlphabetically(options, 'name')).map((rule, i) => <div key={i} data-testid={`rule-attached-${i}`} className="flex justify ">
                 <Typography.Paragraph className="text-gray-500 px-3">{rule?.rule?.name}</Typography.Paragraph>/<Typography className="text-gray-400 ml-1">
-                    {`${renderOutcome(rule)?.type  || ''} : ${renderOutcome(rule)?.subRuleRef || ''}`}
+                    {/*{`${renderOutcome(rule)?.type  || ''} : ${renderOutcome(rule)?.subRuleRef || ''}`}*/}
+                    {`${getOutcomeLabelFromType(renderOutcome(rule)?.type)}: ${renderOutcome(rule)?.subRuleRef || ''}`}
                 </Typography>
             </div>)
+            
         }
     </div>
 }
@@ -54,9 +67,14 @@ export const OutcomesAttached: React.FunctionComponent<IOutcomeProps> = ({ outco
     const [outcomeOptions, setOutcomeOptions] = useState<any[]>([]);
     const { t } = useCommonTranslations();
 
+    // useEffect(() => {
+    //     setOutcomeOptions(outcomes);
+    // }, [outcomes]);
     useEffect(() => {
-        setOutcomeOptions(outcomes);
+      console.log("🧪 Outcomes received in Attached panel (OutcomesAttached):", outcomes);
+      setOutcomeOptions(outcomes);
     }, [outcomes]);
+
 
     const handleSearch = (text: string) => {
         if (text.trim().length) {
@@ -77,7 +95,10 @@ export const OutcomesAttached: React.FunctionComponent<IOutcomeProps> = ({ outco
             !outcomeOptions.length ? <Empty /> : null
         }
         {outcomeOptions.map((outcome, i) => <div key={i} className="flex justify px-2">
-            <Typography.Paragraph data-testid={`attached-outcome-${i}`}>{`${outcome.type}: ${outcome.subRuleRef}`} </Typography.Paragraph>
+            {/*<Typography.Paragraph data-testid={`attached-outcome-${i}`}>{`${outcome.type}: ${outcome.subRuleRef}`} </Typography.Paragraph>*/}
+            <Typography.Paragraph data-testid={`attached-outcome-${i}`}>
+              {`${outcome.data?.label}`}
+            </Typography.Paragraph>
 
         </div>)}
     </div>

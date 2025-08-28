@@ -1,12 +1,9 @@
-// <!-- SPDX-License-Identifier: Apache-2.0 -->
-
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Drawer, Collapse, Typography, Button, Alert, CollapseProps, Spin } from "antd";
 import { useState, useMemo, Suspense, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as yup from 'yup';
 import dayjs from 'dayjs';
-
 
 import { useCommonTranslations } from "~/hooks";
 import { getExitConditions, getUserProfile } from "src/domain/Rule/CreateConfig/service";
@@ -21,8 +18,6 @@ import AccessDeniedPage from "~/components/common/AccessDenied";
 import { useParams, useSearchParams } from "next/navigation";
 import { postRuleConfig } from "../service";
 import usePrivileges from "~/hooks/usePrivileges";
-// import { DEFAULT_EXIT_CONDITIONS } from "~/constants";
-
 
 interface FormProps {
     open: boolean;
@@ -50,7 +45,6 @@ interface FormProps {
     } | null;
 }
 
-
 export const ConfigForm: React.FunctionComponent<FormProps> = ({
     open,
     setOpen,
@@ -63,7 +57,6 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
     handleClose = () => { },
     onSubmit,
     ...props
-
 }) => {
     const { rule } = props;
     const { t } = useCommonTranslations();
@@ -83,24 +76,18 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
             try {
                 const fetchedConditions = await getExitConditions();
                 setAvailableExitConditionsForDisplay(fetchedConditions);
-                // System defaults are typically static or fetched from a specific endpoint.
-                // For now, we'll assume a subset or all fetched conditions can be system defaults.
-                // If your API provides explicit 'isSystemDefault' flag, filter by that.
                 setSystemDefaults(fetchedConditions.filter((cond: any) => cond.isSystemDefault));
 
                 const userProfile = await getUserProfile();
                 if (userProfile && userProfile.personalExitConditions) {
                     setUserPersonalDefaults(userProfile.personalExitConditions);
                 } else {
-                    // Filter fetched conditions to include only those marked as user defaults
-                    // This assumes getUserProfile doesn't directly return them, but they're part of all conditions
-                    // Adjust this logic based on your actual API response structure for user defaults
                     setUserPersonalDefaults(fetchedConditions.filter((cond: any) => cond.isUserDefault));
                 }
 
                 console.log("ConfigForm: Fetched availableExitConditionsForDisplay:", fetchedConditions);
-                console.log("ConfigForm: Set systemDefaults:", systemDefaults); // This log will show previous state due to closure, updated state available on next render
-                console.log("ConfigForm: Set userPersonalDefaults:", userPersonalDefaults); // Same here
+                console.log("ConfigForm: Set systemDefaults:", systemDefaults);
+                console.log("ConfigForm: Set userPersonalDefaults:", userPersonalDefaults);
             } catch (error: any) {
                 console.error("ConfigForm: Failed to fetch exit conditions:", error);
                 setDataError(error?.response?.data?.message || error?.message || 'Failed to load exit conditions.');
@@ -114,9 +101,9 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
 
     const schema = useMemo(() => {
         return yup.object().shape({
-            major: yup.number().required(t('createRulePage.errors.majorRequired')),
-            minor: yup.number().required(t('createRuleConfigPage.errors.minorRequired')),
-            patch: yup.number().required(t('createRuleConfigPage.errors.patchRequired')),
+            major: yup.number().typeError(t('createRulePage.errors.majorRequired')).required(t('createRulePage.errors.majorRequired')),
+            minor: yup.number().typeError(t('createRuleConfigPage.errors.minorRequired')).required(t('createRuleConfigPage.errors.minorRequired')),
+            patch: yup.number().typeError(t('createRuleConfigPage.errors.patchRequired')).required(t('createRuleConfigPage.errors.patchRequired')),
             isBand: yup.boolean().required(t('createRuleConfigPage.errors.bandRequired')),
             isCase: yup.boolean().required(t('createRuleConfigPage.errors.caseRequired')),
             category: yup.string().required(t('createRuleConfigPage.errors.categoryRequired')),
@@ -143,19 +130,11 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
                 }
                 return yup.string().optional();
             }),
-            // Updated schema for exitConditions to expect id and reason
-            // exitConditions: yup.array().of(
-            //     yup.object().shape({
-            //         id: yup.string().required(t('createRuleConfigPage.errors.idRequired') || 'ID is required'), // ID is now expected and required
-            //         reason: yup.string().required(t('createRuleConfigPage.errors.reasonRequired')),
-            //         // 'outcome' field removed as per user's request to send only id and reason
-            //     })
-            // ).min(1, t('createRuleConfigPage.errors.minItems', { count: 1 })),
             exitConditions: yup.array().of(
-              yup.object().shape({
-                id: yup.string().required(t('createRuleConfigPage.errors.idRequired') || 'ID is required'),
-                reason: yup.string().required(t('createRuleConfigPage.errors.reasonRequired')),
-              })
+                yup.object().shape({
+                    id: yup.string().required(t('createRuleConfigPage.errors.idRequired') || 'ID is required'),
+                    reason: yup.string().required(t('createRuleConfigPage.errors.reasonRequired')),
+                })
             ).optional(),
 
             bands: yup.array().of(
@@ -230,13 +209,38 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
             isBand: false,
             isCase: false,
             dataType: 'NUMERIC',
-            // Initialize arrays for fields
-            exitConditions: [], // Ensure this matches the schema name
+            exitConditions: [],
             bands: [],
             cases: [],
             parameters: [],
+            // Initialize major, minor, patch to undefined or null, not 0, so placeholders show
+            major: undefined,
+            minor: undefined,
+            patch: undefined,
         },
     });
+
+    // Effect to reset form when the drawer opens
+    useEffect(() => {
+        if (open) {
+            reset({
+                bandMinimumCondition: -99999999999,
+                bandMaximumCondition: 99999999999,
+                isBand: false,
+                isCase: false,
+                dataType: 'NUMERIC',
+                exitConditions: [],
+                bands: [],
+                cases: [],
+                parameters: [],
+                major: undefined, // Explicitly set to undefined
+                minor: undefined, // Explicitly set to undefined
+                patch: undefined, // Explicitly set to undefined
+            });
+            setSelectedCategory(''); // Reset selected category as well
+            console.log("ConfigForm: Form reset upon opening drawer.");
+        }
+    }, [open, reset]); // Dependency on 'open' ensures it runs when drawer state changes
 
     // LOG: Log formState errors whenever they change
     useEffect(() => {
@@ -326,15 +330,8 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
 
     const handleFormSubmission = async (data: any) => {
         console.log("ConfigForm: Submitting Data:", data);
-        // data.exitConditions will already be in the format {id, reason} from ExitConditions.tsx
-        // If your backend expects a different format or additional fields, map them here.
-        // For example, if 'outcome' is still needed for the API but not in the form:
-        // const exitConditionsForAPI = data.exitConditions.map((cond: any) => ({ ...cond, outcome: true }));
-
         const obj = {
-            // ... (other fields)
-            exitConditions: data.exitConditions || [], // This will already be {id, reason} as set by ExitConditions component
-            // ...
+            exitConditions: data.exitConditions || [],
             major: data.major,
             minor: data.minor,
             patch: data.patch,
@@ -376,7 +373,7 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
             }) : [],
             parameters: data.parameters || [],
         };
-        onSubmit(obj); // Pass the transformed data to the parent onSubmit
+        onSubmit(obj);
     };
 
     const onClose = () => {
@@ -393,12 +390,8 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
             (el as HTMLElement).style.display = 'none';
         });
 
-        reset();
-        parameterFields.replace([]);
-        bandsFields.replace([]);
-        caseFields.replace([]);
-        console.log("ConfigForm: Form closed and reset.");
-
+        // The useEffect on `open` handles the reset when it becomes false -> true
+        // So we don't need a full reset here, just close the drawer.
         setOpen(false);
         handleClose();
     };
@@ -434,19 +427,33 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
                 </Suspense>
             )
         },
+        // {
+        //     key: '1',
+        //     label: <Typography.Title type={formState?.errors?.dataType ? 'danger' : 'secondary'} level={5}>{t('createRuleConfigPage.information')}</Typography.Title>,
+        //     children: <Suspense>
+        //         <Information
+        //             control={control}
+        //             handleSubmit={handleSubmit}
+        //             onSubmit={handleFormSubmission}
+        //             formState={formState}
+        //             setValue={setValue}
+        //         />
+        //     </Suspense>
+        // },
         {
-            key: '1',
-            label: <Typography.Title type={formState?.errors?.dataType ? 'danger' : 'secondary'} level={5}>{t('createRuleConfigPage.information')}</Typography.Title>,
-            children: <Suspense>
-                <Information
-                    control={control}
-                    handleSubmit={handleSubmit}
-                    onSubmit={handleFormSubmission}
-                    formState={formState}
-                    setValue={setValue}
-                />
-            </Suspense>
-        },
+                key: '1',
+                label: <Typography.Title type={formState?.errors?.dataType ? 'danger' : 'secondary'} level={5}>{t('createRuleConfigPage.information')}</Typography.Title>,
+                children: <Suspense>
+                    <Information
+                        control={control}
+                        handleSubmit={handleSubmit}
+                        onSubmit={handleFormSubmission}
+                        formState={formState}
+                        setValue={setValue}
+                        open={open} // Pass the 'open' prop here
+                    />
+                </Suspense>
+            },
         {
             key: '2',
             label: <Typography.Title level={5} type={formState.errors?.parameters?.message ? 'danger' : 'secondary'} >{t('createRuleConfigPage.parameters')}</Typography.Title>,
@@ -510,10 +517,6 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
     }, [items]);
 
     const { canCreateRuleConfig } = usePrivileges();
-    // if (!canCreateRuleConfig) {
-    //     console.warn("ConfigForm: User does not have privileges to create rule config.");
-    //     return <AccessDeniedPage />;
-    // }
 
     if (dataLoading) {
         console.log("ConfigForm: Data is loading...");

@@ -13,6 +13,7 @@ import { AttachedRules } from '.';
 import { Connection, Controls, EdgeChange, MiniMap, Node, NodeChange, NodeMouseHandler } from 'reactflow';
 import { FormState, Control, UseFormHandleSubmit, UseFormWatch } from 'react-hook-form';
 import { useCommonTranslations } from '~/hooks';
+import { useRouter } from 'next/router';
 
 interface Props {
   rules: IRule[];
@@ -45,6 +46,7 @@ interface Props {
 }
 export const Create: React.FunctionComponent<Props> = ({ rules, loadingRules, ...props }) => {
   const{t} = useCommonTranslations();
+  const router = useRouter();
   if (loadingRules) {
     return <Spin data-testid="spinner" className='w-full h-full mx-auto' />
   }
@@ -54,6 +56,9 @@ export const Create: React.FunctionComponent<Props> = ({ rules, loadingRules, ..
         <Button disabled={props.saveLoading} onClick={props.onOpenScoreMode}>{t('typologyScorePage.openScoringView')}</Button>
         <Button disabled={props.saveLoading} onClick={props.handleSubmit(props.onSubmit)}>{t('typologyScorePage.keepInDrafts')}</Button>
         <Button loading={props.saveLoading} onClick={props.handleSubmit(props.onSubmit)} className='text-white' style={{ backgroundColor: '#56b453' }}>{t('save')}</Button>
+        <Button onClick={() => router.back()}>
+                    {t('typologyReviewPage.back')}
+                </Button>
       </div>
       <Row className='h-full w-full'>
         <Col span={5}>

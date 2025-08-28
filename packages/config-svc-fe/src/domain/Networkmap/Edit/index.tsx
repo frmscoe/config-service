@@ -55,7 +55,7 @@ const NetworkMapPage = () => {
     const [typologies, setTypologies] = useState<GroupedTypology[]>([]);
     const [typologyOptions, setTypologyOptions] = useState<GroupedTypology[]>([]);
     const [selectedTypology, setSelectedTypology] = useState<string | null>(null);
-    const [events] = useState<{ label: string, disabled: boolean, value: string; color: string }[]>([{ label: 'PAIN.001', value: 'pain_001', disabled: false, color: 'gold' }, { label: 'PAIN.013', value: 'pain_013', disabled: false, color: 'magenta' }, { label: 'PACS.002', value: 'pacs_001', disabled: false, color: 'gold' }, { label: 'PACS.008', value: 'pacs_008', disabled: false, color: 'gold' }]);
+    const [events] = useState<{ label: string, disabled: boolean, value: string; color: string }[]>([{ label: 'PAIN.001', value: 'pain_001', disabled: false, color: 'gold' }, { label: 'PAIN.013', value: 'pain_013', disabled: false, color: 'magenta' }, { label: 'PACS.002', value: 'pacs_002', disabled: false, color: 'gold' }, { label: 'PACS.008', value: 'pacs_008', disabled: false, color: 'gold' }]);
     const [eventOptions, setEventOptions] = useState<IEvent[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
     const [attacheEvents, setAttachedEvents] = useState([]);
@@ -103,6 +103,7 @@ const NetworkMapPage = () => {
             data: {
               label: event.eventId,
               handleExpand: () => {}, // placeholder or actual handler
+              handleDelete,
               isActive: true,
             },
             position: { x: 100, y: 150 },
@@ -970,6 +971,7 @@ const NetworkMapPage = () => {
                     ...draggedItem,
                     label: draggedItem.label.slice(0, 25),
                     handleExpand: handleExpandEvent,
+                    handleDelete,
                     isActive: false,
                 },
                 position: {
@@ -1055,6 +1057,8 @@ const NetworkMapPage = () => {
         initialEdges={edges}
         initialAttachedRules={attachedRules}
         initialEventId={eventId}
+        originalNetworkMapData={originalNetworkMapData}
+
 
     />
         {contextHolder}

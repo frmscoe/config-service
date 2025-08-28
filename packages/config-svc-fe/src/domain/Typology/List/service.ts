@@ -18,7 +18,7 @@ export interface ITypology {
  * @param limit
  * @returns {data: ITypology[], count: number}
  */
-export const getTypologies = ({page = 1, limit = 10 }) => {
+export const getTypologies = ({page = 1, limit = process.env.NEXT_PUBLIC_SECURITY_FETCH_LIMIT }) => {
     // THIS IS THE CORRECT WAY to pass query parameters using Axios (or similar client wrapped by Api)
     return Api.get(`/typology`, { params: { page, limit } });
 }

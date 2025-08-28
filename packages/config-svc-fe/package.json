@@ -3,7 +3,7 @@
     "url": ""
   },
   "contributors": [
-    "Ome Chukwuemeka <ome.chukwuemeka@lextego.com>"
+    "Ome Chukwuemeka>"
   ],
   "dependencies": {
     "@ant-design/icons": "^5.3.6",
@@ -87,7 +87,7 @@
   "engines": {
     "node": ">=20.10.0"
   },
-  "homepage": "https://github.com/frmscoe/config-svc-fe",
+  "homepage": "https://github.com/lextego/config-svc-fe",
   "license": "Apache-2.0",
   "name": "@lextego/config-svc-fe",
   "private": true,

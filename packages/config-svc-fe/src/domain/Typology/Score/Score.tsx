@@ -16,6 +16,7 @@ import TypologyDetails from './TypologyInfo';
 import { OutcomesAttached, RulesAttached } from './Attached';
 import { useCommonTranslations } from '~/hooks';
 import { RuleWithConfig } from './service';
+import { useRouter } from 'next/router';
 
 interface Props {
   rules: RuleWithConfig[] | any[];
@@ -49,6 +50,7 @@ interface Props {
 }
 export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps & IRemovedProps & ReactFlowProps> = ({ rules, loadingRules, ...props }) => {
   const {t} = useCommonTranslations();
+  const router = useRouter();
 
   const items: CollapseProps['items'] = useMemo(() => {
     return [
@@ -104,7 +106,9 @@ export const Score: React.FunctionComponent<Props & OutComeProps & IOtherProps &
       <Button className='bg-green-500 text-white' onClick={props.handleSave}>
         {t('save')}
       </Button>
-
+      <Button onClick={() => router.back()}>
+                    {t('typologyReviewPage.back')}
+                </Button>
       </div>
       <Row className='h-full w-full'>
         <Col span={5}>

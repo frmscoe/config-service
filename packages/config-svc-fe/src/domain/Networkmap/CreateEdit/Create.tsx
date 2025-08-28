@@ -54,6 +54,12 @@ const EventNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
     }
   };
 
+  const handleDelete = () => {
+    if (data.handleDelete) {
+      data.handleDelete(id, data);
+    }
+  };
+
   return (
     <div
       className={styles['custom-node']}
@@ -75,8 +81,22 @@ const EventNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
         <NodeIndexOutlined style={{ marginRight: 6 }} />
         {data.label}
       </span>
-
-      {data.expanded ? (
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <CloseOutlined
+          onClick={handleDelete}
+          style={{
+            fontSize: '1.2rem',
+            color: '#ff4d4f',
+            cursor: 'pointer',
+          }}
+        />
+        {data.expanded ? (
+          <MinusCircleFilled onClick={handleExpand} style={{ fontSize: '1.5rem', color: '#54B352', cursor: 'pointer' }} />
+        ) : (
+          <PlusCircleFilled onClick={handleExpand} style={{ fontSize: '1.5rem', color: '#54B352', cursor: 'pointer' }} />
+        )}
+      </div>
+      {/*{data.expanded ? (
         <MinusCircleFilled
           className="absolute right-2 top-1/2 transform -translate-y-1/2"
           onClick={handleExpand}
@@ -96,7 +116,7 @@ const EventNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
             cursor: 'pointer',
           }}
         />
-      )}
+      )}*/}
 
       <Handle
         type="source"

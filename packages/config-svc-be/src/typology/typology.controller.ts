@@ -86,6 +86,17 @@ export class TypologyController {
     return this.typologyService.findOne(id);
   }
 
+  @Get('name/:name')
+  @Roles(TypologyPrivilege.GET_TYPOLOGY)
+  @ApiOperation({ summary: 'Retrieve a typology by Name' })
+  @ApiOkResponse({
+    description: 'The typology has been successfully retrieved.',
+    type: TypologyRuleWithConfigs,
+  })
+  findOneByName(@Param('name') name: string): Promise<TypologyRuleWithConfigs> {
+    return this.typologyService.findOneByName(name);
+  }
+
   @Patch(':id')
   @Roles(TypologyPrivilege.UPDATE_TYPOLOGY)
   @ApiOperation({ summary: 'Update a typology by ID' })

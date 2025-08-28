@@ -43,15 +43,27 @@ const EditConfigPage = () => {
             });
     }, [id]);
 
+    // useEffect(() => {
+    //     fetchConfig();
+    // }, [fetchConfig]);
+
+    // const canEdit = configuration && canTransition(privileges, 'RULE_CONFIG', configuration.state, 'EDIT');
+
+    // if (configuration && !canEdit) {
+    //     return <AccessDeniedPage />;
+    // }
+
     useEffect(() => {
-        fetchConfig();
+      fetchConfig();
     }, [fetchConfig]);
 
-    const canEdit = configuration && canTransition(privileges, 'RULE_CONFIG', configuration.state, 'EDIT');
+    const storedUsername = typeof window !== 'undefined' ? localStorage.getItem('config_svc_username')?.toLowerCase() : '';
+    const isOwner = configuration?.ownerId?.toLowerCase() === storedUsername;
 
-    if (configuration && !canEdit) {
-        return <AccessDeniedPage />;
+    if (configuration && !isOwner) {
+      return <AccessDeniedPage />;
     }
+
 
     return (
         <EditConfigForm

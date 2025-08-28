@@ -17,6 +17,8 @@ import { useCommonTranslations } from '~/hooks';
 // import { ConfigForm } from '../CreateConfig/Forms';
 import { ConfigForm } from './Forms';
 import { postRuleConfig, getFullRuleConfig, updateRuleConfig } from './service'; // corrected import
+import { useRouter } from 'next/router';
+
 
 const { Option } = Select;
 
@@ -72,7 +74,7 @@ const EditConfigForm: React.FC<Props> = ({
     { key: '6', label: 'Rule', children: rule?.name },
   ];
 
-  
+  const router = useRouter();
 
   const handleClone = async () => {
     if (!selectedVersionType) return;
@@ -112,6 +114,8 @@ const EditConfigForm: React.FC<Props> = ({
       setCloneModalOpen(false);
       setSelectedVersionType(null);
       fetchConfig();
+      router.push('/rule-config');
+
     } catch (err: any) {
       console.error(err);
       message.error(err?.message || 'Cloning failed');

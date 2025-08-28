@@ -54,36 +54,114 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
     }, [data]);
 
 
-    const handleSearch = useCallback((confirm: () => void) => {
-        if (searchText.trim().length) {
-            setNetworkMaps(
-                ...[data.filter((rule) =>
-                    rule.desc.toLowerCase().includes(searchText.toLowerCase())
-                )]
-            );
-            confirm();
+    // const handleSearch = useCallback((confirm: () => void) => {
+    //     if (searchText.trim().length) {
+    //         setNetworkMaps(
+    //             ...[data.filter((rule) =>
+    //                 rule.desc.toLowerCase().includes(searchText.toLowerCase())
+    //             )]
+    //         );
+    //         confirm();
 
-        }
-    }, [searchText]);
+    //     }
+    // }, [searchText]);
+    const handleSearch = useCallback((confirm: () => void) => {
+      if (searchText.trim().length) {
+        setNetworkMaps(
+          ...[
+            data.filter((item) =>
+              item.description?.toLowerCase().includes(searchText.toLowerCase())
+            ),
+          ]
+        );
+        confirm();
+      }
+    }, [searchText, data]);
+
+
+    // Name search state
+    const [searchNameText, setSearchNameText] = useState<string>('');
+
+    // Name search handler (mirrors Description search)
+    const handleSearchName = useCallback((confirm: () => void) => {
+      if (searchNameText.trim().length) {
+        setNetworkMaps(
+          ...[
+            data.filter((item) =>
+              item.name?.toLowerCase().includes(searchNameText.toLowerCase())
+            ),
+          ]
+        );
+        confirm();
+      }
+    }, [searchNameText, data]);
+
 
 
     const columns: TableColumnsType<any> = useMemo(() => {
         return [
+            // {
+            //     title: commonTranslations('rulesListPage.table.name'),
+            //     dataIndex: 'name',
+            //     showSorterTooltip: { target: 'full-header' },
+            //     sorter: (a: any, b: any) => a.state.localeCompare(b.name),
+            //     // filters: uniqueArray(data, 'cfg').map((obj) => ({ text: obj.name, value: obj.name.toLowerCase() })),
+            //     filters: uniqueArray(data, 'cfg').map((obj) => ({
+            //       text: obj.cfg,
+            //       value: obj.cfg.toLowerCase(),
+            //     })),
+
+            //     // onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
+            //     onFilter: (value, record) => record.cfg?.toLowerCase().includes(value as string),
+
+            // },
             {
-                title: commonTranslations('rulesListPage.table.name'),
-                dataIndex: 'name',
-                showSorterTooltip: { target: 'full-header' },
-                sorter: (a: any, b: any) => a.state.localeCompare(b.name),
-                // filters: uniqueArray(data, 'cfg').map((obj) => ({ text: obj.name, value: obj.name.toLowerCase() })),
-                filters: uniqueArray(data, 'cfg').map((obj) => ({
-                  text: obj.cfg,
-                  value: obj.cfg.toLowerCase(),
-                })),
-
-                // onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
-                onFilter: (value, record) => record.cfg?.toLowerCase().includes(value as string),
-
+              title: commonTranslations('rulesListPage.table.name'),
+              dataIndex: 'name',
+              key: 'name',
+              showSorterTooltip: { target: 'full-header' },
+              sorter: (a: any, b: any) => a.name?.localeCompare(b.name),
+              filtered: !!searchNameText.trim().length, // show filter icon as active when typing
+              onFilter: (value, record) => record.name?.toLowerCase().includes((value as string) || ''),
+              filters: uniqueArray(data, 'name').map((obj) => ({
+                text: obj.name,
+                value: obj.name?.toLowerCase(),
+              })),
+              filterDropdown: ({ confirm, clearFilters }: any) => (
+                <div style={{ padding: 8 }}>
+                  <Input
+                    placeholder={commonTranslations('rulesListPage.search') || 'Search name'}
+                    value={searchNameText}
+                    onChange={(e) => setSearchNameText(e.target.value)}
+                    onPressEnter={() => handleSearchName(confirm)}
+                    className={styles['input-description-search']}
+                  />
+                  <Space>
+                    <Button
+                      type="primary"
+                      onClick={() => handleSearchName(confirm)}
+                      size="small"
+                      className={styles['reset-button']}
+                    >
+                      {commonTranslations('rulesListPage.search')}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setSearchNameText('');
+                        clearFilters?.();
+                        confirm();
+                        setNetworkMaps(data); // reset to current page slice
+                      }}
+                      size="small"
+                      style={{ width: 90 }}
+                    >
+                      {commonTranslations('rulesListPage.reset')}
+                    </Button>
+                  </Space>
+                </div>
+              ),
             },
+
             {
                 title: commonTranslations('rulesListPage.table.version'),
                 dataIndex: 'cfg',
@@ -190,7 +268,9 @@ const NetworkMapList: React.FunctionComponent<Props> = ({
             },
 
         ];
-    }, [commonTranslations, data, searchText, canEdit])
+    // }, [commonTranslations, data, searchText, canEdit])
+    }, [commonTranslations, data, searchText, handleSearch, searchNameText, handleSearchName, canEdit, canReview]);
+
     return (
         <>
             {canCreate ? <div>

@@ -21,6 +21,8 @@ import { getRandomNumber } from "~/utils/getRandomNumberHelper";
 import Link from "next/link";
 import { useCommonTranslations } from "~/hooks";
 import { Api } from "~/client"
+import { useRouter } from 'next/router';
+
 
 
 export interface AttachedRules extends IRule {
@@ -51,7 +53,7 @@ const NetworkMapPage = () => {
     const [typologies, setTypologies] = useState<GroupedTypology[]>([]);
     const [typologyOptions, setTypologyOptions] = useState<GroupedTypology[]>([]);
     const [selectedTypology, setSelectedTypology] = useState<string | null>(null);
-    const [events] = useState<{ label: string, disabled: boolean, value: string; color: string }[]>([{ label: 'PAIN.001', value: 'pain_001', disabled: false, color: 'gold' }, { label: 'PAIN.013', value: 'pain_013', disabled: false, color: 'magenta' }, { label: 'PACS.002', value: 'pacs_001', disabled: false, color: 'gold' }, { label: 'PACS.008', value: 'pacs_008', disabled: false, color: 'gold' }]);
+    const [events] = useState<{ label: string, disabled: boolean, value: string; color: string }[]>([{ label: 'PAIN.001', value: 'pain_001', disabled: false, color: 'gold' }, { label: 'PAIN.013', value: 'pain_013', disabled: false, color: 'magenta' }, { label: 'PACS.002', value: 'pacs_002', disabled: false, color: 'gold' }, { label: 'PACS.008', value: 'pacs_008', disabled: false, color: 'gold' }]);
     const [eventOptions, setEventOptions] = useState<IEvent[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
     const [attacheEvents, setAttachedEvents] = useState([]);
@@ -63,6 +65,8 @@ const NetworkMapPage = () => {
     const{t} = useCommonTranslations();
 
     const [activeEventId, setActiveEventId] = useState<string | null>(null);
+    const router = useRouter();
+
 
 
 
@@ -82,6 +86,17 @@ const NetworkMapPage = () => {
 
 const { TextArea } = Input;
 const { Option } = Select;
+
+const checkNetworkMapNameExists = async (name: string) => {
+  try {
+    const { data } = await Api.get(`/network-map/name/${encodeURIComponent(name)}`);
+    return !!data?._key; // Returns true if a network map with the name exists
+  } catch (error) {
+    // If 404 or not found, treat it as name not existing
+    return false;
+  }
+};
+
 
 const handleSave = async () => {
   const eventNode = nodes.find(n => n.type === 'eventNode');
@@ -181,9 +196,41 @@ const handleSave = async () => {
         </Space>
       </Space>
     ),
+    // onOk: async () => {
+    //   const version = `${formData.major}.${formData.minor}.${formData.patch}`;
+    //   const now = new Date().toISOString();
+
+    //   const payload = {
+    //     active: false,
+    //     name: formData.name,
+    //     description: formData.description,
+    //     cfg: version,
+    //     source: "user_created",
+    //     createdAt: now,
+    //     updatedAt: now,
+    //     modifiedBy: "",
+    //     ownerId: "",
+    //     state: "01_DRAFT",
+    //     events: [
+    //       {
+    //         eventId: eventNode.id,
+    //         typologies: typologiesPayload
+    //       }
+    //     ]
+    //   };
     onOk: async () => {
       const version = `${formData.major}.${formData.minor}.${formData.patch}`;
       const now = new Date().toISOString();
+
+      const nameExists = await checkNetworkMapNameExists(formData.name);
+      if (nameExists) {
+        modal.error({
+          title: 'Name Conflict',
+          content: `A Network Map with the name "${formData.name}" already exists. Please choose another name.`,
+          okButtonProps: { style: { backgroundColor: 'red' } }
+        });
+        return;
+      }
 
       const payload = {
         active: false,
@@ -204,14 +251,27 @@ const handleSave = async () => {
         ]
       };
 
+
       try {
         setSaveLoading(true);
         await createNetworkMap(payload);
+        // modal.success({
+        //   title: t('createEditNetworkMap.successTitle'),
+        //   content: t('createEditNetworkMap.networkMapCreated'),
+        //   okButtonProps: { style: { backgroundColor: 'red' } }
+        // });
         modal.success({
           title: t('createEditNetworkMap.successTitle'),
           content: t('createEditNetworkMap.networkMapCreated'),
-          okButtonProps: { style: { backgroundColor: 'red' } }
+          okButtonProps: { style: { backgroundColor: 'red' } },
+          onOk: () => {
+            router.push('/network-map');
+          }
         });
+
+        // await createNetworkMap(payload);
+        // router.push('/network-map');
+
       } catch (e: any) {
         modal.error({
           title: 'Error',
@@ -899,6 +959,7 @@ const handleSave = async () => {
                     ...draggedItem,
                     label: draggedItem.label.slice(0, 25),
                     handleExpand: handleExpandEvent,
+                    handleDelete,
                     isActive: false,
                 },
                 position: {

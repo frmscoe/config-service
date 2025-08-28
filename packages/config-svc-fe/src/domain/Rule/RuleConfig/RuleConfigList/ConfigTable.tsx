@@ -1,4 +1,3 @@
-// <!-- SPDX-License-Identifier: Apache-2.0 -->
 import { TableColumnsType, Input, Space, Button, Table, Modal } from "antd";
 import { uniqueArray } from "~/utils/uniqueItems";
 import { IRuleConfig } from "./types";
@@ -144,8 +143,16 @@ export const ConfigTable: React.FunctionComponent<IProps> = ({
               </Link>
             )}*/}
 
-            {canTransition(privileges, 'RULE_CONFIG', record.state, 'EDIT') &&
+            {/*{canTransition(privileges, 'RULE_CONFIG', record.state, 'EDIT') &&
               record.ownerId?.toLowerCase() === username && (
+                <Link href={`/rule-config/${record._key}/edit`}>
+                  <Button type="link">
+                    {commonTranslations('rulesListPage.table.modify')}
+                  </Button>
+                </Link>
+            )}*/}
+
+            {record.ownerId?.toLowerCase() === username && (
                 <Link href={`/rule-config/${record._key}/edit`}>
                   <Button type="link">
                     {commonTranslations('rulesListPage.table.modify')}

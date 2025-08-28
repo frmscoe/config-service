@@ -1,6 +1,6 @@
 // <!-- SPDX-License-Identifier: Apache-2.0 -->
 import type { ReactNode } from "react";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { useAuth } from "~/context/auth";
 
@@ -12,21 +12,44 @@ interface Props {
 }
 
 const LayoutSwitcher = ({ children }: Props) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, logout } = useAuth(); // assuming you have logout()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const resetTimer = () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        logout(); // log the user out
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const activityEvents = ["mousemove", "keydown", "click", "scroll"];
+    activityEvents.forEach((event) => window.addEventListener(event, resetTimer));
+
+    resetTimer(); // Start timer initially
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      activityEvents.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [isAuthenticated, logout]);
 
   if (isLoading) {
-    return <FullScreenLoader />
+    return <FullScreenLoader />;
   }
 
-  if(isAuthenticated) {
+  if (isAuthenticated) {
     return (
       <Layout>
         <AntdRegistry>
           {children}
         </AntdRegistry>
-      </Layout>)
+      </Layout>
+    );
   }
-
 
   return (
     <AuthLayout>
@@ -35,8 +58,6 @@ const LayoutSwitcher = ({ children }: Props) => {
       </AntdRegistry>
     </AuthLayout>
   );
-
-
 };
 
 export { LayoutSwitcher };

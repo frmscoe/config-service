@@ -1,0 +1,601 @@
+// // Import Rule
+import React, { useState } from 'react';
+import { Upload, message as antMessage, Select, Button, Modal, Spin, Radio } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { Api } from '~/client';
+import usePrivileges from '~/hooks/usePrivileges';
+import AccessDeniedPage from '~/components/common/AccessDenied';
+import { useCommonTranslations } from '~/hooks';
+// import { stringify } from 'querystring'; // Removed as it's no longer needed
+
+const { Option } = Select;
+const { Dragger } = Upload;
+
+const lightBlueButtonStyle = {
+  backgroundColor: '#add8e6',
+  borderColor: '#add8e6',
+  color: '#000',
+};
+
+const cancelButtonStyle = {
+  backgroundColor: '#ff4d4f',
+  borderColor: '#ff4d4f',
+  color: '#fff',
+};
+
+const ImportNetWorkMap: React.FC = () => {
+  const [jsonContent, setJsonContent] = useState<any>(null);
+  const [modalMessage, setModalMessage] = useState<string | null>(null);
+  const [dataType, setDataType] = useState<string>('CURRENCY');
+  const [showDataTypeSelection, setShowDataTypeSelection] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isIntermediateModalVisible, setIsIntermediateModalVisible] = useState<boolean>(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState<boolean>(false);
+  const [isVersionModalVisible, setIsVersionModalVisible] = useState<boolean>(false);
+  const [ruleExists, setRuleExists] = useState<boolean>(false);
+  const [configExists, setConfigExists] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [versionUpdateType, setVersionUpdateType] = useState<string>('patch');
+  const [ruleCreated, setRuleCreated] = useState<boolean>(false);
+  const [existingRuleVersion, setExistingRuleVersion] = useState<string | null>(null);
+  const [existingRuleId, setExistingRuleId] = useState<string | null>(null);
+  const { canImportRule } = usePrivileges();
+  const { t } = useCommonTranslations();
+  const [band, setband] = useState([]);
+  const [cases, setcases] = useState([]);
+  const [exitConditions, setExitConditions] = useState([]);
+  const [isSavingModalVisible, setIsSavingModalVisible] = useState(false);
+  const [isCreatingConfigVisible, setIsCreatingConfigVisible] = useState(false);
+  // Add state for parameters
+  const [parameters, setParameters] = useState([]);
+
+
+  // const handleFileUpload = (file: any) => {
+  //   const reader = new FileReader();
+  //   reader.onload = () => {
+  //     try {
+  //       const fileContent = JSON.parse(reader.result as string);
+  //       setJsonContent(fileContent);
+  //       const bandsFromJson = fileContent.config.bands || [];
+  //       const casesFromJson = fileContent.config.cases || [];
+  //       const exitConditionsFromJson = fileContent.config.exitConditions || [];
+  //       const parametersFromJson = fileContent.config.parameters || []; // Extract parameters
+
+  //       setband(bandsFromJson);
+  //       setcases(casesFromJson);
+  //       setExitConditions(exitConditionsFromJson);
+  //       setParameters(parametersFromJson); // Set parameters state
+  //       checkForExistingRule(fileContent);
+  //     } catch (error) {
+  //       showErrorModal(t('importNetworkMapPage.errorParsingJson'));
+  //     }
+  //   };
+  //   reader.readAsText(file);
+  //   return false;
+  // };
+
+  const handleFileUpload = (file: any) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const fileContent = JSON.parse(reader.result as string);
+        setJsonContent(fileContent);
+
+        const bandsFromJson = fileContent.config?.bands || [];
+        const casesFromJson = fileContent.config?.cases || [];
+        const exitConditionsFromJson = fileContent.config?.exitConditions || [];
+        const parametersFromJson = fileContent.config?.parameters || [];
+
+        setband(bandsFromJson);
+        setcases(casesFromJson);
+        setExitConditions(exitConditionsFromJson);
+        setParameters(parametersFromJson);
+
+        checkForExistingNetworkMap(fileContent); // 🔍 This will be your next function
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        showErrorModal(t('importNetworkMapPage.errorParsingJson'));
+      }
+    };
+    reader.readAsText(file);
+    return false;
+  };
+
+
+  const showErrorModal = (content: string) => {
+    setModalMessage(content);
+    setIsErrorModalVisible(true);
+  };
+
+  // const checkForExistingRule = async (fileContent: any) => {
+  //   setLoading(true);
+  //   try {
+  //     let ruleName = fileContent.id.split('@')[0];
+  //     ruleName = String(ruleName).trim();
+  //     if (ruleName === '') {
+  //       showErrorModal(t('importNetworkMapPage.invalidRuleName'));
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     if (fileContent.cfg === '') {
+  //       showErrorModal(t('importNetworkMapPage.invalidConfig'));
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     const response = await Api.get(`rule/name/${ruleName}`);
+  //     if (response.data && response.data.length > 0) { // Checking if data array has elements
+  //       setRuleExists(true);
+  //       setExistingRuleVersion(response.data[0].cfg);
+  //       setExistingRuleId(response.data[0]._id); // Store the rule ID
+  //       setModalMessage(t('importNetworkMapPage.existingRuleFound'));
+  //       setIsModalVisible(true);
+  //     } else {
+  //       setRuleExists(false);
+  //       setModalMessage(t('importNetworkMapPage.noExistingRuleFound'));
+  //       setIsModalVisible(true);
+  //     }
+  //   } catch (error: any) {
+  //     if (error.response && error.response.status === 404) {
+  //       setRuleExists(false);
+  //       setModalMessage(t('importNetworkMapPage.noExistingRuleFound'));
+  //       setIsModalVisible(true);
+  //     } else {
+  //       console.error('Error checking for existing rule:', error);
+  //       showErrorModal(error?.response?.data?.message || t('importNetworkMapPage.errorCreatingRule'));
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const checkForExistingNetworkMap = async (fileContent: any) => {
+    setLoading(true);
+    try {
+      const mapName = fileContent.messages?.[0]?.id?.split('@')[0]?.trim();
+      const cfg = fileContent.messages?.[0]?.cfg;
+
+      if (!mapName) {
+        showErrorModal(t('importNetworkMapPage.invalidNetworkMapName'));
+        setLoading(false);
+        return;
+      }
+
+      if (!cfg) {
+        showErrorModal(t('importNetworkMapPage.invalidConfig'));
+        setLoading(false);
+        return;
+      }
+
+      const response = await Api.get(`/network-map/name/${encodeURIComponent(mapName)}`);
+
+      if (response.data && response.data._key) {
+        setNetworkMapExists(true);
+        setExistingNetworkMapVersion(response.data.cfg || cfg); // fallback to file cfg
+        setExistingNetworkMapId(response.data._id);
+        setModalMessage(t('importNetworkMapPage.existingNetworkMapFound'));
+        setIsModalVisible(true);
+      } else {
+        setNetworkMapExists(false);
+        setModalMessage(t('importNetworkMapPage.noExistingNetworkMapFound'));
+        setIsModalVisible(true);
+      }
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        setNetworkMapExists(false);
+        setModalMessage(t('importNetworkMapPage.noExistingNetworkMapFound'));
+        setIsModalVisible(true);
+      } else {
+        console.error('Error checking for existing network map:', error);
+        showErrorModal(error?.response?.data?.message || t('importNetworkMapPage.errorCheckingNetworkMap'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+
+  const checkForExistingConfig = async (ruleName: string) => {
+    setLoading(true);
+    try {
+      const response = await Api.get(`rule/rule-and-its-configs/${ruleName}`);
+      if (response.data && response.data.ruleConfigs && response.data.ruleConfigs.length > 0) {
+        setConfigExists(true);
+        setModalMessage(t('importNetworkMapPage.existingConfigFound'));
+        setIsIntermediateModalVisible(true);
+      } else {
+        setConfigExists(false);
+        setModalMessage(t('importNetworkMapPage.noExistingConfigFound'));
+        setIsIntermediateModalVisible(true);
+      }
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        setConfigExists(false);
+        setModalMessage(t('importNetworkMapPage.noExistingConfigFound'));
+        setIsIntermediateModalVisible(true);
+      } else {
+        console.error('Error checking for existing configuration:', error);
+        showErrorModal(error?.response?.data?.message || t('importNetworkMapPage.errorCheckingConfig'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUseExistingRule = async () => {
+    setModalMessage(null);
+    setIsModalVisible(false);
+    await checkForExistingConfig(jsonContent.id.split('@')[0]);
+  };
+
+  const handleYesCreateNewRule = () => {
+    setModalMessage(null);
+    setShowDataTypeSelection(true);
+    setIsModalVisible(false);
+  };
+
+  const handleYesCreateNewConfig = async () => {
+    setModalMessage(null);
+    setIsIntermediateModalVisible(false);
+    setIsCreatingConfigVisible(true); // Show creating config modal
+    await createNewConfig();
+  };
+
+  const handleYesUpdateRuleAndConfig = () => {
+    setShowDataTypeSelection(false);
+    setIsIntermediateModalVisible(false);
+    setIsVersionModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setIsIntermediateModalVisible(false);
+    setIsErrorModalVisible(false);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+    setIsIntermediateModalVisible(false);
+    setIsErrorModalVisible(false);
+    setShowDataTypeSelection(false);
+    setIsSavingModalVisible(false);
+    setIsCreatingConfigVisible(false); // Hide creating config modal
+  };
+
+  const handleDataTypeChange = (value: string) => {
+    setDataType(value);
+  };
+
+  const handleDataTypeSubmit = async () => {
+    setIsSavingModalVisible(true);  // Show saving modal
+    try {
+      await createNewRuleWithVersionUpdate(false);
+    } catch (error) {
+      console.error('Error while creating new rule:', error);
+      // Handle error (e.g., show error message)
+    } finally {
+      setIsSavingModalVisible(false);  // Hide saving modal
+      setShowDataTypeSelection(false); // Close the data type selection modal
+    }
+  };
+
+  const handleVersionChange = (e: any) => {
+    setVersionUpdateType(e.target.value);
+  };
+
+  const handleVersionSubmit = async () => {
+    await createNewConfig(true);
+    setIsVersionModalVisible(false);
+  };
+
+  const createNewConfig = async (isVersionUpdate = false, ruleIdForConfig?: string) => {
+    setLoading(true);
+    setModalMessage(t('importNetworkMapPage.addingConfig'));
+    try {
+      let newVersion = jsonContent.cfg;
+
+      if (isVersionUpdate && existingRuleVersion) {
+        const versionParts = existingRuleVersion.split('.');
+        let major = parseInt(versionParts[0]);
+        let minor = parseInt(versionParts[1]);
+        let patch = parseInt(versionParts[2]);
+
+        if (versionUpdateType === 'major') {
+          major += 1;
+          minor = 0;
+          patch = 0;
+        } else if (versionUpdateType === 'minor') {
+          minor += 1;
+          patch = 0;
+        } else if (versionUpdateType === 'patch') {
+          patch += 1;
+        }
+
+        newVersion = `${major}.${minor}.${patch}`;
+      }
+
+      const targetRuleId = ruleIdForConfig || existingRuleId || jsonContent.id.split('@')[0];
+
+      // Ensure the ruleId is prefixed with "rule/" if it's not already
+      // This check remains useful if existingRuleId or jsonContent.id is used,
+      // but newRuleId (from response.data.rule._id) should already have the prefix.
+      let finalRuleIdForConfig = targetRuleId;
+      if (targetRuleId && !targetRuleId.startsWith('rule/')) {
+          finalRuleIdForConfig = `rule/${targetRuleId}`;
+      }
+
+      const response = await Api.post('rule-config', {
+        cfg: newVersion,
+        desc: jsonContent.desc || '', // Send empty string if desc is missing
+        ruleId: finalRuleIdForConfig, // Use the correctly formatted rule ID
+        config: {
+          parameters: parameters.map((param: any) => ({
+            ParameterName: param.ParameterName,
+            ParameterValue: param.ParameterValue,
+            ParameterType: param.ParameterType,
+          })),
+          exitConditions: exitConditions,
+          bands: band,
+          cases: cases,
+        }
+      });
+
+      if (response.status === 201) {
+        setRuleCreated(true);
+        setModalMessage(t('importNetworkMapPage.configCreatedSuccess'));
+      }
+    } catch (error: any) {
+      console.error('Error creating new config:', error);
+      showErrorModal(error?.response?.data?.message || t('importNetworkMapPage.errorCreatingConfig'));
+    } finally {
+      setLoading(false);
+      setIsCreatingConfigVisible(false); // Hide creating config modal
+      setIsModalVisible(true);
+    }
+  };
+
+  const createNewRuleWithVersionUpdate = async (isVersionUpdate: boolean) => {
+    let ruleName = jsonContent.id.split('@')[0];
+    ruleName = String(ruleName).trim();
+    setLoading(true);
+    setModalMessage(t('importNetworkMapPage.addingRule'));
+    try {
+      let newVersion = jsonContent.cfg;
+
+      if (isVersionUpdate && existingRuleVersion) {
+        const versionParts = existingRuleVersion.split('.');
+        let major = parseInt(versionParts[0]);
+        let minor = parseInt(versionParts[1]);
+        let patch = parseInt(versionParts[2]);
+
+        if (versionUpdateType === 'major') {
+          major += 1;
+          minor = 0;
+          patch = 0;
+        } else if (versionUpdateType === 'minor') {
+          minor += 1;
+          patch = 0;
+        } else if (versionUpdateType === 'patch') {
+          patch += 1;
+        }
+
+        newVersion = `${major}.${minor}.${patch}`;
+      }
+
+      const response = await Api.post('rule/import', {
+        rule_cfg: newVersion,
+        name: ruleName,
+        dataType: dataType,
+        rule_desc: jsonContent.desc || '', // Send empty string if desc is missing
+        source: 'USER_IMPORTED',
+        rule_config_cfg: jsonContent.cfg, // This is the config version from the file
+        rule_config_desc: jsonContent.desc || '', // Send empty string if desc is missing
+        version: newVersion, // This is the rule's version
+        configVersion: jsonContent.cfg, // Corrected: Should be from jsonContent.cfg
+        config: {
+          parameters: parameters.map((param: any) => ({
+            ParameterName: param.ParameterName,
+            ParameterValue: param.ParameterValue,
+            ParameterType: param.ParameterType,
+          })),
+          exitConditions: exitConditions,
+          bands: band,
+          cases: cases,
+        }
+      });
+
+      console.log('Response from rule/import API:', response.data);
+
+      if (response.status === 201) {
+        // Correctly extract _id from the nested 'rule' object
+        const newRuleId = response.data.rule ? response.data.rule._id : undefined;
+
+        if (!newRuleId) {
+          console.error('Error: newRuleId not found in response.data.rule');
+          showErrorModal(t('importNetworkMapPage.errorCreatingRule') + ': Rule ID not returned from backend.');
+          setLoading(false);
+          return; // Stop execution if ID is not found
+        }
+
+        setRuleCreated(false);
+        setModalMessage(t('importNetworkMapPage.ruleCreatedSuccess'));
+
+        setIsCreatingConfigVisible(true);
+        await createNewConfig(false, newRuleId); // Pass newRuleId directly to createNewConfig
+      }
+    } catch (error: any) {
+      console.error('Error creating new rule:', error);
+      showErrorModal(error?.response?.data?.message || t('importNetworkMapPage.errorCreatingRule'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!canImportRule) {
+    return <AccessDeniedPage />;
+  }
+
+  return (
+    <div className="import-rule-config">
+      <h1>{t('importNetworkMapPage.ImportRuleConfigTitle')}</h1>
+      <Dragger beforeUpload={handleFileUpload} showUploadList={false}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">{t('importNetworkMapPage.uploadPrompt')}</p>
+        <p className="ant-upload-hint">{t('importNetworkMapPage.uploadHint')}</p>
+      </Dragger>
+
+      {loading && <Spin size="large" />}
+
+      <Modal
+        title={t('importNetworkMapPage.existingRuleModalTitle')}
+        open={isModalVisible}
+        onCancel={handleCancel}
+        footer={[
+          ruleExists ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Button key="useExistingRule" type="primary" style={lightBlueButtonStyle} onClick={handleUseExistingRule}>
+                {t('importNetworkMapPage.useExistingRule')}
+              </Button>
+              <Button key="createNewRule" type="primary" style={lightBlueButtonStyle} onClick={handleYesCreateNewRule}>
+                {t('importNetworkMapPage.createNewRule')}
+              </Button>
+              <Button key="cancelImport" style={cancelButtonStyle} onClick={handleCancel}>
+                {t('importNetworkMapPage.cancelImport')}
+              </Button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Button key="createNewRule" type="primary" style={lightBlueButtonStyle} onClick={handleYesCreateNewRule}>
+                {t('importNetworkMapPage.createNewRule')}
+              </Button>
+              <Button key="cancelImport" style={cancelButtonStyle} onClick={handleCancel}>
+                {t('importNetworkMapPage.cancelImport')}
+              </Button>
+            </div>
+          )
+        ]}
+      >
+        <p>{modalMessage}</p>
+      </Modal>
+
+      <Modal
+        title={t('importNetworkMapPage.existingConfigModalTitle')}
+        open={isIntermediateModalVisible}
+        onCancel={handleCancel}
+        footer={[
+          configExists ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Button key="updateConfig" type="primary" style={lightBlueButtonStyle} onClick={handleYesUpdateRuleAndConfig}>
+                {t('importNetworkMapPage.updateConfig')}
+              </Button>
+              <Button key="createNewConfig" type="primary" style={lightBlueButtonStyle} onClick={handleYesCreateNewConfig}>
+                {t('importNetworkMapPage.createNewConfig')}
+              </Button>
+              <Button key="cancelImport" style={cancelButtonStyle} onClick={handleCancel}>
+                {t('importNetworkMapPage.cancelImport')}
+              </Button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Button key="createNewConfig" type="primary" style={lightBlueButtonStyle} onClick={handleYesCreateNewConfig}>
+                {t('importNetworkMapPage.createNewConfig')}
+              </Button>
+              <Button key="cancelImport" style={cancelButtonStyle} onClick={handleCancel}>
+                {t('importNetworkMapPage.cancelImport')}
+              </Button>
+            </div>
+          )
+        ]}
+      >
+        <p>{modalMessage}</p>
+      </Modal>
+
+      <Modal
+        title={t('importNetworkMapPage.pleaseSelectDataType')}
+        open={showDataTypeSelection}
+        onCancel={() => setShowDataTypeSelection(false)}
+        footer={[
+          <Button key="submit" type="primary" style={lightBlueButtonStyle} onClick={handleDataTypeSubmit}>
+            {t('importNetworkMapPage.OK')}
+          </Button>,
+        ]}
+      >
+        <Select defaultValue="CURRENCY" onChange={handleDataTypeChange}>
+          <Option value="CURRENCY">{t('importNetworkMapPage.dataTypes.currency')}</Option>
+          <Option value="NUMERIC">{t('importNetworkMapPage.dataTypes.number')}</Option>
+          <Option value="TIME">{t('importNetworkMapPage.dataTypes.time')}</Option>
+          <Option value="CALENDAR_DATE_TIME">{t('importNetworkMapPage.dataTypes.calendarDateTime')}</Option>
+          <Option value="TEXT">{t('importNetworkMapPage.dataTypes.text')}</Option>
+        </Select>
+      </Modal>
+
+      <Modal
+        title={t('importNetworkMapPage.savingRuleToDatabase')}
+        open={isSavingModalVisible}
+        footer={null} // No buttons in this modal
+      >
+        <Spin size="large" /> {/* Show a spinner while saving */}
+      </Modal>
+
+      <Modal
+        title={t('importNetworkMapPage.creatingRuleConfig')}
+        open={isCreatingConfigVisible}
+        footer={null} // No buttons in this modal
+      >
+        <Spin size="large" /> {/* Show a spinner while creating config */}
+      </Modal>
+
+      <Modal
+        title={t('importNetworkMapPage.versionUpdateTitle')}
+        open={isVersionModalVisible}
+        onCancel={() => setIsVersionModalVisible(false)}
+        footer={[
+          <Button key="submit" type="primary" style={lightBlueButtonStyle} onClick={handleVersionSubmit}>
+            {t('importNetworkMapPage.enterMissingData')}
+          </Button>,
+        ]}
+      >
+        <Radio.Group onChange={handleVersionChange} value={versionUpdateType}>
+          <Radio value="major">{t('importNetworkMapPage.majorChange')}</Radio>
+          <Radio value="minor">{t('importNetworkMapPage.minorChange')}</Radio>
+          <Radio value="patch">{t('importNetworkMapPage.patchChange')}</Radio>
+        </Radio.Group>
+      </Modal>
+
+      <Modal
+        title={t('importNetworkMapPage.ImportRuleConfigTitle')}
+        open={isErrorModalVisible}
+        onCancel={handleOk}
+        footer={[
+          <Button key="ok" type="primary" style={lightBlueButtonStyle} onClick={handleOk}>
+            {t('importNetworkMapPage.OK')}
+          </Button>,
+        ]}
+      >
+        <p>{modalMessage}</p>
+      </Modal>
+
+      <Modal
+        title={t('importNetworkMapPage.ruleCreatedSuccess')}
+        open={isModalVisible && ruleCreated}
+        onCancel={handleOk}
+        footer={[
+          <Button key="ok" type="primary" style={lightBlueButtonStyle} onClick={handleOk}>
+            {t('importNetworkMapPage.OK')}
+          </Button>,
+        ]}
+      >
+        <p>{modalMessage}</p>
+      </Modal>
+    </div>
+  );
+};
+
+export default ImportNetWorkMap;
+
+
+

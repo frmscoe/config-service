@@ -31,6 +31,7 @@ export interface Props {
     error: string;
     loading: boolean;
     rule: IRule | null;
+    afterEdit?: () => void;
     // Removed afterCreate prop from here as Edit.tsx doesn't directly trigger list refresh.
     // It only needs to know when its submission is done to close itself.
 }
@@ -206,7 +207,7 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                         />
                     </FormItem>
 
-                    {props.rule?.state !== '01_DRAFT' ? <Form.Item
+                    {/*{props.rule?.state !== '01_DRAFT' ? <Form.Item
                         className="w-1/2 flex-grow"
                         validateStatus={(errors?.changeType && errors?.changeType?.message || errors?.changeType && errors?.changeType?.message) ? 'error' : ''}
                         help={(errors?.changeType && errors?.changeType?.message)}
@@ -227,7 +228,37 @@ const EditRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props }) =
                             )}
                         />
 
-                    </Form.Item> : null}
+                    </Form.Item> : null}*/}
+                    {props.rule?.state !== '01_DRAFT' ? (
+                      <Form.Item
+                        className="w-1/2 flex-grow"
+                        validateStatus={errors.changeType ? 'error' : ''}
+                        help={errors.changeType?.message}
+                      >
+                        <label className="block text-gray-700 mb-3">Change Type</label>
+
+                        <Controller
+                          name="changeType"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              data-testid="change-type-select"
+                              placeholder="Type of Change"
+                              // IMPORTANT: antd v5 — use options, not <Select.Option>
+                              options={[
+                                { value: 'major', label: 'MAJOR' },
+                                { value: 'minor', label: 'MINOR' },
+                                { value: 'patch', label: 'PATCH' },
+                              ]}
+                              value={field.value}
+                              onChange={(val) => field.onChange(val)}
+                              onBlur={field.onBlur}
+                            />
+                          )}
+                        />
+                      </Form.Item>
+                    ) : null}
+
 
 
                     <div className="mb-4">

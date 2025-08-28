@@ -101,9 +101,9 @@ const Rule: React.FunctionComponent<Props> = ({
                 title: commonTranslations('rulesListPage.table.version'),
                 dataIndex: 'cfg',
                 sorter: (a, b) => a.state.localeCompare(b.cfg),
-                filteredValue: filters.cfg ? filters.cfg.split(',') : null,
+                filteredValue: filters?.cfg ? filters.cfg.split(',') : null,
                 filterDropdown: ({ confirm, clearFilters }) => {
-                    const [selected, setSelected] = useState<string[]>(filters.cfg ? filters.cfg.split(',') : []);
+                    const [selected, setSelected] = useState<string[]>(filters?.cfg ? filters.cfg.split(',') : []);
                     const handleToggle = (value: string) => {
                         setSelected(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
                     };

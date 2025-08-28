@@ -1,6 +1,19 @@
-// <!-- SPDX-License-Identifier: Apache-2.0 -->
 import type { MenuProps } from 'antd';
-import { Row, Col, Spin, Button, Collapse, Space, Typography, Card, Checkbox, Tag, Dropdown, DownOutlined } from 'antd';
+import { Row,
+         Col,
+         Spin,
+         Button,
+         Collapse,
+         Space,
+         Typography,
+         Card,
+         Checkbox,
+         Tag,
+         Dropdown,
+         DownOutlined,
+         Modal,
+         Radio
+       } from 'antd';
 import React, { DragEventHandler, useMemo, useState } from 'react';
 import { Events, EventsProps } from './Events';
 import { IRule } from '~/domain/Rule/RuleDetailPage/service';
@@ -13,7 +26,8 @@ import styles from './style.module.scss';
 import { UnAssignedTypologies, UnassignedTypologiesProps } from './Typology-List';
 import { RuleWithConfig } from '~/domain/Typology/Score/service';
 import Link from 'next/link';
-
+import { createNetworkMap } from './service';
+import { message } from 'antd';
 
 
 interface Props {
@@ -43,17 +57,26 @@ interface Props {
 
   initialAttachedRules?: RuleWithConfig[];
   initialEventId?: string;
-
-
+  initialNodes: any[]; // Added for the clone modal logic
 }
 
 const Version = React.lazy(() => import('./Versions'));
 
+// import { Modal, Radio } from 'antd';
+
 
 const EventNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
+
+
   const handleExpand = () => {
     if (data.handleExpand) {
       data.handleExpand(id);
+    }
+  };
+
+  const handleDelete = () => {
+    if (data.handleDelete) {
+      data.handleDelete(id, data);
     }
   };
 
@@ -78,28 +101,21 @@ const EventNode: React.FunctionComponent<NodeProps> = ({ data, id }) => {
         <NodeIndexOutlined style={{ marginRight: 6 }} />
         {data.label}
       </span>
-
-      {data.expanded ? (
-        <MinusCircleFilled
-          className="absolute right-2 top-1/2 transform -translate-y-1/2"
-          onClick={handleExpand}
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <CloseOutlined
+          onClick={handleDelete}
           style={{
-            fontSize: '1.5rem',
-            color: '#54B352',
+            fontSize: '1.2rem',
+            color: '#ff4d4f',
             cursor: 'pointer',
           }}
         />
-      ) : (
-        <PlusCircleFilled
-          className="absolute right-2 top-1/2 transform -translate-y-1/2"
-          onClick={handleExpand}
-          style={{
-            fontSize: '1.5rem',
-            color: '#54B352',
-            cursor: 'pointer',
-          }}
-        />
-      )}
+        {data.expanded ? (
+          <MinusCircleFilled onClick={handleExpand} style={{ fontSize: '1.5rem', color: '#54B352', cursor: 'pointer' }} />
+        ) : (
+          <PlusCircleFilled onClick={handleExpand} style={{ fontSize: '1.5rem', color: '#54B352', cursor: 'pointer' }} />
+        )}
+      </div>
 
       <Handle
         type="source"
@@ -178,7 +194,7 @@ const TypologyNode: React.FunctionComponent<NodeProps & { onNodesChange: any }> 
     </>}
     styles={{ header: { background: '#EEEEEE' } }}
     style={{ minWidth: 350 }}>
-    
+
 
 
     {showDetails && (
@@ -257,11 +273,14 @@ const nodeTypes = { eventNode: EventNode, typologyNode: TypologyNode, versionNod
 
 export const Edit: React.FunctionComponent<Props & UnassignedTypologiesProps & EventsProps> = ({ loadingTypologies, ...props }) => {
   const { t } = useCommonTranslations();
-  
+
+  // Move useState hooks inside the functional component
+  const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
+  const [cloneLoading, setCloneLoading] = useState(false);
+  const [versionType, setVersionType] = useState<'major' | 'minor' | 'patch'>('patch');
   const [attachedRules, setAttachedRules] = useState<RuleWithConfig[]>(props.initialAttachedRules || []);
   const [eventId, setEventId] = useState(props.initialEventId || '');
 
-  
 
 
   //Disabled donot delete
@@ -276,13 +295,12 @@ export const Edit: React.FunctionComponent<Props & UnassignedTypologiesProps & E
     return <Spin data-testid="spinner" className='w-full h-full mx-auto' />
   }
 
-  
 
 
   return (
     <div className='pr-2' style={{ minHeight: '80vh' }}>
       <div className='flex justify-between w-full mb-2 gap-2'>
-        <div className='flex gap-2 ml-auto'>
+        {/*<div className='flex gap-2 ml-auto'>
           <Button loading={props.saveLoading} onClick={props.handleSave} className='text-white' style={{ backgroundColor: '#56b453' }}>
             {t('createEditNetworkMap.save')}
           </Button>
@@ -290,7 +308,19 @@ export const Edit: React.FunctionComponent<Props & UnassignedTypologiesProps & E
             <Link href="/network-map">{t('createEditNetworkMap.cancel')}</Link>
           </Button>
 
+        </div>*/}
+        <div className='flex gap-2 ml-auto'>
+          <Button loading={props.saveLoading} onClick={props.handleSave} className='text-white' style={{ backgroundColor: '#56b453' }}>
+            {t('createEditNetworkMap.save')}
+          </Button>
+          <Button onClick={() => setIsCloneModalOpen(true)} className='text-white bg-blue-500'>
+            Clone
+          </Button>
+          <Button loading={props.saveLoading} className='text-white bg-red-500'>
+            <Link href="/network-map">{t('createEditNetworkMap.cancel')}</Link>
+          </Button>
         </div>
+
       </div>
       <React.Suspense fallback={<Spin />}>
         <Version
@@ -298,13 +328,13 @@ export const Edit: React.FunctionComponent<Props & UnassignedTypologiesProps & E
           setOpen={props.setShowVersions}
         />
       </React.Suspense>
-      
+
       <Row className='h-full w-full'>
         <Col span={5}>
           {/* Disabled not part of this iteration */}
            <Events
             {...props}
-          /> 
+          />
 
           <UnAssignedTypologies
             {...props}
@@ -323,7 +353,7 @@ export const Edit: React.FunctionComponent<Props & UnassignedTypologiesProps & E
               onNodeClick={props.onNodeClick}
               nodeTypes={nodeTypes}
 
-              
+
 
             >
               {/* Disabled not part of this iteration. Donot Delete */}
@@ -381,6 +411,66 @@ export const Edit: React.FunctionComponent<Props & UnassignedTypologiesProps & E
           </div>
         </Col>
       </Row>
+      <Modal
+  open={isCloneModalOpen}
+  onCancel={() => setIsCloneModalOpen(false)}
+  title="Clone as New Version"
+  okText="Clone"
+  confirmLoading={cloneLoading}
+  onOk={async () => {
+  setCloneLoading(true);
+  try {
+    const oldCfg = props.originalNetworkMapData?.cfg || '1.0.0';
+    const [major, minor, patch] = oldCfg.split('.').map(Number);
+    let newCfg = '';
+    if (versionType === 'major') newCfg = `${major + 1}.0.0`;
+    if (versionType === 'minor') newCfg = `${major}.${minor + 1}.0`;
+    if (versionType === 'patch') newCfg = `${major}.${minor}.${patch + 1}`;
+
+    const now = new Date().toISOString();
+
+    const cloned = {
+      ...props.originalNetworkMapData,
+      cfg: newCfg,
+      name: `${props.originalNetworkMapData.name}`,
+      createdAt: now,
+      updatedAt: now,
+      state: '01_DRAFT',
+      source: 'user_created',
+    };
+
+    // Inspect this in your dev tools
+    console.log('CLONE PAYLOAD', JSON.stringify(cloned, null, 2));
+
+    await createNetworkMap(cloned);
+    message.success("Cloned successfully");
+    window.location.href = '/network-map';
+  } catch (err: any) {
+    console.error("Clone failed:", err);
+    message.error(err?.response?.data?.message || 'Clone failed');
+  } finally {
+    setCloneLoading(false);
+    setIsCloneModalOpen(false);
+  }
+}}
+
+
+
+
+>
+  <Radio.Group
+    onChange={(e) => setVersionType(e.target.value)}
+    value={versionType}
+    className='mt-3'
+  >
+    <Radio value="major">Major</Radio>
+    <Radio value="minor">Minor</Radio>
+    <Radio value="patch">Patch</Radio>
+  </Radio.Group>
+</Modal>
     </div>
   );
+
+
+
 };

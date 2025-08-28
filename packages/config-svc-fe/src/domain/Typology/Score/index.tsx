@@ -8,9 +8,25 @@ import usePrivileges from "~/hooks/usePrivileges";
 import { AttachedRules } from "../Create";
 import React from "react";
 import AccessDeniedPage from "~/components/common/AccessDenied";
-import { ITypology, RuleWithConfig, getTypology, getTypologyWithRules, getRuleById, getRuleConfigById, getAllRules, updateTypology } from "./service";
+import { ITypology, 
+         RuleWithConfig, 
+         getTypology, 
+         getTypologyWithRules, 
+         getRuleById, 
+         getRuleConfigById, 
+         getAllRules, 
+         updateTypology 
+     } from "./service";
 import dagre from 'dagre';
-import { nodeDefaults, createNodesAndEdges, extractOutcomes, defaultNodeWidth, defaultNodeHeight, createNewNodesAndEdges, buildScorePayload } from "./helpers";
+import { nodeDefaults, 
+         createNodesAndEdges, 
+         extractOutcomes, 
+         defaultNodeWidth, 
+         defaultNodeHeight, 
+         createNewNodesAndEdges, 
+         buildScorePayload,
+         getOutcomeLabelFromType
+        } from "./helpers";
 import { getRandomNumber } from "~/utils/getRandomNumberHelper";
 import { IOutcome } from "./Outcomes";
 import { useParams } from "next/navigation";
@@ -62,6 +78,7 @@ const ScorePage = () => {
     const [selectedOutcomes, setSelectedOutComes] = useState<any[]>([]);
     const [activeKeys, setActiveKeys] = useState<string | string[]>(['1']);
     const router = useRouter();
+    const normalizeId = (id?: string) => (id ? id.split('/').pop()! : id);
 
     const onConnect = useCallback(
         (params: any) =>
@@ -262,58 +279,205 @@ const ScorePage = () => {
         })
 
     }
+    // const handleDelete = (id: string) => {
+    //     const deleted = nodes.find((n) => n.id === id);
+    //     if (!deleted) {
+    //         return;
+    //     }
+
+    //     let newNodes = nodes.filter((n) => n.id !== id);
+    //     let newEdges = edges.filter((e) => e.source !== id && e.target !== id);
+
+    //     // Find operator nodes connected to the deleted node
+    //     const connectedOperators = edges
+    //         .filter((e) => e.source === id || e.target === id)
+    //         .map((e) => (e.source === id ? e.target : e.source))
+    //         .filter((nodeId) => nodes.find((n) => n.id === nodeId)?.type === 'operatorNode');
+
+    //     connectedOperators.forEach((operatorId) => {
+    //         // Find score nodes connected to the operator node
+    //         const connectedScoreNodes = edges
+    //             .filter((e) => e.source === operatorId || e.target === operatorId)
+    //             .map((e) => (e.source === operatorId ? e.target : e.source))
+    //             .filter((nodeId) => nodes.find((n) => n.id === nodeId)?.type === 'scoreNode' && nodeId !== id);
+
+    //         if (connectedScoreNodes.length < 2) {
+    //             newNodes = newNodes.filter((n) => n.id !== operatorId);
+    //             newEdges = newEdges.filter((e) => e.source !== operatorId && e.target !== operatorId);
+    //         }
+    //     });
+
+    //     // Remove score nodes connected to the deleted node
+    //     newNodes = newNodes.filter((n) => (n?.data.outcomeId !== id));
+    //     newEdges = newEdges.filter((e) => e.source !== id && e.target !== id);
+
+    //     // Check and fix operator nodes to score nodes ratio
+    //     const scoreNodes = newNodes.filter((n) => n.type === 'scoreNode');
+    //     const operatorNodes = newNodes.filter((n) => n.type === 'operatorNode');
+    //     if (operatorNodes.length >= scoreNodes.length) {
+    //         const operatorToRemove = operatorNodes[operatorNodes.length - 1];
+    //         newNodes = newNodes.filter((n) => n.id !== operatorToRemove?.id);
+    //         newEdges = newEdges.filter((e) => e.source !== operatorToRemove?.id && e.target !== operatorToRemove?.id);
+    //     }
+
+    //     setNodes(newNodes);
+    //     setEdges(newEdges);
+    //     setSelectedOutComes(selectedOutcomes.filter((o) => o.id !== id));
+    //     const existsInRemoved = removed.find((r) => r.id === id && r.ruleId === deleted?.data?.ruleId);
+    //     if (!existsInRemoved) {
+    //         setRemoved([...removed, deleted?.data]);
+    //         setActiveKeys((prev) => [...prev, '5']);
+    //     }
+    //     // const rule = typology.ruleWithConfigs.find((r) => r.rule._key === deleted?.data?.ruleId);
+    //     // const rule = Array.isArray(typology.ruleWithConfigs)
+    //     //   ? typology.ruleWithConfigs.find((r) => r.rule._key === deleted?.data?.ruleId)
+    //     //   : undefined;
+
+    //     // const options = extractOutcomes(rule?.ruleConfigs || [], deleted?.data?.ruleId);
+    //     // setOutcomeOptions([...options]);
+    //     if (Array.isArray(typology.ruleWithConfigs)) {
+    //       const ruleConfigsMap = typology.ruleWithConfigs
+    //         .flatMap(r => r.ruleConfigs)
+    //         .reduce((acc, cfg) => {
+    //           acc[cfg._key] = cfg;
+    //           return acc;
+    //         }, {} as Record<string, any>);
+
+    //       const allOutcomes = extractOutcomes(
+    //         typology.rules_rule_configs || [],
+    //         ruleConfigsMap
+    //       );
+
+    //       setOutComes(allOutcomes);
+
+    //       // Re-apply filter to refresh the visible outcome panel
+    //       if (selectedRule) {
+    //         const filtered = allOutcomes.filter(o => {
+    //           const cleanRuleId = o.ruleId?.split('/')?.pop();
+    //           return cleanRuleId === selectedRule;
+    //         });
+    //         setOutcomeOptions(filtered);
+    //       } else {
+    //         setOutcomeOptions(allOutcomes);
+    //       }
+    //     }
+
+    //     updateLayout(newNodes, newEdges);
+    // };
+
     const handleDelete = (id: string) => {
         const deleted = nodes.find((n) => n.id === id);
         if (!deleted) {
             return;
         }
 
+        // 1. Filter out the deleted outcome node
         let newNodes = nodes.filter((n) => n.id !== id);
+
+        // 2. Filter out score nodes associated with the deleted outcome
+        // This assumes score nodes have a 'data.outcomeId' property that matches the deleted outcome's ID.
+        newNodes = newNodes.filter((n) => !(n.type === 'scoreNode' && n.data?.outcomeId === id));
+
+        // 3. Filter out edges directly connected to the deleted outcome node AND the deleted score node(s)
         let newEdges = edges.filter((e) => e.source !== id && e.target !== id);
 
-        // Find operator nodes connected to the deleted node
-        const connectedOperators = edges
-            .filter((e) => e.source === id || e.target === id)
-            .map((e) => (e.source === id ? e.target : e.source))
-            .filter((nodeId) => nodes.find((n) => n.id === nodeId)?.type === 'operatorNode');
+        // We also need to remove edges connected to the score node(s) that were just deleted.
+        // To do this effectively, we first identify the IDs of the score nodes that *will* be deleted.
+        const deletedScoreNodeIds = nodes
+            .filter((n) => n.type === 'scoreNode' && n.data?.outcomeId === id)
+            .map(n => n.id);
 
-        connectedOperators.forEach((operatorId) => {
-            // Find score nodes connected to the operator node
-            const connectedScoreNodes = edges
-                .filter((e) => e.source === operatorId || e.target === operatorId)
-                .map((e) => (e.source === operatorId ? e.target : e.source))
-                .filter((nodeId) => nodes.find((n) => n.id === nodeId)?.type === 'scoreNode' && nodeId !== id);
+        // Now, filter out edges connected to these identified score nodes.
+        newEdges = newEdges.filter((e) =>
+            !deletedScoreNodeIds.includes(e.source) && !deletedScoreNodeIds.includes(e.target)
+        );
 
-            if (connectedScoreNodes.length < 2) {
-                newNodes = newNodes.filter((n) => n.id !== operatorId);
-                newEdges = newEdges.filter((e) => e.source !== operatorId && e.target !== operatorId);
-            }
-        });
 
-        // Remove score nodes connected to the deleted node
-        newNodes = newNodes.filter((n) => (n?.data.outcomeId !== id));
-        newEdges = newEdges.filter((e) => e.source !== id && e.target !== id);
+        // --- CRITICAL: Ensure NO logic here removes 'operatorNode's or their specific edges ---
+        // The previous problematic logic for deleting operator nodes or adjusting their ratio has been omitted.
+        // This ensures smoothstep lines (which are represented by or connected to operator nodes) are not affected.
 
-        // Check and fix operator nodes to score nodes ratio
-        const scoreNodes = newNodes.filter((n) => n.type === 'scoreNode');
-        const operatorNodes = newNodes.filter((n) => n.type === 'operatorNode');
-        if (operatorNodes.length >= scoreNodes.length) {
-            const operatorToRemove = operatorNodes[operatorNodes.length - 1];
-            newNodes = newNodes.filter((n) => n.id !== operatorToRemove?.id);
-            newEdges = newEdges.filter((e) => e.source !== operatorToRemove?.id && e.target !== operatorToRemove?.id);
-        }
-
+        // 4. Update state with the new set of nodes and edges
         setNodes(newNodes);
         setEdges(newEdges);
+
+        // 5. Update selected outcomes
         setSelectedOutComes(selectedOutcomes.filter((o) => o.id !== id));
+
+        // 6. Handle 'removed' state and active keys for the removed panel
         const existsInRemoved = removed.find((r) => r.id === id && r.ruleId === deleted?.data?.ruleId);
         if (!existsInRemoved) {
             setRemoved([...removed, deleted?.data]);
             setActiveKeys((prev) => [...prev, '5']);
         }
-        const rule = typology.ruleWithConfigs.find((r) => r.rule._key === deleted?.data?.ruleId);
-        const options = extractOutcomes(rule?.ruleConfigs || [], deleted?.data?.ruleId);
-        setOutcomeOptions([...options]);
+
+        // 7. Re-evaluate and update outcomes and outcome options for the UI
+        // if (Array.isArray(typology.ruleWithConfigs)) {
+        //     const ruleConfigsMap = typology.ruleWithConfigs
+        //         .flatMap(r => r.ruleConfigs)
+        //         .reduce((acc, cfg) => {
+        //             acc[cfg._key] = cfg;
+        //             return acc;
+        //         }, {} as Record<string, any>);
+
+        //     const allOutcomes = extractOutcomes(
+        //         typology.rules_rule_configs || [],
+        //         ruleConfigsMap
+        //     );
+
+        //     setOutComes(allOutcomes);
+
+        //     // Re-apply filter to refresh the visible outcome panel
+        //     if (selectedRule) {
+        //         const filtered = allOutcomes.filter(o => {
+        //             const cleanRuleId = o.ruleId?.split('/')?.pop();
+        //             return cleanRuleId === selectedRule;
+        //         });
+        //         setOutcomeOptions(filtered);
+        //     } else {
+        //         setOutcomeOptions(allOutcomes);
+        //     }
+        // }
+        // 7. Re-evaluate and update outcomes and outcome options for the UI
+        if (Array.isArray(typology.ruleWithConfigs)) {
+          const ruleConfigsMap = typology.ruleWithConfigs
+            .flatMap(r => r.ruleConfigs)
+            .reduce((acc, cfg) => {
+              acc[cfg._key] = cfg;
+              return acc;
+            }, {} as Record<string, any>);
+
+          const allOutcomes = extractOutcomes(
+            typology.rules_rule_configs || [],
+            ruleConfigsMap
+          );
+
+          // Build a set of what is STILL on canvas (use newNodes, not state `nodes`)
+          const normalizeId = (s?: string) => (s ? s.split('/').pop()! : s);
+          const canvasOutcomeKeys = new Set(
+            newNodes
+              .filter(n => n.data?.type === 'outcome')
+              .map(n => `${normalizeId(n.data?.ruleId)}::${n.data?.subRuleRef}`)
+          );
+
+          // Filter to "what remains" after deletion
+          let filtered = allOutcomes.filter(
+            o => !canvasOutcomeKeys.has(`${normalizeId(o.ruleId)}::${o.subRuleRef}`)
+          );
+
+          // If a rule is selected, also narrow to that rule
+          if (selectedRule) {
+            filtered = filtered.filter(
+              o => normalizeId(o.ruleId) === selectedRule
+            );
+          }
+
+          setOutComes(filtered);
+          setOutcomeOptions(filtered);
+        }
+
+
+        // 8. Update layout with the new set of nodes and edges
         updateLayout(newNodes, newEdges);
     };
 
@@ -364,11 +528,36 @@ const ScorePage = () => {
             const outcomeNode = {
                 ...nodeDefaults,
                 id: getRandomNumber(10000).toString(),
-                data: { ...data, label: `${data.type}: ${data.subRuleRef}`, type: 'outcome', score: 0, showDelete: true },
+                // data: { ...data, label: `${data.type}: ${data.subRuleRef}`, type: 'outcome', score: 0, showDelete: true },
+                data: {
+                  ...data,
+                  label: `${data.type}: ${data.subRuleRef}`,
+                  type: 'outcome',
+                  score: 0,
+                  showDelete: true,
+                  customNode: getOutcomeLabelFromType(data.type), //this is the fix
+                },
+
                 position: { x: 250, y: yPos },
-                type: 'customNode'
+                // type: 'customNode'
             };
+            // const outcomeNode = {
+            //   ...nodeDefaults,
+            //   id: getRandomNumber(10000).toString(),
+            //   data: {
+            //     ...data,
+            //     label: `${data.type}: ${data.subRuleRef}`,
+            //     score: 0,
+            //     showDelete: true,
+            //     customNode: getOutcomeLabelFromType(data.type),
+            //   },
+            //   position: { x: 250, y: yPos },
+            //   type: 'outcome' // RESTORE THIS!
+            // };
+
             newNodes.push(outcomeNode);
+            console.log("🚀 Outcome data.type:", data.type);
+
 
             // This edge connects the rule to the newly dropped outcome
             const edge = {
@@ -444,20 +633,7 @@ const ScorePage = () => {
     };
 
 
-    const handleSelectRule = (id: string) => {
-        setSelectedRuleIndex(id);
-        
-        if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
-            console.warn("ruleWithConfigs not available yet.");
-            return;
-          }
-        const rule = typology.ruleWithConfigs.find((r) => r.rule._key === id);
-        const selectedOutcomes = extractOutcomes(rule?.ruleConfigs || [], id);
-        setOutComes([...selectedOutcomes]);
-        setOutcomeOptions([...selectedOutcomes]);
-        setActiveKeys((prev) => [...prev, '3']);
-
-    }
+    
 
 
     const updateLayout = React.useCallback((newNodes: Node[], newEdges: Edge[]) => {
@@ -556,6 +732,11 @@ const ScorePage = () => {
                 )
               );
 
+              console.log("🔍 Rule ID:", entry.ruleId);
+                console.log("➡️ Rule Config IDs:", entry.ruleConfigId);
+                console.log("✅ Loaded Configs:", configs.filter(Boolean));
+
+
               if (!rule) return null;
 
               return {
@@ -574,9 +755,17 @@ const ScorePage = () => {
               return acc;
             }, {} as Record<string, IRuleConfig>);
 
-          const outcomes = extractOutcomes(data.rules_rule_configs, ruleConfigsMap);
+          // const outcomes = extractOutcomes(data.rules_rule_configs, ruleConfigsMap);
 
-          setTypology(data);
+          // setTypology(data);
+            setTypology({
+              ...data,
+              ruleWithConfigs: attachedRules.map(r => ({
+                rule: r.rule,
+                ruleConfigs: r.ruleConfigs
+              }))
+            });
+
           setRules(attachedRules);
 
           // FIX: Flatten rule structure to what Rules.tsx expects
@@ -589,8 +778,8 @@ const ScorePage = () => {
             }))
           );
 
-          setOutComes(outcomes);
-          setOutcomeOptions(outcomes);
+          // setOutComes(outcomes);
+          // setOutcomeOptions(outcomes);
           console.log("Extracted Outcomes:", outcomes);
 
           const { nodes: newNodes, edges: newEdges } = createNodesAndEdges(attachedRules);
@@ -613,7 +802,375 @@ const ScorePage = () => {
         fetchTypology();
     }, []);
 
+    // const handleSelectRule = (id: string) => {
+    //     setSelectedRuleIndex(id);
+        
+    //     if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+    //         console.warn("ruleWithConfigs not available yet.");
+    //         return;
+    //       }
+    //     const rule = typology.ruleWithConfigs.find((r) => r.rule._key === id);
+    //     const selectedOutcomes = extractOutcomes(rule?.ruleConfigs || [], id);
+    //     setOutComes([...selectedOutcomes]);
+    //     setOutcomeOptions([...selectedOutcomes]);
+    //     setActiveKeys((prev) => [...prev, '3']);
+
+    // }
+
+    // const handleSelectRule = (id: string) => {
+    //   console.log("Selected rule ID:", id);
+    //   setSelectedRuleIndex(id);
+
+    //   if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+    //     console.warn("ruleWithConfigs not available yet.");
+    //     return;
+    //   }
+
+    //   const ruleEntry = typology.ruleWithConfigs.find((r) => r.rule._key === id);
+    //   console.log("Matched Rule Entry:", ruleEntry);
+
+    //   if (!ruleEntry) {
+    //     console.warn("Rule not found.");
+    //     return;
+    //   }
+
+    //   const ruleId = ruleEntry.rule._key;
+    //   const ruleConfigs = ruleEntry.ruleConfigs || [];
+    //   console.log("Rule Configs:", ruleConfigs);
+
+    //   const ruleConfigsMap = ruleConfigs.reduce((acc, cfg) => {
+    //     acc[cfg._key] = cfg;
+    //     return acc;
+    //   }, {} as Record<string, IRuleConfig>);
+
+    //   // const configIds = ruleConfigs.map(cfg => cfg._key);
+    //   const configIds = ruleConfigs.map(cfg => cfg._key) // This returns just "7817..." — correct
+    //   console.log(" Config keys passed to extractOutcomes:", ruleConfigs.map(cfg => cfg._key));
+
+    //   console.log("📦 Passing to extractOutcomes:", {
+    //       ruleId,
+    //       configIds: ruleConfigs.map(cfg => cfg._key),
+    //       ruleConfigsMap
+    //     });
+
+    //   const selectedOutcomes = extractOutcomes(
+    //     [
+    //       {
+    //         ruleId,
+    //         ruleConfigId: configIds
+    //       }
+    //     ],
+    //     ruleConfigsMap
+    //   );
+
+    //   console.log("Extracted Outcomes:", selectedOutcomes);
+
+    //   setOutComes([...selectedOutcomes]);
+    //   setOutcomeOptions([...selectedOutcomes]);
+    //   setActiveKeys((prev) => [...new Set([...prev, '3'])]);
+    // };
+
+    // const handleSelectRule = (id: string) => {
+    //   setSelectedRuleIndex(id);
+
+    //   console.log("Typology Rule With Configs", typology?.ruleWithConfigs);
+    //   console.log("Typology Rule With Configs", typology.ruleWithConfigs);
+
+    //   if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+    //     console.warn("ruleWithConfigs not available yet.");
+    //     return;
+    //   }
+
+    //   const ruleEntry = typology.ruleWithConfigs.find((r) => r.rule._key === id);
+    //   if (!ruleEntry) {
+    //     console.warn("Rule not found.");
+    //     return;
+    //   }
+
+    //   const ruleId = ruleEntry.rule._key;
+    //   const ruleConfigs = ruleEntry.ruleConfigs || [];
+
+    //   const ruleConfigsMap = ruleConfigs.reduce((acc, cfg) => {
+    //     acc[cfg._key] = cfg;
+    //     return acc;
+    //   }, {} as Record<string, IRuleConfig>);
+
+    //   const ruleConfigKeys = ruleConfigs.map(cfg => cfg._key); // raw keys only
+
+    //   console.log("Passing config keys to extractOutcomes:", ruleConfigKeys);
+
+    //   const selectedOutcomes = extractOutcomes(
+    //     [{ ruleId, ruleConfigId: ruleConfigKeys }],
+    //     ruleConfigsMap
+    //   );
+
+    //   console.log("Extracted Outcomes:", selectedOutcomes);
+
+    //   setOutComes(selectedOutcomes);
+    //   setOutcomeOptions(selectedOutcomes);
+    //   setActiveKeys((prev) => [...new Set([...prev, '3'])]);
+    // };
+
+    // const handleSelectRule = (id: string) => {
+    //   setSelectedRuleIndex(id);
+
+    //   console.log('🔍 All canvas nodes:', nodes);
+    //   nodes.forEach((n, i) => {
+    //       console.log(`📌 Node #${i + 1}:`, n.data);
+    //     });
+
+
+    //     const canvasOutcomes = nodes.filter(
+    //       (n) => n.data?.type === 'outcome'
+    //     );
+
+    //     console.log('🎯 Outcomes currently on canvas:', canvasOutcomes);
+
+    //     canvasOutcomes.forEach((o, i) => {
+    //       console.log(`  #${i + 1}: ruleId=${o.data.ruleId}, subRuleRef=${o.data.subRuleRef}, reason=${o.data.reason}`);
+    //     });
+
+
+    //   if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+    //     console.warn("ruleWithConfigs not available yet.");
+    //     return;
+    //   }
+
+    //   const rule = typology.ruleWithConfigs.find((r) => r.rule._key === id);
+    //   if (!rule) {
+    //     console.warn(`Rule with ID ${id} not found in ruleWithConfigs.`);
+    //     return;
+    //   }
+
+    //   // const ruleId = rule.rule._id;
+    //   const ruleId = rule.rule._id.split('/').pop(); // Extract only raw ID
+    //   const ruleConfigs = rule.ruleConfigs || [];
+
+    //   const ruleConfigsMap = ruleConfigs.reduce((acc, cfg) => {
+    //     acc[cfg._key] = cfg;
+    //     return acc;
+    //   }, {} as Record<string, IRuleConfig>);
+
+    //   const rawOutcomes = extractOutcomes(
+    //     [{ ruleId, ruleConfigId: ruleConfigs.map(c => c._key) }],
+    //     ruleConfigsMap
+    //   );
+
+    //   // FIX: Check for already-dragged outcomes
+    //   const existingCanvasOutcomes = nodes
+    //     .filter((n) =>
+    //       n.data?.type === 'outcome' && // lowercase fix
+    //       n.data?.ruleId === ruleId
+    //     )
+    //     .map((n) => `${n.data.type}-${n.data.ruleId}-${n.data.subRuleRef}`);
+
+    // // const existingCanvasOutcomes = nodes
+    // // .filter(n => n.data?.type === 'outcome' && n.data?.ruleId === ruleId)
+    // // .map(n => `${n.data.type}-${n.data.ruleId}-${n.data.subRuleRef}`);
+
+
+    //   const filteredOutcomes = rawOutcomes.filter((o) =>
+    //     !existingCanvasOutcomes.includes(`${o.type}-${o.ruleId}-${o.subRuleRef}`)
+    //   );
+
+    //   setOutComes(filteredOutcomes);
+    //   setOutcomeOptions(filteredOutcomes);
+    //   setActiveKeys((prev) => [...new Set([...prev, '3'])]);
+    // };
+
+    // const handleSelectRule = (id: string) => {
+    //   setSelectedRuleIndex(id);
+    //   console.log('🔍 Selected Rule _key:', id);
+
+    //   const canvasOutcomes = nodes.filter(n => n.data?.type === 'outcome');
+    //   console.log('🧠 Canvas Outcomes:', canvasOutcomes.map(n => n.data));
+
+    //   if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+    //     console.warn("❗ ruleWithConfigs not available.");
+    //     return;
+    //   }
+
+    //   const rule = typology.ruleWithConfigs.find(r => r.rule._key === id);
+    //   if (!rule) {
+    //     console.warn(`❗ Rule with _key=${id} not found.`);
+    //     return;
+    //   }
+
+    //   const ruleId = rule.rule._id; // "rule/abc123" — keep it raw
+    //   const ruleConfigs = rule.ruleConfigs || [];
+
+    //   const ruleConfigsMap = ruleConfigs.reduce((acc, cfg) => {
+    //     acc[cfg._key] = cfg;
+    //     return acc;
+    //   }, {} as Record<string, IRuleConfig>);
+
+    //   const rawOutcomes = extractOutcomes(
+    //     [{ ruleId, ruleConfigId: ruleConfigs.map(cfg => cfg._key) }],
+    //     ruleConfigsMap
+    //   );
+
+    //   console.log('📦 Extracted Outcomes:', rawOutcomes);
+
+    //   const existingOutcomeKeys = canvasOutcomes.map(n => {
+    //     const key = `${n.data.type}-${n.data.ruleId}-${n.data.subRuleRef}`;
+    //     console.log('📌 Existing Canvas Outcome Key:', key);
+    //     return key;
+    //   });
+
+    //   const filteredOutcomes = rawOutcomes.filter((o, i) => {
+    //     const key = `${o.type}-${o.ruleId}-${o.subRuleRef}`;
+    //     const isDuplicate = existingOutcomeKeys.includes(key);
+    //     console.log(`🔍 Outcome #${i + 1}: ${key} => ${isDuplicate ? '❌ DUPLICATE' : '✅ ALLOW'}`);
+    //     return !isDuplicate;
+    //   });
+
+    //   setOutComes(filteredOutcomes);
+    //   setOutcomeOptions(filteredOutcomes);
+    //   setActiveKeys(prev => [...new Set([...prev, '3'])]);
+    // };
+
+    // const handleSelectRule = (id: string) => {
+    //   setSelectedRuleIndex(id);
+
+    //   console.log('🔍 Selected Rule _key:', id);
+    //   console.log('🧠 All canvas nodes:', nodes);
+
+    //   const canvasOutcomes = nodes.filter(n => n.data?.type === 'outcome');
+    //   console.log('🧠 Canvas Outcomes:', canvasOutcomes);
+
+    //   if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+    //     console.warn("⚠️ ruleWithConfigs not available.");
+    //     return;
+    //   }
+
+    //   const ruleEntry = typology.ruleWithConfigs.find((r) => r.rule._key === id);
+    //   if (!ruleEntry) {
+    //     console.warn(`❌ Rule with ID ${id} not found in ruleWithConfigs.`);
+    //     return;
+    //   }
+
+    //   const ruleId = ruleEntry.rule._id.split('/').pop(); // remove prefix
+    //   const ruleConfigs = ruleEntry.ruleConfigs || [];
+
+    //   const ruleConfigsMap = ruleConfigs.reduce((acc, cfg) => {
+    //     acc[cfg._key] = cfg;
+    //     return acc;
+    //   }, {} as Record<string, IRuleConfig>);
+
+    //   const rawOutcomes = extractOutcomes(
+    //     [{ ruleId, ruleConfigId: ruleConfigs.map(c => c._key) }],
+    //     ruleConfigsMap
+    //   );
+
+    //   console.log("📦 Extracted Outcomes:", rawOutcomes);
+
+    //   // const existingKeysOnCanvas = new Set(
+    //   //   canvasOutcomes
+    //   //     .filter(n => n.data?.ruleId === ruleId)
+    //   //     .map(n => `${n.data?.type}-${n.data?.ruleId}-${n.data?.subRuleRef}`)
+    //   // );
+    //   const existingKeysOnCanvas = new Set(
+    //       canvasOutcomes
+    //         .filter(n => n.data?.ruleId === ruleId)
+    //         .map(n => `outcome-${n.data?.ruleId}-${n.data?.subRuleRef}`)
+    //     );
+
+
+    //   console.log("🗑️ Filter keys on canvas:", existingKeysOnCanvas);
+
+    //   // const filteredOutcomes = rawOutcomes.filter(o => {
+    //   //   const key = `${o.type}-${o.ruleId}-${o.subRuleRef}`;
+    //   //   return !existingKeysOnCanvas.has(key);
+    //   // });
+    //   const filteredOutcomes = rawOutcomes.filter(o => {
+    //       const key = `outcome-${o.ruleId}-${o.subRuleRef}`; // force type to "outcome" to match canvas
+    //       return !existingKeysOnCanvas.has(key);
+    //     });
+
+
+    //   console.log("🎯 Filtered Outcomes (for panel):", filteredOutcomes);
+
+    //   setOutComes(filteredOutcomes);
+    //   setOutcomeOptions(filteredOutcomes);
+    //   setActiveKeys(prev => [...new Set([...prev, '3'])]);
+    // };
+
+    const handleSelectRule = (id: string) => {
+      setSelectedRuleIndex(id);
+
+      // 1) Find the rule & its configs
+      if (!typology?.ruleWithConfigs || !Array.isArray(typology.ruleWithConfigs)) {
+        console.warn("ruleWithConfigs not available.");
+        return;
+      }
+
+      const ruleEntry = typology.ruleWithConfigs.find(r => r.rule._key === id);
+      if (!ruleEntry) {
+        console.warn(`Rule with _key=${id} not found.`);
+        return;
+      }
+
+      // Always compare using raw keys (no collection prefix)
+      const ruleId = normalizeId(ruleEntry.rule._id) || normalizeId(ruleEntry.rule._key);
+      const ruleConfigs = ruleEntry.ruleConfigs || [];
+
+      const ruleConfigsMap = ruleConfigs.reduce((acc, cfg) => {
+        acc[cfg._key] = cfg;
+        return acc;
+      }, {} as Record<string, IRuleConfig>);
+
+      // 2) Produce all outcomes for this rule
+      const rawOutcomes = extractOutcomes(
+        [{ ruleId, ruleConfigId: ruleConfigs.map(c => c._key) }],
+        ruleConfigsMap
+      );
+
+      // 3) Build a set of outcomes already on the canvas for this rule
+      const existingKeysOnCanvas = new Set(
+        nodes
+          .filter(n => n.data?.type === 'outcome' && normalizeId(n.data?.ruleId) === ruleId)
+          .map(n => `${normalizeId(n.data?.ruleId)}::${n.data?.subRuleRef}`)
+      );
+
+      // 4) Filter out already-used outcomes
+      const filteredOutcomes = rawOutcomes.filter(o => {
+        const key = `${normalizeId(o.ruleId)}::${o.subRuleRef}`;
+        return !existingKeysOnCanvas.has(key);
+      });
+
+      // 5) Populate the Outcomes panel strictly with the remainder
+      setOutComes(filteredOutcomes);
+      setOutcomeOptions(filteredOutcomes);
+      setActiveKeys(prev => [...new Set([...prev, '3'])]);
+    };
+
+
+
     
+    // const handleSave = async () => {
+    //   if (!typology?._key) {
+    //     Modal.error({ title: "Missing Typology", content: "Typology ID not found." });
+    //     return;
+    //   }
+
+    //   const scorePayload = await buildScorePayload(nodes);
+    //   console.log("Final Score Payload", scorePayload);
+
+    //   try {
+    //     await updateTypology({ score: scorePayload }, typology._key);
+    //     Modal.success({
+    //       title: "Saved!",
+    //       content: "Score section saved successfully.",
+    //     });
+    //   } catch (error) {
+    //     console.error("Error saving score:", error);
+    //     Modal.error({
+    //       title: "Save Failed",
+    //       content: "Something went wrong while saving the score.",
+    //     });
+    //   }
+    // };
+
     const handleSave = async () => {
       if (!typology?._key) {
         Modal.error({ title: "Missing Typology", content: "Typology ID not found." });
@@ -628,6 +1185,9 @@ const ScorePage = () => {
         Modal.success({
           title: "Saved!",
           content: "Score section saved successfully.",
+          onOk: () => {
+            router.push("/typology"); // Redirect after success
+          }
         });
       } catch (error) {
         console.error("Error saving score:", error);
@@ -637,6 +1197,7 @@ const ScorePage = () => {
         });
       }
     };
+
 
 
 
@@ -695,7 +1256,7 @@ const ScorePage = () => {
             }}
 
             onDragExit={(e) => {
-                console.log('stooped dragging');
+                console.log('stopped dragging');
             }}
         />
     </ReactFlowProvider>

@@ -66,6 +66,25 @@ const RuleConfig: React.FunctionComponent<Props> = ({
     }
   }, [searchText, ruleConfigs]);
 
+  // NEW: name search state
+    const [searchNameText, setSearchNameText] = useState<string>('');
+
+    // NEW: filter handler for Name column (mirrors handleSearchRule)
+    const handleSearchName = useCallback((confirm: () => void) => {
+      if (searchNameText.trim().length) {
+        setConfigs(
+          ...[ruleConfigs
+            .filter((rule) => rule?.name?.toLowerCase().includes(searchNameText.toLowerCase()))
+            .map((config) => ({
+              ...config,
+              _key: config._key || config._id || generateRandomString(ruleConfigs.length),
+            }))
+          ]
+        );
+        confirm();
+      }
+    }, [searchNameText, ruleConfigs]);
+
 
   useEffect(() => {
     setConfigs([...ruleConfigs.map((config) => ({
@@ -94,6 +113,9 @@ const RuleConfig: React.FunctionComponent<Props> = ({
       }
     };
 
+    
+
+
     return <ConfigTable
       data={data}
       searchConfigResults={searchConfigResults}
@@ -109,13 +131,65 @@ const RuleConfig: React.FunctionComponent<Props> = ({
 
   const columns: TableColumnsType<IRule> = useMemo(() => {
     return [
+      // {
+      //   title: commonTranslations('rulesListPage.table.name'), dataIndex: 'name', key: 'name',
+      //   showSorterTooltip: { target: 'full-header' },
+      //   sorter: (a: IRule, b: IRule) => a.name.localeCompare(b.name),
+      //   filters: uniqueArray(ruleConfigs, 'name').map((obj) => ({ text: obj.name, value: obj.name.toLowerCase() })),
+      //   onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
+      // },
       {
-        title: commonTranslations('rulesListPage.table.name'), dataIndex: 'name', key: 'name',
+        title: commonTranslations('rulesListPage.table.name'),
+        dataIndex: 'name',
+        key: 'name',
         showSorterTooltip: { target: 'full-header' },
         sorter: (a: IRule, b: IRule) => a.name.localeCompare(b.name),
-        filters: uniqueArray(ruleConfigs, 'name').map((obj) => ({ text: obj.name, value: obj.name.toLowerCase() })),
-        onFilter: (value, record) => record.name.toLowerCase().includes(value as string),
+
+        // mark as filtered when there is text (matches Description pattern)
+        filtered: !!searchNameText.trim().length,
+
+        // keep onFilter to satisfy antd API, though we filter via setConfigs
+        onFilter: (value, record) => record.name.toLowerCase().includes((value as string) || ''),
+
+        // custom dropdown with Input + Search/Reset buttons
+        filterDropdown: ({ confirm, clearFilters }: any) => (
+          <div style={{ padding: 8 }}>
+            <Input
+              placeholder={commonTranslations('rulesListPage.search') || 'Search name'}
+              value={searchNameText}
+              onChange={(e) => setSearchNameText(e.target.value)}
+              onPressEnter={() => handleSearchName(confirm)}
+              className={styles['input-description-search']} // reuse style
+            />
+            <Space>
+              <Button
+                type="primary"
+                onClick={() => handleSearchName(confirm)}
+                size="small"
+                className={styles['reset-button']}
+              >
+                {commonTranslations('rulesListPage.search')}
+              </Button>
+              <Button
+                onClick={() => {
+                  setSearchNameText('');
+                  clearFilters?.();
+                  confirm();
+                  setConfigs([...ruleConfigs.map((config) => ({
+                    ...config,
+                    _key: config._key || config._id || generateRandomString(ruleConfigs.length),
+                  }))]);
+                }}
+                size="small"
+                style={{ width: 90 }}
+              >
+                {commonTranslations('rulesListPage.reset')}
+              </Button>
+            </Space>
+          </div>
+        ),
       },
+
       {
         title: commonTranslations('rulesListPage.table.version'), dataIndex: 'cfg', key: 'cfg',
         showSorterTooltip: { target: 'full-header' },
@@ -210,7 +284,7 @@ const RuleConfig: React.FunctionComponent<Props> = ({
         ),
       },
     ];
-  }, [canCreateRuleConfig, commonTranslations, ruleConfigs, searchText, handleSearchRule]);
+  }, [canCreateRuleConfig, commonTranslations, ruleConfigs, searchText, handleSearchRule, handleSearchName]);
 
 
   return (

@@ -1,5 +1,4 @@
-// <!-- SPDX-License-Identifier: Apache-2.0 -->
-// Misaligned Description Label and Input Box in Rule Config Creation
+// // Misaligned Description Label and Input Box in Rule Config Creation
 import { Checkbox, Form, Input, Select } from "antd";
 import { Controller } from "react-hook-form";
 import { RULE_DATA_TYPES } from "~/constants";
@@ -11,9 +10,10 @@ interface IProps {
     onSubmit: any,
     control: any,
     setValue: any,
+    open: boolean; // Added this line
 }
 
-export const Information: React.FunctionComponent<IProps> = ({ formState, handleSubmit, onSubmit, control, setValue }) => {
+export const Information: React.FunctionComponent<IProps> = ({ formState, handleSubmit, onSubmit, control, setValue, open }) => { // Destructure open prop
     const { t } = useCommonTranslations();
     return (
         <Form layout="horizontal" onFinish={handleSubmit(onSubmit)}
@@ -30,7 +30,7 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
                 labelAlign="left"
                 
             >
-                <Controller
+                {/*<Controller
                     name="dataType"
                     control={control}
                     render={({ field }) => (
@@ -39,6 +39,20 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
                             {RULE_DATA_TYPES.map((state) => (
                                 <Select.Option value={state.value}>
                                     {t(`ruleDataTypes.${state.key}`)}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    )}
+                />*/}
+                <Controller
+                    name="dataType"
+                    control={control}
+                    render={({ field }) => (
+                        <Select data-testid="data-type" {...field}
+                            placeholder={t('createRuleConfigPage.informationForm.selectDataType')}>
+                            {RULE_DATA_TYPES.map((state) => (
+                                <Select.Option key={state.value} value={state.value}>
+                                    {state.label}
                                 </Select.Option>
                             ))}
                         </Select>
@@ -72,14 +86,11 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
             </Form.Item>
 
 
-
-
-
             <Form.Item
                 label={t('createRuleConfigPage.informationForm.version')}
                 className="py-0 mb-0"
                 labelAlign="left"
-
+                key={String(open)} // Added key prop here
             >
                 <div className='flex gap-2'>
                     <Form.Item
