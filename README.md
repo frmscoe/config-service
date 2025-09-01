@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-# TMS Configuration Service Documentation [Draft]
+# TMS Configuration Service Documentation
 
 ## Introduction  
 
@@ -111,13 +111,7 @@ Make sure you have docker properly setup.
 
 cd into `Full-Stack-Docker-Tazama`
 
-> WARNING :exclamation: Currently the Tazama auth service has a dependency on Arango, it might not deploy if you do not remove the dependency [PR raised to address](https://github.com/tazama-lf/Full-Stack-Docker-Tazama/pull/111)
-
-remove `- arango`
-
-> WARNING :exclamation: Currently the Tazama infrastructure service does not expose the Arango ports correctly [PR raised to address](https://github.com/tazama-lf/Full-Stack-Docker-Tazama/pull/111)
-
-add ports `18529:8529`
+add ports `18529:8529` to `docker-compose.infrastructure.yaml`
 
 > WARNING :exclamation: Currently the Tazama Lumberjack has a dependency on NATS, it might not deploy if you do not remove the dependence. Inside docker-compose.dev.logs-elastic.yaml file, look for `- nats` and remove it.
 
@@ -613,6 +607,7 @@ CLIENT_ID=auth-lib-client
 CLIENT_SECRET=auth-lib-client-test-secret 
 CERT_PATH_PRIVATE=/absolute/path/to/test-private-key.pem 
 CERT_PATH_PUBLIC=/absolute/path/to/test-public-key.pem 
+AUTH_SERVICE_URL=http://localhost:3020
 ```
 
 #### Private Key (private-key.pem) - CERT_PATH_PRIVATE:
