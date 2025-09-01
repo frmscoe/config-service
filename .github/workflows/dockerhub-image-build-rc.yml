@@ -16,6 +16,8 @@ jobs:
     if: github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
     name: Push Docker images to Docker Hub
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN_LIB }}
     permissions:
       packages: write
       contents: read
@@ -57,7 +59,7 @@ jobs:
           push: true
           tags: ${{ steps.meta_be.outputs.tags }}
           labels: ${{ steps.meta_be.outputs.labels }}
-          build-args: GH_TOKEN=${{ secrets.GH_TOKEN }}
+          build-args: GH_TOKEN=${{ secrets.GH_TOKEN_LIB }}
 
       - name: Generate artifact attestation for config-svc-be
         uses: actions/attest-build-provenance@v1
