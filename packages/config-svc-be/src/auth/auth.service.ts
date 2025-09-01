@@ -11,6 +11,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { AuthDto } from './dto/auth.dto';
 import { UserEmailMappingService } from '../user-mapping/user-email-mapping.service';
+import { AUTH_SERVICE_URL } from '../constants'; 
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,7 @@ export class AuthService {
     try {
       this.logger.log(`Attempting login for username: ${createAuthDto.username}`);
       const response = await axios.post<string>( // <string> ensures axios expects a raw string response body
-        'http://localhost:3020/v1/auth/login', // Your external authentication service URL
+        `${AUTH_SERVICE_URL}/v1/auth/login`
         {
           username: createAuthDto.username,
           password: createAuthDto.password,
