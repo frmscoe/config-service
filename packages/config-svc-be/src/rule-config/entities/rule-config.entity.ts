@@ -56,7 +56,7 @@ export class Band {
   @ApiProperty({
     description: 'Upper limit for the band',
     example: '2',
-    type: 'number or string',
+    oneOf: [{ type: 'number' }, { type: 'string' }],
     required: false,
   })
   @IsOptional()
@@ -67,7 +67,7 @@ export class Band {
   @ApiProperty({
     description: 'Lower limit for the band',
     example: '1',
-    type: 'number or string',
+    oneOf: [{ type: 'number' }, { type: 'string' }],
     required: false,
   })
   @IsOptional()
@@ -96,7 +96,7 @@ export class Case {
   @ApiProperty({
     description: 'Explicit value to check against',
     example: 'WITHDRAWAL',
-    type: 'string or number',
+    oneOf: [{ type: 'number' }, { type: 'string' }],
   })
   @ValidateIf((o) => o.value !== undefined)
   @Type(() => Object)
