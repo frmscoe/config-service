@@ -91,7 +91,7 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
                             name={'major'}
                             control={control}
                             render={({ field }) => (
-                                <Select data-testid="major-select"  {...field} placeholder={'Major'} >
+                                <Select key="major-select" data-testid="major-select"  {...field} placeholder={'Major'} >
                                     {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((val) => (
                                         <Select.Option value={val} key={val}>
                                             {val}
@@ -111,7 +111,7 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
                             name={'minor'}
                             control={control}
                             render={({ field }) => (
-                                <Select data-testid="minor-select"  {...field} placeholder={'Minor'} >
+                                <Select key="minor-select" data-testid="minor-select"  {...field} placeholder={'Minor'} >
                                     {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((val) => (
                                         <Select.Option value={val} key={val}>
                                             {val}
@@ -132,7 +132,7 @@ export const Information: React.FunctionComponent<IProps> = ({ formState, handle
                             name={'patch'}
                             control={control}
                             render={({ field }) => (
-                                <Select data-testid="patch-select"  {...field} placeholder={'Patch'}>
+                                <Select key="patch-select" data-testid="patch-select"  {...field} placeholder={'Patch'}>
                                     {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((val) => (
                                         <Select.Option value={val} key={val}>
                                             {val}
