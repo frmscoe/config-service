@@ -262,7 +262,7 @@ export const deCommon = {
     importRulePage: {
     ImportRuleConfigTitle: 'Regelkonfiguration importieren',
     uploadPrompt: 'Klicken oder ziehen Sie die Datei in diesen Bereich, um sie hochzuladen',
-    uploadHint: 'Unterstützung für einzelne Regelkonfiguration uploads. Das Hochladen von Firmendaten oder anderen Banddateien ist strengstens untersagt',
+    uploadHint: 'Unterstützung für einzelne Regelkonfiguration uploads.',
     errorParsingJson: 'Fehler beim Parsen von JSON',
     invalidRuleName: 'Ungültiger Regelname',
     invalidRuleDescription: 'Ungültige Regelbeschreibung',

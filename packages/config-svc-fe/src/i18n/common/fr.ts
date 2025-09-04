@@ -257,7 +257,7 @@ export const frCommon = {
     importRulePage: {
     ImportRuleConfigTitle: 'Configuration de règle d\'importation',
     uploadPrompt: 'Cliquez ou glissez le fichier dans cette zone pour télécharger',
-    uploadHint: 'Support pour un téléchargement unique Configuration de règle. Interdiction stricte de télécharger des données d\'entreprise ou d\'autres fichiers de bande',
+    uploadHint: 'Support pour un téléchargement unique Configuration de règle.',
     errorParsingJson: 'Erreur lors de l\'analyse du JSON',
     invalidRuleName: 'Nom de règle invalide',
     invalidRuleDescription: 'Description de règle invalide',

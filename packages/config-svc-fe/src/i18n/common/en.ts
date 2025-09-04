@@ -261,7 +261,7 @@ export const enCommon = {
     importRulePage: {
     ImportRuleConfigTitle: 'Import Rule Configuration',
     uploadPrompt: 'Click or drag file to this area to upload',
-    uploadHint: 'Support for a single Rule Configuration upload. Strictly prohibit from uploading company data or other band files',
+    uploadHint: 'Support for a single Rule Configuration upload.',
     errorParsingJson: 'Error parsing JSON',
     invalidRuleName: 'Invalid rule name',
     invalidRuleDescription: 'Invalid rule description',
@@ -305,7 +305,7 @@ export const enCommon = {
   importTypologyPage: {
     ImportRuleConfigTitle: 'Import Typology',
     uploadPrompt: 'Click or drag file to this area to upload',
-    uploadHint: 'Support for a single Typologys. Strictly prohibit from uploading company data or other band files',
+    uploadHint: 'Support for a single Typologies.',
     errorParsingJson: 'Error parsing JSON',
     invalidRuleName: 'Invalid rule name',
     invalidRuleDescription: 'Invalid rule description',
@@ -349,7 +349,7 @@ export const enCommon = {
   importNetworkMapPage: {
     ImportRuleConfigTitle: 'Import Network Map',
     uploadPrompt: 'Click or drag file to this area to upload',
-    uploadHint: 'Support for a single Network Map. Strictly prohibit from uploading company data or other band files',
+    uploadHint: 'Support for a single Network Map.',
     errorParsingJson: 'Error parsing JSON',
     invalidRuleName: 'Invalid rule name',
     invalidRuleDescription: 'Invalid rule description',

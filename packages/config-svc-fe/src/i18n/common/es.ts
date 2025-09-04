@@ -260,7 +260,7 @@ export const esCommon = {
         importRulePage: {
         ImportRuleConfigTitle: 'Configuración de regla de importación',
         uploadPrompt: 'Haz clic o arrastra el archivo a esta área para subir',
-        uploadHint: 'Soporte para carga única Configuración de regla. Está estrictamente prohibido subir datos de la empresa u otros archivos de banda',
+        uploadHint: 'Soporte para carga única Configuración de regla.',
         errorParsingJson: 'Error al analizar JSON',
         invalidRuleName: 'Nombre de regla inválido',
         invalidRuleDescription: 'Descripción de regla inválida',
