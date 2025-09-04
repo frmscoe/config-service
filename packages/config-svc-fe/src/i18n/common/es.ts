@@ -172,7 +172,7 @@ export const esCommon = {
 
     typologies: "Typologies",
     typologyDetails: "Typology Details",
-    ruleDetails: "Rule Details",
+    ruleDetails: "Detalles del Procesador de Reglas",
     rules: "Rules",
     import: "Import",
     settings: "Condiciones de salida",
@@ -260,7 +260,7 @@ export const esCommon = {
         importRulePage: {
         ImportRuleConfigTitle: 'Configuración de regla de importación',
         uploadPrompt: 'Haz clic o arrastra el archivo a esta área para subir',
-        uploadHint: 'Soporte para carga única o masiva. Está estrictamente prohibido subir datos de la empresa u otros archivos de banda',
+        uploadHint: 'Soporte para carga única Configuración de regla. Está estrictamente prohibido subir datos de la empresa u otros archivos de banda',
         errorParsingJson: 'Error al analizar JSON',
         invalidRuleName: 'Nombre de regla inválido',
         invalidRuleDescription: 'Descripción de regla inválida',
@@ -330,7 +330,7 @@ export const esCommon = {
         "information": "Información",
         "parameters": "Parámetros",
         "exitConditions": "Condiciones de salida",
-        "band": "Banda",
+        "band": "Bandas",
         "cases": "Casos",
         "save": "Guardar",
         "exit": "Salir",
