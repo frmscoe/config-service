@@ -173,7 +173,7 @@ export const deCommon = {
 
   typologies: "Typologien",
   typologyDetails: "Typologiedetails",
-  ruleDetails: "Regel Details",
+  ruleDetails: "Regelprozessor-Details",
   rules: "Regeln",
   import: "Importieren",
   settings: "Ausstiegsbedingungen",
@@ -262,7 +262,7 @@ export const deCommon = {
     importRulePage: {
     ImportRuleConfigTitle: 'Regelkonfiguration importieren',
     uploadPrompt: 'Klicken oder ziehen Sie die Datei in diesen Bereich, um sie hochzuladen',
-    uploadHint: 'Unterstützung für einzelne oder Massenuploads. Das Hochladen von Firmendaten oder anderen Banddateien ist strengstens untersagt',
+    uploadHint: 'Unterstützung für einzelne Regelkonfiguration uploads.',
     errorParsingJson: 'Fehler beim Parsen von JSON',
     invalidRuleName: 'Ungültiger Regelname',
     invalidRuleDescription: 'Ungültige Regelbeschreibung',
@@ -331,7 +331,7 @@ export const deCommon = {
     "information": "Informationen",
     "parameters": "Parameter",
     "exitConditions": "Ausstiegsbedingungen",
-    "band": "Band",
+    "band": "Bands",
     "cases": "Fälle",
     "save": "Speichern",
     "exit": "Ausgang",

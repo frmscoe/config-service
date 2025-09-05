@@ -172,7 +172,7 @@ export const frCommon = {
 
   typologies: "Typologies",
   typologyDetails: "Détails de typologie",
-  ruleDetails: "Détails de la règle",
+  ruleDetails: "Détails du Processeur de Règles",
   rules: "Règles",
   import: "Importer",
   settings: "Conditions de sortie",
@@ -257,7 +257,7 @@ export const frCommon = {
     importRulePage: {
     ImportRuleConfigTitle: 'Configuration de règle d\'importation',
     uploadPrompt: 'Cliquez ou glissez le fichier dans cette zone pour télécharger',
-    uploadHint: 'Support pour un téléchargement unique ou en masse. Interdiction stricte de télécharger des données d\'entreprise ou d\'autres fichiers de bande',
+    uploadHint: 'Support pour un téléchargement unique Configuration de règle.',
     errorParsingJson: 'Erreur lors de l\'analyse du JSON',
     invalidRuleName: 'Nom de règle invalide',
     invalidRuleDescription: 'Description de règle invalide',
@@ -326,7 +326,7 @@ export const frCommon = {
     "information": "Informations",
     "parameters": "Paramètres",
     "exitConditions": "Conditions de sortie",
-    "band": "Bande",
+    "band": "Bandes",
     "cases": "Cas",
     "save": "Enregistrer",
     "exit": "Sortie",

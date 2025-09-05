@@ -60,7 +60,7 @@ const ImportRuleConfig: React.FC = () => {
         const bandsFromJson = fileContent.config.bands || [];
         const casesFromJson = fileContent.config.cases || [];
         const exitConditionsFromJson = fileContent.config.exitConditions || [];
-        const parametersFromJson = fileContent.config.parameters || []; // Extract parameters
+        const parametersFromJson = Array.isArray(fileContent.config.parameters) ? fileContent.config.parameters : []; // Extract parameters
 
         setband(bandsFromJson);
         setcases(casesFromJson);

@@ -5,20 +5,20 @@ import type { TFunction } from "i18next";
 export const getSidebarItems = (commonTranslations: TFunction) => [
   { text: commonTranslations("dashboard"), icon: "grid", url: "/" },
   {
-    text: commonTranslations("typologies"),
-    icon: "image",
-    children: [
-      { text: commonTranslations("typologyDetails"), icon: "image", url: "/typology" },
-      { text: commonTranslations("import"), icon: "image", url: "/typology/import" },
-    ],
-  },
-  {
     text: commonTranslations("rules"),
     icon: "person",
     children: [
       { text: commonTranslations("ruleDetails"), icon: "image", url: "/rule" },
       { text: commonTranslations("ruleConfig"), icon: "image", url: "/rule-config" },
       { text: commonTranslations("import"), icon: "image", url: "/rule-config/import" },
+    ],
+  },
+  {
+    text: commonTranslations("typologies"),
+    icon: "image",
+    children: [
+      { text: commonTranslations("typologyDetails"), icon: "image", url: "/typology" },
+      { text: commonTranslations("import"), icon: "image", url: "/typology/import" },
     ],
   },
   // { text: commonTranslations("ruleConfig"), icon: 'person', url: '/rule-config' },

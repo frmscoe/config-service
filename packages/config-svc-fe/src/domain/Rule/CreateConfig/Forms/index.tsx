@@ -386,10 +386,6 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
             document.activeElement.blur();
         }
 
-        document.querySelectorAll('.ant-select-dropdown, .ant-picker-dropdown').forEach((el) => {
-            (el as HTMLElement).style.display = 'none';
-        });
-
         // The useEffect on `open` handles the reset when it becomes false -> true
         // So we don't need a full reset here, just close the drawer.
         setOpen(false);

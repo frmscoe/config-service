@@ -389,10 +389,6 @@ export const ConfigForm: React.FunctionComponent<FormProps> = ({
             document.activeElement.blur();
         }
 
-        document.querySelectorAll('.ant-select-dropdown, .ant-picker-dropdown').forEach((el) => {
-            (el as HTMLElement).style.display = 'none';
-        });
-
         reset();
         parameterFields.replace([]);
         bandsFields.replace([]);
