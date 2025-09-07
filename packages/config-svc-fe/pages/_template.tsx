@@ -6,7 +6,7 @@ const _Template = () => {
   return (
     <>
       <Head>
-        <title>LexTego - Configuration Service</title>
+        <title>Tazama - Configuration Service</title>
       </Head>
       <h1>Template</h1>
     </>

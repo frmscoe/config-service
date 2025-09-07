@@ -1,6 +1,6 @@
 #!/usr/bin/env bash 
 
-org_name='lextego'
+org_name='Tazama'
 prj_name='tdaly-test'
 branch_name='main'
 

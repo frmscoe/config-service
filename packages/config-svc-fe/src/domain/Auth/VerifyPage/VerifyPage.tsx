@@ -54,7 +54,7 @@ const VerifyPage = () => {
   return (
     <>
       <Head>
-        <title>LexTego - Configuration Service</title>
+        <title>Tazama - Configuration Service</title>
       </Head>
       <div className={styles["verify-container"]}>
         <div className="w-full flex flex-col">

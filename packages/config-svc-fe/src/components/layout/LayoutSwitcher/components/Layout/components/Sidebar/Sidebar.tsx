@@ -70,7 +70,7 @@ export const Sidebar = ({ onSetIsSidebarOpen, isSidebarOpen }: Props) => {
       <div className={styles["sidebar-logo"]}>
         <img
           src={isSidebarOpen ? "/images/logo-full-dark.svg" : "/images/logo-dark.svg"}
-          alt="LexTego"
+          alt="Tazama"
           width="100%"
         />
       </div>

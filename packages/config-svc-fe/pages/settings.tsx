@@ -165,7 +165,7 @@ const Settings = () => {
   return (
     <>
       <Head>
-        <title>LexTego - Configuration Service</title>
+        <title>Tazama - Configuration Service</title>
       </Head>
       <div style={{ padding: 24 }}>
         <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>

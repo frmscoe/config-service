@@ -220,7 +220,7 @@ const data = [
   return (
     <>
       <Head>
-        <title>LexTego - Configuration Service</title>
+        <title>Tazama - Configuration Service</title>
       </Head>
       <div style={{ padding: 24 }}>
         <h2 style={{ marginBottom: 24 }}>Deployment Page</h2>
