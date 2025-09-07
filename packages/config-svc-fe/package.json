@@ -92,7 +92,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev -p ${PORT:-4000}",
+    "dev": "next dev -p 4000",
     "start:prod": "next start -p $PORT",
     "test": "jest",
     "clean": "rm -rf .next/ dist/ node_modules/",
