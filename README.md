@@ -670,6 +670,7 @@ create a `.env` and paste the following environment variables:
 PORT=4000 # this specifies the port the frontend is running
 
 NEXT_PUBLIC_CONFIG_SVC_BE_URL=http://localhost:3007 # this is the config_svc_be URL
+NEXT_PUBLIC_SECURITY_BC_URL=http://localhost:8080/realms/tazama   # this is the keycloak realm URL
 NEXT_PUBLIC_SECURITY_BC_CLIENT_ID=auth-lib-client # this is the keycloak client ID
 NEXT_PUBLIC_SECURITY_BC_SECRET=auth-lib-client-test-secret # this is the keycloak client secret
 
@@ -682,7 +683,7 @@ NEXT_PUBLIC_SECURITY_FETCH_LIMIT=100 #this is for setting the total number of ar
 You need an SSL certificate to run the server.
 
 1. At the project root config-svc-fe, run this command `mkdir certificates`
-2. At the project root config-svc-fe, rune this command `openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -keyout certificates/localhost.key -out certificates/localhost.crt -subj "/CN=localhost"` 
+2. At the project root config-svc-fe, run this command `openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -keyout certificates/localhost.key -out certificates/localhost.crt -subj "/CN=localhost"` 
 
 NB: This uses OpenSSL and they come preinstalled in macOS and Linux.
 

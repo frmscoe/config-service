@@ -44,7 +44,7 @@ const ForgotPasswordPage = () => {
   return (
     <>
       <Head>
-        <title>LexTego - Configuration Service</title>
+        <title>Tazama - Configuration Service</title>
       </Head>
 
       <div className={styles["forgot-password-container"]}>

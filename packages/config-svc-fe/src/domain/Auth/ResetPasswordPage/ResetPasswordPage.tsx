@@ -50,7 +50,7 @@ const ResetPasswordPage = () => {
   return (
     <>
       <Head>
-        <title>LexTego - Configuration Service</title>
+        <title>Tazama - Configuration Service</title>
       </Head>
       <div className={styles["reset-password-container"]}>
         <div className="w-full flex flex-col">

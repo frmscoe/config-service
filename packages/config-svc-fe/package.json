@@ -1,10 +1,13 @@
 {
+  "name": "@tazama/config-service-fe",
+  "description": "Configuration Service front-end",
+  "homepage": "https://github.com/tazama-lf/config-service",
+  "license": "Apache-2.0",
+  "version": "0.5.0",
   "bugs": {
-    "url": ""
+    "url": "https://www.github.com/tazama-lf/config-service/issues"
   },
-  "contributors": [
-    "Ome Chukwuemeka>"
-  ],
+  "author": "Tazama.org",
   "dependencies": {
     "@ant-design/icons": "^5.3.6",
     "@ant-design/nextjs-registry": "^1.0.0",
@@ -33,7 +36,6 @@
     "xstate": "^5.19.2",
     "yup": "^1.4.0"
   },
-  "description": "Configuration Service frontend",
   "devDependencies": {
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-react": "^7.23.3",
@@ -87,13 +89,10 @@
   "engines": {
     "node": ">=20.10.0"
   },
-  "homepage": "https://github.com/lextego/config-svc-fe",
-  "license": "Apache-2.0",
-  "name": "@lextego/config-svc-fe",
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev -p ${PORT:-4000}",
+    "dev": "next dev -p 4000",
     "start:prod": "next start -p $PORT",
     "test": "jest",
     "clean": "rm -rf .next/ dist/ node_modules/",
@@ -115,6 +114,5 @@
     "start:command-handler-svc": "npm -w packages/command-handler-svc run start",
     "start:event-handler-svc": "npm -w packages/event-handler-svc run start",
     "test:watch": "jest --watch"
-  },
-  "version": "0.5.0"
+  }
 }

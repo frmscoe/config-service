@@ -1,13 +1,14 @@
 {
-  "name": "config-svc-be",
-  "version": "0.0.1",
-  "description": "",
-  "author": "Ome Chukwuemeka <ome.chukwuemeka@lextego.com",
-  "private": true,
-  "lextego": {
-    "publish_to_dockerhub": true
-  },
+  "name": "@tazama/config-service-be",
+  "description": "Configuration Service back-end",
+  "homepage": "https://github.com/tazama-lf/config-service",
   "license": "Apache-2.0",
+  "version": "0.0.1",
+  "bugs": {
+    "url": "https://www.github.com/tazama-lf/config-service/issues"
+  },
+  "author": "Tazama.org",
+  "private": true,
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
