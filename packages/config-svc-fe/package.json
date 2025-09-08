@@ -33,7 +33,7 @@
     "reactflow": "^11.11.2",
     "sass": "^1.91.0",
     "styled-components": "^6.1.8",
-    "xstate": "^5.19.2",
+    "xstate": "^5.21.0",
     "yup": "^1.4.0"
   },
   "devDependencies": {
