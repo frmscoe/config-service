@@ -73,25 +73,13 @@ export class RuleService {
       updatedAt: now, // Set initial update timestamp
       updatedBy: username, // Set initial updater
       }
-    const newRuleConfig = {
-      cfg: createRuleAndRuleConfigDto.rule_config_cfg,
-      desc: createRuleAndRuleConfigDto.rule_config_desc,
-      config: createRuleAndRuleConfigDto.config,
-      ownerId: req['user'].username,
-      _key: uuidv4(),
-      state: StateEnum['01_DRAFT']
-    }
+
     try {
       // Insert the new document into the 'rule' collection;
       const rule = await ruleCollection.save({
         ...newRule,
       });
-      // Insert the new document into the 'rule-config' collection;
-      const ruleConfig = await ruleConfigCollection.save({
-        ...newRuleConfig,
-        ruleId: rule._key,
-      });
-      return { rule, ruleConfig };
+      return { rule };
     } catch (e) {
       throw new BadRequestException(e.message);
     }
