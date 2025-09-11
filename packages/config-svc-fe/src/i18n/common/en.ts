@@ -305,7 +305,7 @@ export const enCommon = {
   importTypologyPage: {
     ImportRuleConfigTitle: 'Import Typology',
     uploadPrompt: 'Click or drag file to this area to upload',
-    uploadHint: 'Support for a single Typologies.',
+    uploadHint: 'Support for a single Typology.',
     errorParsingJson: 'Error parsing JSON',
     invalidRuleName: 'Invalid rule name',
     invalidRuleDescription: 'Invalid rule description',

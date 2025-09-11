@@ -83,6 +83,12 @@ const CreateRule: React.FunctionComponent<Props> = ({ open, setOpen, ...props })
       clearErrors();
     }
   }, [props.success]);
+  useEffect(() => {  
+    if (open) {  
+        reset();  
+        clearErrors();  
+    }  
+}, [open, reset, clearErrors]);
 
   return (
     <Drawer

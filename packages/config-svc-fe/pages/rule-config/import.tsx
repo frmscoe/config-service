@@ -185,7 +185,20 @@ const ImportRuleConfig: React.FC = () => {
     setIsErrorModalVisible(false);
     setShowDataTypeSelection(false);
     setIsSavingModalVisible(false);
-    setIsCreatingConfigVisible(false); // Hide creating config modal
+    setIsCreatingConfigVisible(false);
+    setJsonContent(null);
+    setModalMessage(null);
+    setIsVersionModalVisible(false);
+    setRuleExists(false);
+    setConfigExists(false);
+    setLoading(false);
+    setRuleCreated(false);
+    setExistingRuleVersion(null);
+    setExistingRuleId(null);
+    setband([]);
+    setcases([]);
+    setExitConditions([]);
+    setParameters([]);
   };
 
   const handleDataTypeChange = (value: string) => {
