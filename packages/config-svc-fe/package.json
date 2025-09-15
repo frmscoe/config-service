@@ -14,7 +14,7 @@
     "@hookform/resolvers": "^3.3.4",
     "@xstate/react": "^5.0.3",
     "antd": "^5.27.2",
-    "axios": "^1.11.0",
+    "axios": "^1.12.2",
     "axios-mock-adapter": "^2.1.0",
     "classnames": "^2.5.1",
     "dagre": "^0.8.5",
