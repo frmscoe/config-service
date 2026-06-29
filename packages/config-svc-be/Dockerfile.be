@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Use Node.js 20 as the base image
 FROM node:20
 
@@ -7,10 +8,11 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY packages/config-svc-be/package*.json ./
 
-# Create .npmrc file dynamically with GH_TOKEN
-ARG GH_TOKEN
+# Create .npmrc that reads the token from the environment at install time.
+# The token is supplied via a BuildKit secret mount and is never written into
+# any image layer, so it cannot leak in the published image.
 RUN echo "@tazama-lf:registry=https://npm.pkg.github.com" > .npmrc \
-    && echo "//npm.pkg.github.com/:_authToken=${GH_TOKEN}" >> .npmrc
+    && echo "//npm.pkg.github.com/:_authToken=\${GH_TOKEN}" >> .npmrc
 
 # Install nvm and set Node.js version
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
@@ -20,13 +22,13 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | b
     && nvm use 20
 
 # Install dependencies
-RUN npm install
+RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm install
 
 # Install specific auth-lib package
-RUN npm install @tazama-lf/auth-lib
+RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm install @tazama-lf/auth-lib
 
 # Install audit and logging library
-RUN npm install @tazama-lf/frms-coe-lib
+RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm install @tazama-lf/frms-coe-lib
 
 # Copy the rest of the backend code
 COPY packages/config-svc-be ./

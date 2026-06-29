@@ -59,7 +59,8 @@ jobs:
           push: true
           tags: ${{ steps.meta_be.outputs.tags }}
           labels: ${{ steps.meta_be.outputs.labels }}
-          build-args: GH_TOKEN=${{ secrets.GH_TOKEN_LIB }}
+          secrets: |
+            GH_TOKEN=${{ secrets.GH_TOKEN_LIB }}
 
       - name: Generate artifact attestation for config-svc-be
         uses: actions/attest-build-provenance@v1
