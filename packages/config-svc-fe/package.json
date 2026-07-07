@@ -12,7 +12,7 @@
     "@ant-design/icons": "^5.3.6",
     "@ant-design/nextjs-registry": "^1.0.0",
     "@hookform/resolvers": "^3.3.4",
-    "@xstate/react": "^5.0.3",
+    "@xstate/react": "^6.0.0",
     "antd": "^5.27.2",
     "axios": "^1.11.0",
     "axios-mock-adapter": "^2.1.0",
