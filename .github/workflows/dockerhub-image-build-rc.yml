@@ -63,7 +63,7 @@ jobs:
             GH_TOKEN=${{ secrets.GH_TOKEN_LIB }}
 
       - name: Generate artifact attestation for config-svc-be
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         with:
           subject-name: docker.io/tazamaorg/config-svc-be
           subject-digest: ${{ steps.push_be.outputs.digest }}
@@ -89,7 +89,7 @@ jobs:
           labels: ${{ steps.meta_fe.outputs.labels }}
 
       - name: Generate artifact attestation for config-svc-fe
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         with:
           subject-name: docker.io/tazamaorg/config-svc-fe
           subject-digest: ${{ steps.push_fe.outputs.digest }}
